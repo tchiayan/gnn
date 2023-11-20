@@ -1,0 +1,7 @@
+# large file 
+/PPI/*
+
+# misc 
+__pycache__*
+lightning_logs*
+mlruns*
