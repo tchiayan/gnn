@@ -156,34 +156,106 @@ def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFr
         
         annotation_file_path = r'david/annotation_chart.tsv'
         anno_df = pd.read_csv(annotation_file_path , sep='\t')
-        print(anno_df.iloc[0:10 , 0: 10])
+        #print(anno_df.iloc[0:10 , 0: 10])
         header_file_path = r'david/3_featname_conversion.csv'
         header_name = pd.read_csv(header_file_path)
         header_name.dropna(inplace=True)
-        print(header_name.dtypes)
+        #print(header_name.dtypes)
         
         header_name['gene id'] = header_name['gene id'].astype(int)
         header_name['gene id'] = header_name['gene id'].astype(str)
         header_name.reset_index(inplace=True)
         header_name.set_index('gene id' , inplace=True)
-        print(header_name)
+        #print(header_name)
         genes_id = header_name.index.to_list()
         
         # loop gene 
         pbar = tqdm(total=len(anno_df))
         i = 0
         pbar.set_description('Creating kegg/go gene connection {}/{}'.format(i , 0))
+        gene_pair = {}
         for idx , row in anno_df.iterrows(): 
             genes = [ x.strip() for x in (row['Genes'].split(",")) ]
             # filter only related genes 
-            genes = [ x for x in genes if x in genes_id]
+            genes = [ header_name.loc[x]['index'] for x in genes if x in genes_id ]
+            genes.sort()
+            
             if len(genes) > 0 :
                 i += 1 
+                for gene_paring in itertools.combinations(genes , 2):
+                    if gene_paring not in gene_pair:
+                        gene_pair[gene_paring] = 1 
+                    else: 
+                        gene_pair[gene_paring] += 1
                 pbar.set_description('Creating kegg/go gene connection {}/{}'.format(i , idx))
             pbar.update(1)
         pbar.close()
         
+        edge_index = [[], []]
+        edge_attr = []
+        
+        for key , value in gene_pair.items():
+            pairA , pairB = key
+            edge_index[0].append(int(pairA))
+            edge_index[1].append(int(pairB))
+            edge_index[1].append(int(pairA))
+            edge_index[0].append(int(pairB))
+            edge_attr.extend([ int(value) ]*2)
+            
+        ## Convert edge_index and edge_attr to tensor
+        edge_index = torch.tensor(edge_index , dtype=torch.long)
+        edge_attr = torch.tensor(edge_attr , dtype=torch.float).unsqueeze(1)
+        
+        # scale to 0 to 1 
+        edge_min = torch.min(edge_attr)
+        edge_max = torch.max(edge_attr)
+        edge_attr = (edge_attr - edge_min) / ( edge_max - edge_min )
+        
+        # print(edge_attr)
+        # print(torch.min(edge_attr))
+        # print(torch.max(edge_attr))
+        edge_index , edge_attr = geom_utils.add_self_loops(edge_index=edge_index , edge_attr=edge_attr , fill_value=200. )
+        
+        assert edge_index.shape[1] == edge_attr.shape[0] , "Number of edges and edge attributes must be equal"
+        
+        graph_data  = []
+        
+        pbar = tqdm(total=len(df))
+        # rescale 
+        if rescale: 
+            x = df.values 
+            min_max_scalar = preprocessing.MinMaxScaler()
+            x_scaled = min_max_scalar.fit_transform(x)
+            df = pd.DataFrame(x_scaled)
+            
+        pbar.set_description("Generate graph data")
+        for idx , [ index , row ] in enumerate(df.iterrows()):
+            x = torch.tensor(row.values , dtype=torch.float).unsqueeze(1)
+            assert x.shape[1] == 1 , "Feature dimension must be 1"
+            graph = Data(x=x , edge_index=edge_index , edge_attr=edge_attr , y=torch.tensor(labels[idx] , dtype=torch.long))
+            graph_data.append(graph)
+            pbar.update(1)
+        pbar.close()
+        
+        return graph_data
         
 if __name__ == "__main__":
     
-    generate_graph(None , None , None , integration='GO&KEGG') 
+    base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
+    
+    # read labels
+    labels = os.path.join(base_path, "labels_tr.csv")
+    df_labels = read_features_file(labels) 
+
+    feature3 = os.path.join(base_path , "3_tr.csv")
+    df3 = read_features_file(feature3)
+    name3 = os.path.join(base_path , "3_featname.csv")
+    df3_header = read_features_file(name3)
+    gph3 = generate_graph(df3 , None , df_labels[0].tolist() , integration='GO&KEGG') 
+    
+    _ , _ , mask = geom_utils.remove_isolated_nodes(gph3[0].edge_index)
+    feature_info_1 = {
+        "feature1_isolated_node": gph3[0].x.shape[0] - mask.sum().item(), 
+        "feature1_network_number_of_edge": gph3[0].edge_index.shape[1]
+    }
+    print(feature_info_1)

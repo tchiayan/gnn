@@ -1,3 +1,6 @@
+from typing import Any
+import lightning.pytorch as pl
+from lightning.pytorch.utilities.types import STEP_OUTPUT
 import torch_geometric.nn as geom_nn
 import torch_geometric.utils as geom_utils
 from torch_geometric.loader import DataLoader 
@@ -10,6 +13,8 @@ import os
 from utils import  generate_graph , read_features_file
 import mlflow 
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
+from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
+from lightning.pytorch.callbacks.callback import Callback 
 from sklearn.model_selection import StratifiedKFold
 from math import ceil
 import argparse
@@ -758,7 +763,31 @@ class MultiGraphGeneralPooling(pl.LightningModule):
         self.log("val_loss" , loss , prog_bar=True)
         self.log('val_auc' , auc , prog_bar=True)
         self.log('val_f1' , f1 , prog_bar=True)
+
+class BestModelTracker(Callback):
     
+    def __init__(self) -> None:
+        self.best_model = None 
+        
+    def on_validation_epoch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+        
+        outputs = trainer.logged_metrics
+        
+        if self.best_model == None: 
+            self.best_model = {
+                'best_val_acc': outputs['val_acc'].item(), 
+                'best_epoch': trainer.current_epoch, 
+                'best_val_auc': outputs['val_auc'].item(), 
+                'best_val_f1': outputs['val_f1'].item(),
+            }
+        elif self.best_model['best_val_acc'] < outputs['val_acc'].item() :
+            self.best_model = {
+                'best_val_acc': outputs['val_acc'].item(), 
+                'best_epoch': trainer.current_epoch, 
+                'best_val_auc': outputs['val_auc'].item(), 
+                'best_val_f1': outputs['val_f1'].item(),
+            }
+
 def main():
     
     parser = argparse.ArgumentParser("Multi/Single GNN")
@@ -782,6 +811,8 @@ def main():
     df_labels = read_features_file(labels) 
 
     
+    feature_info = {}
+    
     ## mRNA Features
     feature1 = os.path.join(base_path, "1_tr.csv")
     df1 = read_features_file(feature1)
@@ -793,10 +824,10 @@ def main():
     # degree = geom_utils.degree()
     # print(gp1[0].has_isolated_nodes()) 
     _ , _ , mask = geom_utils.remove_isolated_nodes(gp1[0].edge_index)
-    feature_info_1 = {
+    feature_info.update({
         "feature1_isolated_node": gp1[0].x.shape[0] - mask.sum().item(), 
         "feature1_network_number_of_edge": gp1[0].edge_index.shape[1]
-    }
+    })
     #print("Number of isolated node: " , gp1[0].x.shape[0] - mask.sum().item())
     
     ## DNA Methylation
@@ -806,22 +837,23 @@ def main():
     df2_header = read_features_file(name2)
     gp2 = generate_graph(df2 , df2_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph)
     _ , _ , mask = geom_utils.remove_isolated_nodes(gp2[0].edge_index)
-    feature_info_2 = {
+    feature_info.update({
         "feature2_isolated_node": gp2[0].x.shape[0] - mask.sum().item(), 
         "feature2_network_number_of_edge": gp2[0].edge_index.shape[1]
-    }
+    })
     
     ## miRNA Feature
     feature3 = os.path.join(base_path , "3_tr.csv")
     df3 = read_features_file(feature3)
     name3 = os.path.join(base_path , "3_featname.csv")
     df3_header = read_features_file(name3)
-    gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration='pearson')
+    gp3 = generate_graph(df3 , None , df_labels[0].tolist() , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson')
+    # gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration='pearson')
     _ , _ , mask = geom_utils.remove_isolated_nodes(gp3[0].edge_index)
-    feature_info_3 = {
+    feature_info.update({
         "feature3_isolated_node": gp3[0].x.shape[0] - mask.sum().item(), 
         "feature3_network_number_of_edge": gp3[0].edge_index.shape[1]
-    }
+    })
     
     kf = StratifiedKFold(n_splits=10 , shuffle=True)
     batch_size = args.batch_size
@@ -841,83 +873,98 @@ def main():
         return batchA, batchB , batchC , view_edge
 
     
-    with mlflow.start_run(nested=True) as run:
+    # with mlflow.start_run() as run:
         
-        for arg in vars(args):
-            mlflow.log_param(arg , getattr(args , arg))
+    #     for arg in vars(args):
+    #         mlflow.log_param(arg , getattr(args , arg))
+    #         mlflow.log_params(feature_info)
+        
+    #     parent_run_metrics = {}
+        
+    for i , (train_index , test_index) in enumerate(kf.split(df2.values , df_labels[0].values)):
+        
+        datasetA_tr = [gp1[idx] for idx in train_index] 
+        datasetB_tr = [gp2[idx] for idx in train_index]
+        datasetC_tr = [gp3[idx] for idx in train_index]
+        pair_dataset_tr = PairDataset(datasetA_tr , datasetB_tr , datasetC_tr)
+        dataloader_tr = torch.utils.data.DataLoader(pair_dataset_tr, batch_size=batch_size, shuffle=True, collate_fn=collate, drop_last=True)
+        
+        datasetA_te = [gp1[idx] for idx in test_index] 
+        datasetB_te = [gp2[idx] for idx in test_index]
+        datasetC_te = [gp3[idx] for idx in test_index]
+        pair_dataset_te = PairDataset(datasetA_te , datasetB_te , datasetC_te)
+        dataloader_te = torch.utils.data.DataLoader(pair_dataset_te, batch_size=batch_size, shuffle=False, collate_fn=collate, drop_last=True)
+        
+        # batch_size
+        # Define model 
+        
+        if args.model == 'multigraph_diffpool':
+            model = MultiGraphDiffPooling(1 , args.hidden_embedding , 5 , 1000, skip_connection=True , lr=args.lr)
+            #mlflow.set_experiment("multigraph_diff_pooling")
+        elif args.model == 'dmongraph_pool':
+            model = DmonGraphPooling(1 , args.hidden_embedding , 5 ,1000 , args.lr)
+        else: 
+            model = SingleGraphDiffPooling(1 , args.hidden_embedding , 5 , 1000 , skip_connection=True , lr=args.lr)
+            #mlflow.set_experiment("singlegraph_diff_pooling")
+        
+        mode = {
+            'val_loss': 'min', 
+            'val_accuracy': 'max'
+        }
+        
+        callbacks = []
+        if not args.disable_early_stopping:
+            early_stopping = EarlyStopping(monitor='val_loss' , patience=10 , mode='min')
+            callbacks.append(early_stopping)
+            
+        # model checkpoint 
+        checkpoint = ModelCheckpoint(monitor='val_acc' , mode='max' , save_top_k=1)
+        callbacks.append(checkpoint)
+        
+        # model tracker 
+        modelTracker = BestModelTracker()
+        callbacks.append(modelTracker)
+        
+        # train model 
+        trainer = pl.Trainer(
+            max_epochs=args.max_epoch , 
+            callbacks=callbacks, 
+            # accumulate_grad_batches=3, 
+            gradient_clip_val=0.5
+        )
+        
+        
+        with mlflow.start_run() as child_run:
+            
+            for arg in vars(args):
+                mlflow.log_param(arg , getattr(args , arg))
                 
-            mlflow.log_params(feature_info_1)
-            mlflow.log_params(feature_info_2)
-            mlflow.log_params(feature_info_3)
-        
-        parent_run_metrics = {}
-        
-        for i , (train_index , test_index) in enumerate(kf.split(df2.values , df_labels[0].values)):
+            # mlflow.log_param("kfold" , i)
+            mlflow.log_params(feature_info)
             
-            datasetA_tr = [gp1[idx] for idx in train_index] 
-            datasetB_tr = [gp2[idx] for idx in train_index]
-            datasetC_tr = [gp3[idx] for idx in train_index]
-            pair_dataset_tr = PairDataset(datasetA_tr , datasetB_tr , datasetC_tr)
-            dataloader_tr = torch.utils.data.DataLoader(pair_dataset_tr, batch_size=batch_size, shuffle=True, collate_fn=collate, drop_last=True)
-            
-            datasetA_te = [gp1[idx] for idx in test_index] 
-            datasetB_te = [gp2[idx] for idx in test_index]
-            datasetC_te = [gp3[idx] for idx in test_index]
-            pair_dataset_te = PairDataset(datasetA_te , datasetB_te , datasetC_te)
-            dataloader_te = torch.utils.data.DataLoader(pair_dataset_te, batch_size=batch_size, shuffle=False, collate_fn=collate, drop_last=True)
-            
-            # batch_size
-            # Define model 
-            
-            if args.model == 'multigraph_diffpool':
-                model = MultiGraphDiffPooling(1 , args.hidden_embedding , 5 , 1000, skip_connection=True , lr=args.lr)
-                #mlflow.set_experiment("multigraph_diff_pooling")
-            elif args.model == 'dmongraph_pool':
-                model = DmonGraphPooling(1 , args.hidden_embedding , 5 ,1000 , args.lr)
-            else: 
-                model = SingleGraphDiffPooling(1 , args.hidden_embedding , 5 , 1000 , skip_connection=True , lr=args.lr)
-                #mlflow.set_experiment("singlegraph_diff_pooling")
-            
-            mode = {
-                'val_loss': 'min', 
-                'val_accuracy': 'max'
-            }
-            callbacks = [] if args.disable_early_stopping else [  EarlyStopping(monitor='val_loss' , patience=10 , mode='min') ]
-            # train model 
-            trainer = pl.Trainer(
-                max_epochs=args.max_epoch , 
-                callbacks=callbacks, 
-                # accumulate_grad_batches=3, 
-                gradient_clip_val=0.5
+            trainer.fit(
+                model=model , 
+                train_dataloaders=dataloader_tr, 
+                val_dataloaders=dataloader_te
             )
             
+            #trainer.logged_metrics
+            #run_data = mlflow.get_run(child_run.info.run_id)
+            print(modelTracker.best_model)
+            mlflow.log_metrics(modelTracker.best_model)
+            # subrun_metrics = mlflow.get_run(child_run.info.run_id).data.metrics
+            # for key , value in subrun_metrics.items():
+            #     if not key in parent_run_metrics:
+            #         parent_run_metrics[key] = [ value ]
+            #     else:
+            #         parent_run_metrics[key].append(value)
             
-            with mlflow.start_run(nested=True) as child_run:
-                
-                mlflow.log_param("kfold" , i)
-                
-                trainer.fit(
-                    model=model , 
-                    train_dataloaders=dataloader_tr, 
-                    val_dataloaders=dataloader_te
-                )
-                
-                subrun_metrics = mlflow.get_run(child_run.info.run_id).data.metrics
-                # print(child_run.info.run_id)
-                # print(mlflow.get_run(child_run.info.run_id).data)
-                # print(child_run.data.to_dictionary())
-                for key , value in subrun_metrics.items():
-                    if not key in parent_run_metrics:
-                        parent_run_metrics[key] = [ value ]
-                    else:
-                        parent_run_metrics[key].append(value)
-                
-            if i+1 == args.runkfold :
-                break
+        if i+1 == args.runkfold :
+            break
             
-        for key , value in parent_run_metrics.items():
-            parent_run_metrics[key] = sum(parent_run_metrics[key])/len(parent_run_metrics[key])
-        mlflow.log_metrics(parent_run_metrics)
+        # for key , value in parent_run_metrics.items():
+        #     parent_run_metrics[key] = sum(parent_run_metrics[key])/len(parent_run_metrics[key])
+        # mlflow.log_metrics(parent_run_metrics)
     
 if __name__ == "__main__":
     main()
