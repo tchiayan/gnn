@@ -847,7 +847,7 @@ def main():
     df3 = read_features_file(feature3)
     name3 = os.path.join(base_path , "3_featname.csv")
     df3_header = read_features_file(name3)
-    gp3 = generate_graph(df3 , None , df_labels[0].tolist() , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson')
+    gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson')
     # gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration='pearson')
     _ , _ , mask = geom_utils.remove_isolated_nodes(gp3[0].edge_index)
     feature_info.update({
