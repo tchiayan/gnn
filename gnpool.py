@@ -180,11 +180,10 @@ class GeneralPooling(pl.LightningModule):
         self.log('val_auc' , auc , prog_bar=True)
         self.log('val_f1' , f1 , prog_bar=True)
 
-class DmonGraphPooling(pl.LightningModule):
+class DMonGraphConv(torch.nn.Module):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , lr=1e-4):
-        super().__init__() 
-        self.lr = lr
+    def __init__(self, in_channels , hidden_channels , input_size) -> None:
+        super().__init__()
         
         self.conv1 = geom_nn.GCNConv(in_channels , hidden_channels)
         num_nodes = ceil(0.5 * input_size)
@@ -197,33 +196,10 @@ class DmonGraphPooling(pl.LightningModule):
 
         self.conv3 = geom_nn.DenseGraphConv(hidden_channels, hidden_channels)
         self.batch_norm3 = torch.nn.BatchNorm1d(hidden_channels)
-
-        #self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
-        self.head = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels, hidden_channels) , 
-            torch.nn.Dropout(0.1), 
-            torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(hidden_channels), 
-            torch.nn.Linear(hidden_channels,hidden_channels), 
-            torch.nn.Dropout(0.1), 
-            torch.nn.ReLU(), 
-            torch.nn.BatchNorm1d(hidden_channels), 
-            torch.nn.Linear(hidden_channels,hidden_channels), 
-            torch.nn.Dropout(0.1), 
-            torch.nn.ReLU(), 
-            torch.nn.BatchNorm1d(hidden_channels), 
-            torch.nn.Linear(hidden_channels , num_classes) , 
-            torch.nn.Softmax(dim=-1)
-        )
-        #self.lin2 = torch.nn.Linear(hidden_channels, num_classes)
-        #self.softmax = torch.nn.Softmax(dim=-1)
+        self.pool3  = geom_nn.DMoNPooling([hidden_channels , hidden_channels] , 1)
         
-        #self.loss = torch.nn.CrossEntropyLoss()
-        self.loss = torch.nn.NLLLoss()
-        self.acc = Accuracy(task='multiclass' , num_classes = num_classes)
-        self.auc = AUROC(task='multiclass' , num_classes=num_classes)
-        self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
         
+    
     def bn(self , i , x):
         batch_size , nodes , num_channels = x.size()
         
@@ -249,12 +225,63 @@ class DmonGraphPooling(pl.LightningModule):
         #x = self.conv3(x , adj)
         x = self.bn(3 , x = self.conv3(x , adj))
         
-        x = x.mean(dim=1)
+        _ , x , adj , sp3 , o3 , c3 = self.pool3(x , adj)
+        
+        return x  , sp1+sp2+sp3 , o1+o2+o3 , c1+c2+c3
+    
+class DmonGraphPooling(pl.LightningModule):
+    
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , lr=1e-4):
+        super().__init__() 
+        self.lr = lr
+        
+        self.dmon_pool1 = DMonGraphConv(in_channels , hidden_channels , input_size)
+        self.dmon_pool2 = DMonGraphConv(in_channels , hidden_channels , input_size)
+        self.dmon_pool3 = DMonGraphConv(in_channels , hidden_channels , input_size)
+
+        #self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
+        self.head = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels*3, hidden_channels) , 
+            torch.nn.Dropout(0.1), 
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(hidden_channels), 
+            torch.nn.Linear(hidden_channels,hidden_channels), 
+            torch.nn.Dropout(0.1), 
+            torch.nn.ReLU(), 
+            torch.nn.BatchNorm1d(hidden_channels), 
+            torch.nn.Linear(hidden_channels,hidden_channels), 
+            torch.nn.Dropout(0.1), 
+            torch.nn.ReLU(), 
+            torch.nn.BatchNorm1d(hidden_channels), 
+            torch.nn.Linear(hidden_channels , num_classes) , 
+            torch.nn.Softmax(dim=-1)
+        )
+        #self.lin2 = torch.nn.Linear(hidden_channels, num_classes)
+        #self.softmax = torch.nn.Softmax(dim=-1)
+        
+        #self.loss = torch.nn.CrossEntropyLoss()
+        self.loss = torch.nn.NLLLoss()
+        self.acc = Accuracy(task='multiclass' , num_classes = num_classes)
+        self.auc = AUROC(task='multiclass' , num_classes=num_classes)
+        self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
+    
+    def forward(self , x1 , edge_index1, batch1 , x2 , edge_index2, batch2 , x3 , edge_index3 , batch3 ):
+        
+        x1 , sp1 , _ , _ = self.dmon_pool1(x1 , edge_index1 , batch1)
+        x2 , sp2 , _ , _ = self.dmon_pool2(x2 , edge_index2 , batch2)
+        x3 , sp3 , _ , _ = self.dmon_pool3(x3 , edge_index3 , batch3)
+        
         #x = self.lin1(x).relu()
         # = self.lin2(x)
+        # print("x1 shape" , x1.size())
+        # print("x2 shape" , x2.size())
+        # print("x3 shape" , x3.size())
+        
+        x = torch.concat([x1 , x2 , x3 ] , dim=-1).squeeze(1)
+        #print("Output shape" , x.size())
         x = self.head(x)
         
-        return x , sp1 + sp2 + o1 + o2 + c1 + c2
+        return x , sp1 + sp2 + sp3
     
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters() , lr=self.lr)
@@ -264,9 +291,9 @@ class DmonGraphPooling(pl.LightningModule):
     def training_step(self , batch ,  batch_idx):
         
         #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
-        batch_1 , batch_2 = batch
+        batch_1 , batch_2 , batch_3 , view_edge = batch
         
-        output , dmonpool_loss = self.forward(batch_1.x , batch_1.edge_index , batch_1.batch ) 
+        output , dmonpool_loss = self.forward(batch_1.x , batch_1.edge_index , batch_1.batch  , batch_2.x , batch_2.edge_index , batch_2.batch , batch_3.x , batch_3.edge_index , batch_3.batch ) 
         #print("Output dimension: ", output.size())
         
         loss = self.loss(output , batch_1.y) + dmonpool_loss 
@@ -282,9 +309,9 @@ class DmonGraphPooling(pl.LightningModule):
     
     def validation_step(self , batch , batch_idx):
         #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
-        batch_1 , batch_2 = batch
+        batch_1 , batch_2 , batch_3 , view_edge = batch
         
-        output , dmonpool_loss = self.forward(batch_1.x , batch_1.edge_index , batch_1.batch ) 
+        output , dmonpool_loss = self.forward(batch_1.x , batch_1.edge_index , batch_1.batch  , batch_2.x , batch_2.edge_index , batch_2.batch , batch_3.x , batch_3.edge_index , batch_3.batch )  
         #print("Output dimension: ", output.size())
         
         # print(output.argmax(dim=-1))
