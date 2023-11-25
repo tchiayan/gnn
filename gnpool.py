@@ -267,9 +267,9 @@ class DmonGraphPooling(pl.LightningModule):
     
     def forward(self , x1 , edge_index1, batch1 , x2 , edge_index2, batch2 , x3 , edge_index3 , batch3 ):
         
-        x1 , sp1 , _ , _ = self.dmon_pool1(x1 , edge_index1 , batch1)
-        x2 , sp2 , _ , _ = self.dmon_pool2(x2 , edge_index2 , batch2)
-        x3 , sp3 , _ , _ = self.dmon_pool3(x3 , edge_index3 , batch3)
+        x1 , sp1 , o1 , c1 = self.dmon_pool1(x1 , edge_index1 , batch1)
+        x2 , sp2 , o2 , c2 = self.dmon_pool2(x2 , edge_index2 , batch2)
+        x3 , sp3 , o3 , c3 = self.dmon_pool3(x3 , edge_index3 , batch3)
         
         #x = self.lin1(x).relu()
         # = self.lin2(x)
@@ -281,7 +281,7 @@ class DmonGraphPooling(pl.LightningModule):
         #print("Output shape" , x.size())
         x = self.head(x)
         
-        return x , sp1 + sp2 + sp3
+        return x , sp1 + sp2 + sp3 + o1 + o2 + o3 + c1 + c2 + c3
     
     def configure_optimizers(self):
         optimizer = optim.Adam(self.parameters() , lr=self.lr)
