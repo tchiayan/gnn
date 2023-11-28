@@ -182,7 +182,7 @@ class GeneralPooling(pl.LightningModule):
 
 class DMonGraphConv(torch.nn.Module):
     
-    def __init__(self, in_channels , hidden_channels , input_size) -> None:
+    def __init__(self, in_channels , hidden_channels , input_size , classes) -> None:
         super().__init__()
         
         self.conv1 = geom_nn.GCNConv(in_channels , hidden_channels)
@@ -198,6 +198,8 @@ class DMonGraphConv(torch.nn.Module):
         self.batch_norm3 = torch.nn.BatchNorm1d(hidden_channels)
         self.pool3  = geom_nn.DMoNPooling([hidden_channels , hidden_channels] , 1)
         
+        self.conv4 = geom_nn.DenseGraphConv(hidden_channels , classes)
+        self.batch_norm4 = torch.nn.BatchNorm1d(classes)
         
     
     def bn(self , i , x):
@@ -227,6 +229,8 @@ class DMonGraphConv(torch.nn.Module):
         
         _ , x , adj , sp3 , o3 , c3 = self.pool3(x , adj)
         
+        x = self.bn(4 , x = self.conv4(x , adj))
+        
         return x  , sp1+sp2+sp3 , o1+o2+o3 , c1+c2+c3
     
 class DmonGraphPooling(pl.LightningModule):
@@ -234,10 +238,10 @@ class DmonGraphPooling(pl.LightningModule):
     def __init__(self , in_channels , hidden_channels , num_classes , input_size , lr=1e-4):
         super().__init__() 
         self.lr = lr
-        
-        self.dmon_pool1 = DMonGraphConv(in_channels , hidden_channels , input_size)
-        self.dmon_pool2 = DMonGraphConv(in_channels , hidden_channels , input_size)
-        self.dmon_pool3 = DMonGraphConv(in_channels , hidden_channels , input_size)
+        self.automatic_optimization = False
+        self.dmon_pool1 = DMonGraphConv(in_channels , hidden_channels , input_size , classes=num_classes)
+        self.dmon_pool2 = DMonGraphConv(in_channels , hidden_channels , input_size , classes=num_classes)
+        self.dmon_pool3 = DMonGraphConv(in_channels , hidden_channels , input_size , classes=num_classes)
 
         #self.lin1 = torch.nn.Linear(hidden_channels, hidden_channels)
         self.head = torch.nn.Sequential(
@@ -260,12 +264,15 @@ class DmonGraphPooling(pl.LightningModule):
         #self.softmax = torch.nn.Softmax(dim=-1)
         
         #self.loss = torch.nn.CrossEntropyLoss()
-        self.loss = torch.nn.NLLLoss()
+        self.loss1 = torch.nn.NLLLoss()
+        self.loss2 = torch.nn.NLLLoss()
+        self.loss3 = torch.nn.NLLLoss()
         self.acc = Accuracy(task='multiclass' , num_classes = num_classes)
         self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
     
     def forward(self , x1 , edge_index1, batch1 , x2 , edge_index2, batch2 , x3 , edge_index3 , batch3 ):
+        
         
         x1 , sp1 , o1 , c1 = self.dmon_pool1(x1 , edge_index1 , batch1)
         x2 , sp2 , o2 , c2 = self.dmon_pool2(x2 , edge_index2 , batch2)
@@ -277,57 +284,94 @@ class DmonGraphPooling(pl.LightningModule):
         # print("x2 shape" , x2.size())
         # print("x3 shape" , x3.size())
         
-        x = torch.concat([x1 , x2 , x3 ] , dim=-1).squeeze(1)
+        #x = torch.concat([x1 , x2 , x3 ] , dim=-1).squeeze(1)
         #print("Output shape" , x.size())
-        x = self.head(x)
-        
-        return x , sp1 + sp2 + sp3 + o1 + o2 + o3 + c1 + c2 + c3
-    
+        #x = self.head(x)
+        x1 = x1.squeeze(1)
+        x2 = x2.squeeze(1)
+        x3 = x3.squeeze(1)
+        #print(f"Dimension for x1 : {x1.size()}")
+        #print(f"Dimesnion for x2 : {x2.size()}")
+        #print(f"Dimesnion for x3 : {x3.size()}")
+        return x1 , x2 , x3 , sp1+o1+c1 , sp2+o2+c2 , sp3+o3+c3 
+     
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters() , lr=self.lr)
-        return optimizer 
+        optimizer_1 = optim.Adam(self.dmon_pool1.parameters() , lr=self.lr)
+        optimizer_2 = optim.Adam(self.dmon_pool2.parameters() , lr=self.lr)
+        optimizer_3 = optim.Adam(self.dmon_pool3.parameters() , lr=self.lr)
+        return [ optimizer_1 , optimizer_2 , optimizer_3 ] 
     
     
     def training_step(self , batch ,  batch_idx):
+        opt1 , opt2 , opt3 = self.optimizers()
+        opt1.zero_grad()
+        opt2.zero_grad()
+        opt3.zero_grad()
         
         #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
         batch_1 , batch_2 , batch_3 , view_edge = batch
         
-        output , dmonpool_loss = self.forward(batch_1.x , batch_1.edge_index , batch_1.batch  , batch_2.x , batch_2.edge_index , batch_2.batch , batch_3.x , batch_3.edge_index , batch_3.batch ) 
+        o1 , o2 , o3 , dl1 , dl2 , dl3 = self.forward(batch_1.x , batch_1.edge_index , batch_1.batch  , batch_2.x , batch_2.edge_index , batch_2.batch , batch_3.x , batch_3.edge_index , batch_3.batch ) 
         #print("Output dimension: ", output.size())
         
-        loss = self.loss(output , batch_1.y) + dmonpool_loss 
-        acc = self.acc(output , batch_1.y)
-        f1 = self.f1(output , batch_1.y)
-        auc = self.auc(output , batch_1.y)
+        loss1 = self.loss1(o1 , batch_1.y) + dl1 
+        acc1 = self.acc(o1 , batch_1.y)
         
-        self.log("train_acc" , acc , prog_bar=True , on_epoch=True)
-        self.log("train_loss" , loss , prog_bar=True , on_epoch=True)
-        self.log('train_auc' , auc)
-        self.log('train_f1' , f1)
-        return loss 
+        loss2 = self.loss2(o2 , batch_2.y) + dl2 
+        acc2 = self.acc(o2 , batch_2.y)
+        
+        loss3 = self.loss3(o3 , batch_3.y) + dl3 
+        acc3 = self.acc(o3 , batch_3.y)
+        #f1 = self.f1(output , batch_1.y)
+        #auc = self.auc(output , batch_1.y)
+        self.log("train_acc_1" , acc1 , prog_bar=True , on_epoch=True)
+        self.log("train_loss_1" , loss1 , prog_bar=True , on_epoch=True)
+        self.log("train_acc_2" , acc2 , prog_bar=True , on_epoch=True)
+        self.log("train_loss_2" , loss2 , prog_bar=True , on_epoch=True)
+        self.log("train_acc_3" , acc3 , prog_bar=True , on_epoch=True)
+        self.log("train_loss_3" , loss3 , prog_bar=True , on_epoch=True)
+        
+        self.manual_backward(loss1)
+        self.manual_backward(loss2)
+        self.manual_backward(loss3)
+        
+        opt1.step()
+        opt2.step()
+        opt3.step()
+        #self.log('train_auc' , auc)
+        #self.log('train_f1' , f1)
+        #return loss 
     
     def validation_step(self , batch , batch_idx):
+        
         #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
         batch_1 , batch_2 , batch_3 , view_edge = batch
         
-        output , dmonpool_loss = self.forward(batch_1.x , batch_1.edge_index , batch_1.batch  , batch_2.x , batch_2.edge_index , batch_2.batch , batch_3.x , batch_3.edge_index , batch_3.batch )  
+        o1 , o2 , o3 , dl1 , dl2 , dl3 = self.forward(batch_1.x , batch_1.edge_index , batch_1.batch  , batch_2.x , batch_2.edge_index , batch_2.batch , batch_3.x , batch_3.edge_index , batch_3.batch ) 
         #print("Output dimension: ", output.size())
         
-        # print(output.argmax(dim=-1))
-        # print(batch_1.y)
-        loss = self.loss(output , batch_1.y) + dmonpool_loss
-        acc = self.acc(output , batch_1.y)
-        f1 = self.f1(output , batch_1.y)
-        auc = self.auc(output , batch_1.y)
+        loss1 = self.loss1(o1 , batch_1.y) + dl1 
+        acc1 = self.acc(o1 , batch_1.y)
         
-        self.log("val_acc" , acc , prog_bar=True, on_epoch=True)
-        self.log("val_loss" , loss , prog_bar=True, on_epoch=True)
-        self.log('val_auc' , auc)
-        self.log('val_f1' , f1)
+        loss2 = self.loss2(o2 , batch_2.y) + dl2 
+        acc2 = self.acc(o2 , batch_2.y)
+        
+        loss3 = self.loss3(o3 , batch_3.y) + dl3 
+        acc3 = self.acc(o3 , batch_3.y)
+        
+        self.log("val_acc_1" , acc1 , prog_bar=True , on_epoch=True)
+        self.log("val_loss_1" , loss1 , prog_bar=True , on_epoch=True)
+        self.log("val_acc_2" , acc2 , prog_bar=True , on_epoch=True)
+        self.log("val_loss_2" , loss2 , prog_bar=True , on_epoch=True)
+        self.log("val_acc_3" , acc3 , prog_bar=True , on_epoch=True)
+        self.log("val_loss_3" , loss3 , prog_bar=True , on_epoch=True)
+        #self.log('train_auc' , auc)
+        #self.log('train_f1' , f1)
+        #return loss 
         
         
 class SingleGraphDiffPooling(pl.LightningModule):
+    
     def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=None , lr=1e-3 , type='SAGEConv'):
         super().__init__()
         
@@ -945,19 +989,19 @@ def main():
             callbacks.append(early_stopping)
             
         # model checkpoint 
-        checkpoint = ModelCheckpoint(monitor='val_acc' , mode='max' , save_top_k=1)
-        callbacks.append(checkpoint)
+        # checkpoint = ModelCheckpoint(monitor='val_acc' , mode='max' , save_top_k=1)
+        # callbacks.append(checkpoint)
         
         # model tracker 
-        modelTracker = BestModelTracker()
-        callbacks.append(modelTracker)
+        # modelTracker = BestModelTracker()
+        # callbacks.append(modelTracker)
         
         # train model 
         trainer = pl.Trainer(
             max_epochs=args.max_epoch , 
             callbacks=callbacks, 
             # accumulate_grad_batches=3, 
-            gradient_clip_val=0.5
+            # gradient_clip_val=0.5
         )
         
         
