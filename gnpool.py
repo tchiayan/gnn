@@ -530,26 +530,19 @@ class SingleGraphDiffPooling(pl.LightningModule):
         self.log("val_loss" , loss , prog_bar=True , on_epoch=True)
         self.log('val_auc' , auc , prog_bar=True)
         self.log('val_f1' , f1 , prog_bar=True) 
-        
-class MultiGraphDiffPooling(pl.LightningModule):
+
+class GraphDiffPoolConv(torch.nn.Module): 
     
-        
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv'):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False, type='SAGEConv'):
         super().__init__()
         
-        self.skip_connection = skip_connection 
-        self.lr = lr
+        self.skip_connection = skip_connection
+        self.mode = "pretrain"
         
         # Pooling layer 1 
         node_size = min( 100 , ceil(input_size * 0.5))
         self.graph_em_11 = DenseGCN( in_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type)
         self.graph_pl_11 = DenseGCN( in_channels , hidden_channels , node_size , skip_connection , type=type)
-        
-        self.graph_em_12 = DenseGCN( in_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type)
-        self.graph_pl_12 = DenseGCN( in_channels , hidden_channels , node_size , skip_connection , type=type)
-        
-        self.graph_em_13 = DenseGCN( in_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type)
-        self.graph_pl_13 = DenseGCN( in_channels , hidden_channels , node_size , skip_connection , type=type)
         
         # Pooling layer 2
         node_size = ceil(node_size * 0.5)
@@ -557,29 +550,52 @@ class MultiGraphDiffPooling(pl.LightningModule):
         self.graph_em_21 = DenseGCN( input_hidden_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type)
         self.graph_pl_21 = DenseGCN( input_hidden_channels , hidden_channels , node_size , skip_connection, type=type)
         
-        self.graph_em_22 = DenseGCN( input_hidden_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type)
-        self.graph_pl_22 = DenseGCN( input_hidden_channels , hidden_channels , node_size , skip_connection, type=type)
-        
-        self.graph_em_23 = DenseGCN( input_hidden_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type)
-        self.graph_pl_23 = DenseGCN( input_hidden_channels , hidden_channels , node_size , skip_connection, type=type)
-        
         # Pooling layer 3 
         node_size = ceil(node_size * 0.5)
         input_hidden_channels = 3 * hidden_channels if skip_connection  else hidden_channels
-        self.graph_em_31 = DenseGCN( input_hidden_channels , hidden_channels , hidden_channels  , lin=True, type=type)
+        self.graph_em_31 = DenseGCN( input_hidden_channels , hidden_channels , num_classes  , lin=True, type=type)
         self.graph_pl_31 = DenseGCN( input_hidden_channels , hidden_channels , 1  , skip_connection, type=type)
         
-        self.graph_em_32 = DenseGCN( input_hidden_channels , hidden_channels , hidden_channels  , lin=True, type=type)
-        self.graph_pl_32 = DenseGCN( input_hidden_channels , hidden_channels , 1  , skip_connection, type=type)
+    def forward(self , x1 , edge_index1 , edge_attr1 , batch1_idx , view_edge):
         
-        self.graph_em_33 = DenseGCN( input_hidden_channels , hidden_channels , hidden_channels  , lin=True, type=type)
-        self.graph_pl_33 = DenseGCN( input_hidden_channels , hidden_channels , 1  , skip_connection, type=type)
+        # Convert to dense batch
+        x1 , _ = geom_utils.to_dense_batch(x1 , batch1_idx)
+        edge_index1 = geom_utils.to_dense_adj(edge_index1, batch1_idx  , edge_attr1).squeeze(-1)
         
-        self.graph_em_4 = DenseGCN( hidden_channels , hidden_channels , hidden_channels  , lin=True, type=type)
-        self.graph_pl_4 = DenseGCN( hidden_channels , hidden_channels , 1 , skip_connection , type='GATConv')
         
-        # Last layer of graph convolution
-        # input_hidden_channels = 2 * 3 * hidden_channels if skip_connection  else 2 * hidden_channels
+        # first layer pooling 
+        #print("0 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
+        s1 = self.graph_pl_11(x1 , edge_index1 , None)
+        x1 = self.graph_em_11(x1 , edge_index1 , None)
+        #print("1 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
+        #print("1 ---- Shape of s1: " , s1.size() , "| Shape of s2: " , s2.size())
+        x1 , edge_index1 , l11 , e11 = geom_nn.dense_diff_pool(x1 , edge_index1 , s1)
+        #print("1 ---- New shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
+        
+        # second layer pooling 
+        s1 = self.graph_pl_21(x1 , edge_index1 , None)
+        x1 = self.graph_em_21(x1 , edge_index1 , None)
+        #print("2 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
+        #print("2 ---- Shape of s1: " , s1.size() , "| Shape of s2: " , s2.size())
+        x1 , edge_index1 , l21 , e21 = geom_nn.dense_diff_pool(x1 , edge_index1 , s1)
+        #print("2 ---- New shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
+        
+        # final layer pooling 
+        s1 = self.graph_pl_31(x1 , edge_index1 , None)
+        x1 = self.graph_em_31(x1 , edge_index1 , None)
+        
+        x1 , edge_index1 , l31 , e31 = geom_nn.dense_diff_pool(x1 , edge_index1 , s1)
+        
+        return x1 , s1 , edge_index1 , l11+l21+l31 , e11+e21+e31
+
+class GraphAttentionDifferencePooling(torch.nn.Module): 
+    
+    def __init__(self , in_channels , hidden_channels , num_classes , skip_connection , type='SAGEConv'):
+        super().__init__()
+        
+        self.graph_em = DenseGCN(in_channels , hidden_channels , hidden_channels , lin=True , type=type)
+        self.graph_pl = DenseGCN(in_channels , hidden_channels , 1 , skip_connection , type='GATConv')
+        
         self.head = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels , 1024),
             torch.nn.Dropout(0.1),
@@ -596,155 +612,182 @@ class MultiGraphDiffPooling(pl.LightningModule):
             torch.nn.Linear(512 , num_classes), 
         )
         
+    def forward(self , x1, x2, x3  , view_edge):
+        
+        # x1 , edge_index1 , l31 , e31 = geom_nn.dense_diff_pool(x1 , edge_index1 , s1) # x1 => number_of_sample , 1 , embedding_size
+        # x2 , edge_index2 , l32 , e32 = geom_nn.dense_diff_pool(x2 , edge_index2 , s2) # x2 => number_of_sample , 1 , embedding_size
+        # x3 , edge_index3 , l33 , e33 = geom_nn.dense_diff_pool(x3 , edge_index3 , s3) # x3 => number_of_sample , 1 , embedding_size
+        
+        #print(f"X size: {x1.size()}")
+        x = torch.cat([x1 , x2 , x3] , dim=1)
+        #print(f"X size: {x.size()} | S size: {s.size()}")
+        s = self.graph_pl(x , view_edge , None)
+        x = self.graph_em(x , view_edge , None)
+        #print(f"s : {s.size()} | x: {x.size()}")
+        x , _ , lf , le = geom_nn.dense_diff_pool(x , view_edge , s)
+        #print(f"X size: {x.size()}")
+        x = self.head(x.squeeze(1))
+        
+        return x , lf+le
+        
+class MultiGraphDiffPooling(pl.LightningModule):
+    
+        
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv'):
+        super().__init__()
+        
+        self.skip_connection = skip_connection 
+        self.lr = lr
+        self.mode = "pretrain"
+        self.automatic_optimization = False
+        
+        self.graph_diff_pool1 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
+        self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
+        self.graph_diff_pool3 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
+        
+        self.graph_attn_pool = GraphAttentionDifferencePooling(num_classes , hidden_channels , num_classes , skip_connection , 'GATConv')
+        
         # self.sofmax = torch.nn.Softmax()
         self.loss = torch.nn.CrossEntropyLoss()
-        self.x1loss = torch.nn.CrossEntropyLoss()
-        self.x2loss = torch.nn.CrossEntropyLoss()
+        # self.x1loss = torch.nn.CrossEntropyLoss()
+        # self.x2loss = torch.nn.CrossEntropyLoss()
+        # self.x3loss = torch.nn.CrossEntropyLoss()
         self.acc = Accuracy(task='multiclass' , num_classes = num_classes)
         self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
-        
-    
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx , view_edge):
         
-        #print("Shape of edge_index1 before dense:", edge_index1.size())
-        x1 , _ = geom_utils.to_dense_batch(x1 , batch1_idx)
-        edge_index1 = geom_utils.to_dense_adj(edge_index1, batch1_idx  , edge_attr1).squeeze(-1)
-        #print("Shape of edge_index1 after dense:", edge_index1.size())
-        #print(edge_index1)
-        
-        x2 , _ = geom_utils.to_dense_batch(x2 , batch2_idx)
-        edge_index2 = geom_utils.to_dense_adj(edge_index2 , batch2_idx , edge_attr2).squeeze(-1)
-        
-        x3 , _ = geom_utils.to_dense_batch(x3 , batch3_idx)
-        edge_index3 = geom_utils.to_dense_adj(edge_index3 , batch3_idx , edge_attr3).squeeze(-1)
-        
-        #print("0 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
-        
-        # first layer pooling 
-        s1 = self.graph_pl_11(x1 , edge_index1 , None)
-        x1 = self.graph_em_11(x1 , edge_index1 , None)
-        
-        s2 = self.graph_pl_12(x2 , edge_index2 , None)
-        x2 = self.graph_em_12(x2 , edge_index2 , None)
-        
-        s3 = self.graph_pl_13(x3 , edge_index3 , None)
-        x3 = self.graph_em_13(x3 , edge_index3 , None)
-        
-        #print("1 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
-        #print("1 ---- Shape of s1: " , s1.size() , "| Shape of s2: " , s2.size())
-        
-        x1 , edge_index1 , l11 , e11 = geom_nn.dense_diff_pool(x1 , edge_index1 , s1)
-        x2 , edge_index2 , l12 , e12 = geom_nn.dense_diff_pool(x2 , edge_index2 , s2)
-        x3 , edge_index3 , l13 , e13 = geom_nn.dense_diff_pool(x3 , edge_index3 , s3)
-        
-        #print("1 ---- New shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
-        
-        # second layer pooling 
-        s1 = self.graph_pl_21(x1 , edge_index1 , None)
-        x1 = self.graph_em_21(x1 , edge_index1 , None)
-        
-        s2 = self.graph_pl_22(x2 , edge_index2 , None)
-        x2 = self.graph_em_22(x2 , edge_index2 , None)
-        
-        s3 = self.graph_pl_23(x3 , edge_index3 , None)
-        x3 = self.graph_em_23(x3 , edge_index3 , None)
-        
-        #print("2 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
-        #print("2 ---- Shape of s1: " , s1.size() , "| Shape of s2: " , s2.size())
-        
-        x1 , edge_index1 , l21 , e21 = geom_nn.dense_diff_pool(x1 , edge_index1 , s1)
-        x2 , edge_index2 , l22 , e22 = geom_nn.dense_diff_pool(x2 , edge_index2 , s2)
-        x3 , edge_index3 , l23 , e23 = geom_nn.dense_diff_pool(x3 , edge_index3 , s3)
-        
-        #print("2 ---- New shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
-        
-        # final layer pooling 
-        s1 = self.graph_pl_31(x1 , edge_index1 , None)
-        x1 = self.graph_em_31(x1 , edge_index1 , None)
-        
-        s2 = self.graph_pl_32(x2 , edge_index2 , None)
-        x2 = self.graph_em_32(x2 , edge_index2 , None)
-        
-        s3 = self.graph_pl_33(x3 , edge_index3 , None)
-        x3 = self.graph_em_33(x3 , edge_index3 , None)
-        
+        output1 , s1 , edge_index1 , lp1 , le1 = self.graph_diff_pool1( x1 , edge_index1 , edge_attr1 , batch1_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
+        output2 , s2 , edge_index2 , lp2 , le2 = self.graph_diff_pool2( x2 , edge_index2 , edge_attr2 , batch2_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
+        output3 , s3 , edge_index3 , lp3 , le3 = self.graph_diff_pool3( x3 , edge_index3 , edge_attr3 , batch3_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
         #print("3 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
         #print("3 ---- Shape of s1: " , s1.size() , "| Shape of s2: " , s2.size())
+        #print(f"Size: {output1.size()} {output2.size()} {output3.size()}")
+        x , xloss = self.graph_attn_pool(output1 , output2 , output3 , view_edge)
         
-        x1 , edge_index1 , l31 , e31 = geom_nn.dense_diff_pool(x1 , edge_index1 , s1) # x1 => number_of_sample , 1 , embedding_size
-        x2 , edge_index2 , l32 , e32 = geom_nn.dense_diff_pool(x2 , edge_index2 , s2) # x2 => number_of_sample , 1 , embedding_size
-        x3 , edge_index3 , l33 , e33 = geom_nn.dense_diff_pool(x3 , edge_index3 , s3) # x3 => number_of_sample , 1 , embedding_size
-        
-        #print("3 ---- New shape of x1: " , x1.size() , "| Shape of x2: " , x2.size()) 
-        x = torch.cat([x1 , x2 , x3] , dim=1)
-        s = self.graph_pl_4(x , view_edge , None)
-        x = self.graph_em_4(x , view_edge , None)
-        
-        x , _ , lf , le = geom_nn.dense_diff_pool(x , view_edge , s)
-        
-        
-        # final layer GNN 
-        # x = torch.cat([ x1 , x2 , x3 ] , dim=-1)
-        #print("Final size: " , x.size())
-        # mean
-        # x_mean = torch.mean(torch.stack([x1.squeeze(1),x2.squeeze(1)], dim=-1) , dim=-1)
-        
-        x = self.head(x.squeeze(1))
-        return x , l11+l12+l13+l21+l22+l23+l31+l32+l33+lf , x1.squeeze(1) , x2.squeeze(1) , e11+e12+e13+e21+e22+e23+e31+e32+e33+le
+        return x , xloss , output1.squeeze(1) , output2.squeeze(1) , output3.squeeze(1) , lp1+le1 , lp2+le2 , lp3+le3
         
     def configure_optimizers(self):
-        optimizer = optim.Adam(self.parameters() , lr=self.lr)
-        return optimizer 
+        optimizer1 = optim.Adam(self.graph_diff_pool1.parameters() , lr=self.lr)
+        optimizer2 = optim.Adam(self.graph_diff_pool2.parameters() , lr=self.lr)
+        optimizer3 = optim.Adam(self.graph_diff_pool3.parameters() , lr=self.lr)
+        optimizer = optim.Adam(self.graph_attn_pool.parameters() , lr=self.lr)
+        return [ optimizer1 , optimizer2 , optimizer3 , optimizer ] 
     
     def training_step(self , batch , batch_idx):
+        
+        if self.current_epoch == 10:
+            self.mode = 'train'
+            
+        opt1 , opt2 , opt3 , opt = self.optimizers()
+        opt1.zero_grad()
+        opt2.zero_grad()
+        opt3.zero_grad()
+        opt.zero_grad()
         
         #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
         batch_1 , batch_2 , batch_3 , view_edge = batch
         
-        output , diffpool_loss , output_x1 , output_x2 , entropy_loss = self.forward(
+        output , diffpool_entropy_loss , output_x1 , output_x2 , output_x3 , loss_x1 , loss_x2 , loss_x3 = self.forward(
             batch_1.x , batch_1.edge_index , batch_1.edge_attr , 
             batch_2.x , batch_2.edge_index , batch_2.edge_attr , 
             batch_3.x , batch_3.edge_index , batch_3.edge_attr , 
             batch_1.batch , batch_2.batch , batch_3.batch , 
             view_edge
         ) 
+        
+        # optimize loss per omic data 
+        opt1.zero_grad()
+        loss1 = self.loss(output_x1 , batch_1.y) + loss_x1 
+        self.manual_backward(loss1)
+        opt1.step() 
+        
+        opt2.zero_grad()
+        loss2 = self.loss(output_x2 , batch_2.y) + loss_x2 
+        self.manual_backward(loss2)
+        opt2.step() 
+        
+        opt3.zero_grad()
+        loss3 = self.loss(output_x3 , batch_3.y) + loss_x3 
+        self.manual_backward(loss3)
+        opt1.step() 
+        
+        # calculate acc per omic data 
+        acc1 = self.acc(torch.nn.functional.softmax(output_x1 , dim=-1)  , batch_1.y)
+        acc2 = self.acc(torch.nn.functional.softmax(output_x2 , dim=-1)  , batch_2.y)
+        acc3 = self.acc(torch.nn.functional.softmax(output_x3 , dim=-1)  , batch_3.y)
+        
         #print("Output dimension: ", output.size())
         
-        loss = self.loss(output , batch_1.y)  + diffpool_loss + entropy_loss #+ self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
-        acc = self.acc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
-        f1 = self.f1(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
-        auc = self.auc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
+        if not self.mode == 'pretrain':
+            loss = self.loss(output , batch_1.y)  + diffpool_entropy_loss #+ self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
+            acc = self.acc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
+            f1 = self.f1(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
+            auc = self.auc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
+        else: 
+            loss = torch.tensor(0 , dtype=torch.float)
+            acc = torch.tensor(0 , dtype=torch.float)
+            f1 = torch.tensor(0 , dtype=torch.float)
+            auc = torch.tensor(0 , dtype=torch.float)
         
+        self.log("train_loss_x1" , loss1 , on_epoch=True)
+        self.log("train_loss_x2" , loss2 , on_epoch=True)
+        self.log("train_loss_x3" , loss3 , on_epoch=True)
+        self.log("train_acc_x1" , acc1 , on_epoch=True)
+        self.log("train_acc_x2" , acc2 , on_epoch=True)
+        self.log("train_acc_x3" , acc3 , on_epoch=True)
         self.log("train_acc" , acc , prog_bar=True, on_epoch=True)
         self.log("train_loss" , loss , prog_bar=True, on_epoch=True)
         self.log('train_auc' , auc)
         self.log('train_f1' , f1)
-        return loss 
     
     def validation_step(self , batch , batch_idx): 
+        
+        #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
         batch_1 , batch_2 , batch_3 , view_edge = batch
         
-        output , diffpool_loss , output_x1 , output_x2 , entropy_loss = self.forward(
+        output , diffpool_entropy_loss , output_x1 , output_x2 , output_x3 , loss_x1 , loss_x2 , loss_x3 = self.forward(
             batch_1.x , batch_1.edge_index , batch_1.edge_attr , 
             batch_2.x , batch_2.edge_index , batch_2.edge_attr , 
             batch_3.x , batch_3.edge_index , batch_3.edge_attr , 
             batch_1.batch , batch_2.batch , batch_3.batch , 
             view_edge
         ) 
-        # print(output.size())
-        # print(batch_1.y)
-        # print(batch_1)
-        loss = self.loss(output , batch_1.y) + diffpool_loss + entropy_loss  #+ self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
-        acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , batch_1.y)
         
-        f1 = self.f1(torch.nn.functional.softmax(output , dim=-1) , batch_1.y)
-        auc = self.auc(torch.nn.functional.softmax(output , dim=-1) , batch_1.y)
+        # optimize loss per omic data 
+        loss1 = self.loss(output_x1 , batch_1.y) + loss_x1 
+        loss2 = self.loss(output_x2 , batch_2.y) + loss_x2 
+        loss3 = self.loss(output_x3 , batch_3.y) + loss_x3 
+        
+        # calculate acc per omic data 
+        acc1 = self.acc(torch.nn.functional.softmax(output_x1 , dim=-1)  , batch_1.y)
+        acc2 = self.acc(torch.nn.functional.softmax(output_x2 , dim=-1)  , batch_2.y)
+        acc3 = self.acc(torch.nn.functional.softmax(output_x3 , dim=-1)  , batch_3.y)
+        
+        #print("Output dimension: ", output.size())
+        
+        if not self.mode == 'pretrain':
+            loss = self.loss(output , batch_1.y)  + diffpool_entropy_loss #+ self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
+            acc = self.acc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
+            f1 = self.f1(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
+            auc = self.auc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
+        else: 
+            loss = torch.tensor(0 , dtype=torch.float)
+            acc = torch.tensor(0 , dtype=torch.float)
+            f1 = torch.tensor(0 , dtype=torch.float)
+            auc = torch.tensor(0 , dtype=torch.float)
+        
+        self.log("val_loss_x1" , loss1 , on_epoch=True)
+        self.log("val_loss_x2" , loss2 , on_epoch=True)
+        self.log("val_loss_x3" , loss3 , on_epoch=True)
+        self.log("val_acc_x1" , acc1 , on_epoch=True)
+        self.log("val_acc_x2" , acc2 , on_epoch=True)
+        self.log("val_acc_x3" , acc3 , on_epoch=True)
         self.log("val_acc" , acc , prog_bar=True, on_epoch=True)
         self.log("val_loss" , loss , prog_bar=True, on_epoch=True)
-        self.log('val_auc' , auc , prog_bar=True)
-        self.log('val_f1' , f1 , prog_bar=True) 
+        self.log('val_auc' , auc)
+        self.log('val_f1' , f1)
         
 class MultiGraphGeneralPooling(pl.LightningModule):
     
@@ -993,8 +1036,8 @@ def main():
         # callbacks.append(checkpoint)
         
         # model tracker 
-        # modelTracker = BestModelTracker()
-        # callbacks.append(modelTracker)
+        modelTracker = BestModelTracker()
+        callbacks.append(modelTracker)
         
         # train model 
         trainer = pl.Trainer(
