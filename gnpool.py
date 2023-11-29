@@ -709,7 +709,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
         opt3.zero_grad()
         loss3 = self.loss(output_x3 , batch_3.y) + loss_x3 
         self.manual_backward(loss3)
-        opt1.step() 
+        opt3.step() 
         
         # calculate acc per omic data 
         acc1 = self.acc(torch.nn.functional.softmax(output_x1 , dim=-1)  , batch_1.y)
@@ -725,7 +725,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
             f1 = self.f1(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
             auc = self.auc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
             
-            self.manual_backward(loss2)
+            self.manual_backward(loss)
             opt.step()
         else: 
             loss = torch.tensor(0 , dtype=torch.float)
