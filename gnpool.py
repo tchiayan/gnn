@@ -640,7 +640,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
         self.lr = lr
         self.mode = "pretrain"
         self.automatic_optimization = False
-        self.pretrain_epoch = 0
+        self.pretrain_epoch = pretrain_epoch
         
         self.graph_diff_pool1 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
         self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
