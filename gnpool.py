@@ -633,13 +633,14 @@ class GraphAttentionDifferencePooling(torch.nn.Module):
 class MultiGraphDiffPooling(pl.LightningModule):
     
         
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv'):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0):
         super().__init__()
         
         self.skip_connection = skip_connection 
         self.lr = lr
         self.mode = "pretrain"
         self.automatic_optimization = False
+        self.pretrain_epoch = 0
         
         self.graph_diff_pool1 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
         self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
@@ -677,7 +678,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
     
     def training_step(self , batch , batch_idx):
         
-        if self.current_epoch == 10:
+        if self.current_epoch == self.pretrain_epoch+1:
             self.mode = 'train'
             
         opt1 , opt2 , opt3 , opt = self.optimizers()
@@ -914,9 +915,16 @@ def main():
     parser.add_argument("--convolution" , type=str , default='SAGEConv' , choices=list(gnn.keys()) )
     parser.add_argument("--batch_size" , type=int, default=50)
     parser.add_argument("--runkfold"  , type=int , default=10)
+    parser.add_argument("--pretrain_epoch" , type=int , default=0)
     parser.add_argument("--disable_early_stopping" , action="store_true")
     
     args = parser.parse_args()
+    
+    ## Checking 
+    if args.model == 'multigraph_diffpool':
+        if args.pretrain_epoch >= args.max_epoch:
+            print("Pretrain epoch must be smaller than max_epoch. Exiting")
+            exit()
     
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     
@@ -1013,7 +1021,10 @@ def main():
         # Define model 
         
         if args.model == 'multigraph_diffpool':
-            model = MultiGraphDiffPooling(1 , args.hidden_embedding , 5 , 1000, skip_connection=True , lr=args.lr)
+            if args.pretrain_epoch >= args.max_epoch:
+                print("Pretrain epoch must be smaller than max_epoch. Exiting")
+                exit()
+            model = MultiGraphDiffPooling(1 , args.hidden_embedding , 5 , 1000, skip_connection=True , lr=args.lr , pretrain_epoch=args.pretrain_epoch)
             #mlflow.set_experiment("multigraph_diff_pooling")
         elif args.model == 'dmongraph_pool':
             model = DmonGraphPooling(1 , args.hidden_embedding , 5 ,1000 , args.lr)
