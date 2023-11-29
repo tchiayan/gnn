@@ -682,10 +682,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
             self.mode = 'train'
             
         opt1 , opt2 , opt3 , opt = self.optimizers()
-        opt1.zero_grad()
-        opt2.zero_grad()
-        opt3.zero_grad()
-        opt.zero_grad()
+        
         
         #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
         batch_1 , batch_2 , batch_3 , view_edge = batch
@@ -722,10 +719,14 @@ class MultiGraphDiffPooling(pl.LightningModule):
         #print("Output dimension: ", output.size())
         
         if not self.mode == 'pretrain':
+            opt.zero_grad()
             loss = self.loss(output , batch_1.y)  + diffpool_entropy_loss #+ self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
             acc = self.acc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
             f1 = self.f1(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
             auc = self.auc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
+            
+            self.manual_backward(loss2)
+            opt.step()
         else: 
             loss = torch.tensor(0 , dtype=torch.float)
             acc = torch.tensor(0 , dtype=torch.float)
