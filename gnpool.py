@@ -24,6 +24,7 @@ gnn = {
     'GraphConv': geom_nn.DenseGraphConv , 
     'GATConv': geom_nn.DenseGATConv , 
     'SAGEConv': geom_nn.DenseSAGEConv , 
+    'GINConv': geom_nn.DenseGINConv , 
 }
 class PairDataset(torch.utils.data.Dataset):
     def __init__(self , datasetA , datasetB , datasetC):
