@@ -8,12 +8,13 @@ from tqdm import tqdm
 from sklearn import feature_selection , preprocessing
 from sklearn import metrics
 import itertools
+import numpy as np
 
 def read_features_file(path):
     df = pd.read_csv(path, header=None)
     return df
 
-def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFrame,  integration:str='PPI', threshold:int=300 , cached=None , rescale=False) -> List[Data]:
+def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFrame,  integration:str='PPI', threshold:int=300 , cached=None , rescale=False , use_quantile=False) -> List[Data]:
     
     if integration == 'PPI':
         
@@ -110,6 +111,9 @@ def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFr
         #coor = feature_selection.mutual_info_classif(df , labels)
         
         cosine_similarity = metrics.pairwise.cosine_similarity(df.T)
+        if use_quantile:
+            threshold = np.quantile(cosine_similarity , threshold)
+        
         print(cosine_similarity.shape)
         c = 0 
         pbar = tqdm(total=len(cosine_similarity))
@@ -243,19 +247,17 @@ if __name__ == "__main__":
     
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     
-    # read labels
-    labels = os.path.join(base_path, "labels_tr.csv")
-    df_labels = read_features_file(labels) 
-
-    feature3 = os.path.join(base_path , "3_tr.csv")
-    df3 = read_features_file(feature3)
-    name3 = os.path.join(base_path , "3_featname.csv")
-    df3_header = read_features_file(name3)
-    gph3 = generate_graph(df3 , None , df_labels[0].tolist() , integration='GO&KEGG') 
+    dense_edge = torch.tensor(
+        [[
+            [ 1 , 0 , 0 ] , 
+            [ 0 , 1 , 0 ] , 
+            [ 0 , 0 , 1 ] 
+        ]] , 
+        dtype=torch.float
+    )
     
-    _ , _ , mask = geom_utils.remove_isolated_nodes(gph3[0].edge_index)
-    feature_info_1 = {
-        "feature1_isolated_node": gph3[0].x.shape[0] - mask.sum().item(), 
-        "feature1_network_number_of_edge": gph3[0].edge_index.shape[1]
-    }
-    print(feature_info_1)
+    edge_tensor = geom_utils.to_torch_coo_tensor(dense_edge)
+    print(edge_tensor)
+    
+    
+    

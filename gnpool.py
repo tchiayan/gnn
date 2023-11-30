@@ -918,6 +918,7 @@ def main():
     parser.add_argument("--runkfold"  , type=int , default=10)
     parser.add_argument("--pretrain_epoch" , type=int , default=0)
     parser.add_argument("--disable_early_stopping" , action="store_true")
+    parser.add_argument("--use_quantile" , action="store_true")
     
     args = parser.parse_args()
     
@@ -941,7 +942,7 @@ def main():
     df1 = read_features_file(feature1)
     name1 = os.path.join(base_path, "1_featname.csv")
     df1_header = read_features_file(name1)
-    gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph)
+    gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph , use_quantile=args.use_quantile)
     
     # print(gp1[0])
     # degree = geom_utils.degree()
@@ -958,7 +959,7 @@ def main():
     df2 = read_features_file(feature2)
     name2 = os.path.join(base_path, "2_featname.csv")
     df2_header = read_features_file(name2)
-    gp2 = generate_graph(df2 , df2_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph)
+    gp2 = generate_graph(df2 , df2_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph, use_quantile=args.use_quantile)
     _ , _ , mask = geom_utils.remove_isolated_nodes(gp2[0].edge_index)
     feature_info.update({
         "feature2_isolated_node": gp2[0].x.shape[0] - mask.sum().item(), 
@@ -970,7 +971,7 @@ def main():
     df3 = read_features_file(feature3)
     name3 = os.path.join(base_path , "3_featname.csv")
     df3_header = read_features_file(name3)
-    gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson')
+    gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson' , use_quantile=args.use_quantile)
     # gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration='pearson')
     _ , _ , mask = geom_utils.remove_isolated_nodes(gp3[0].edge_index)
     feature_info.update({
