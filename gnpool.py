@@ -71,15 +71,15 @@ class GCN(torch.nn.Module):
     
 class DenseGCN(torch.nn.Module):
     
-    def __init__(self , in_channels , hidden_channels , out_channels , skip_connection = True , lin=True , type='SAGEConv'):
+    def __init__(self , in_channels , hidden_channels , out_channels , skip_connection = True , lin=True , type='SAGEConv' , **args):
         super().__init__()
-        self.conv1 = gnn[type](in_channels , hidden_channels)
+        self.conv1 = gnn[type](in_channels , hidden_channels , **args)
         self.batch_norm1 = torch.nn.BatchNorm1d(hidden_channels)
         
-        self.conv2 = gnn[type](hidden_channels , hidden_channels)
+        self.conv2 = gnn[type](hidden_channels , hidden_channels, **args)
         self.batch_norm2 = torch.nn.BatchNorm1d(hidden_channels)
         
-        self.conv3 = gnn[type](hidden_channels , out_channels)
+        self.conv3 = gnn[type](hidden_channels , out_channels, **args)
         self.batch_norm3 = torch.nn.BatchNorm1d(out_channels)
         self.skip_connection = skip_connection
         if lin:
@@ -534,7 +534,7 @@ class SingleGraphDiffPooling(pl.LightningModule):
 
 class GraphDiffPoolConv(torch.nn.Module): 
     
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False, type='SAGEConv' , linear=False):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False, type='SAGEConv' , linear=False , **args):
         super().__init__()
         
         self.skip_connection = skip_connection
@@ -542,27 +542,27 @@ class GraphDiffPoolConv(torch.nn.Module):
         
         # Pooling layer 1 
         node_size = min( 100 , ceil(input_size * 0.5))
-        self.graph_em_11 = DenseGCN( in_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type)
-        self.graph_pl_11 = DenseGCN( in_channels , hidden_channels , node_size , skip_connection , type=type)
+        self.graph_em_11 = DenseGCN( in_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type , **args)
+        self.graph_pl_11 = DenseGCN( in_channels , hidden_channels , node_size , skip_connection , type=type , **args)
         
         # Pooling layer 2
         node_size = ceil(node_size * 0.5)
         input_hidden_channels = 3 * hidden_channels if skip_connection  else hidden_channels
-        self.graph_em_21 = DenseGCN( input_hidden_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type)
-        self.graph_pl_21 = DenseGCN( input_hidden_channels , hidden_channels , node_size , skip_connection, type=type)
+        self.graph_em_21 = DenseGCN( input_hidden_channels , hidden_channels , hidden_channels , skip_connection , lin=False, type=type , **args)
+        self.graph_pl_21 = DenseGCN( input_hidden_channels , hidden_channels , node_size , skip_connection, type=type , **args)
         
         # Pooling layer 3 
         node_size = ceil(node_size * 0.5)
         input_hidden_channels = 3 * hidden_channels if skip_connection  else hidden_channels
-        self.graph_em_31 = DenseGCN( input_hidden_channels , hidden_channels , num_classes if not linear else hidden_channels  , lin=True, type=type)
-        self.graph_pl_31 = DenseGCN( input_hidden_channels , hidden_channels , 1  , skip_connection, type=type)
+        self.graph_em_31 = DenseGCN( input_hidden_channels , hidden_channels , num_classes if not linear else hidden_channels  , lin=True, type=type, **args)
+        self.graph_pl_31 = DenseGCN( input_hidden_channels , hidden_channels , 1  , skip_connection, type=type , **args)
         
         if linear:
             self.linear = torch.nn.Linear(hidden_channels , num_classes)
         else: 
             self.linear = None 
             
-    def forward(self , x1 , edge_index1 , edge_attr1 , batch1_idx , view_edge):
+    def forward(self , x1 , edge_index1 , edge_attr1 , batch1_idx):
         
         # Convert to dense batch
         x1 , _ = geom_utils.to_dense_batch(x1 , batch1_idx)
@@ -644,7 +644,7 @@ class GraphAttentionDifferencePooling(torch.nn.Module):
 class MultiGraphDiffPooling(pl.LightningModule):
     
         
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 , linear=False ):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 , linear=False , **args):
         super().__init__()
         
         self.skip_connection = skip_connection 
@@ -655,9 +655,9 @@ class MultiGraphDiffPooling(pl.LightningModule):
         self.decay = decay
         self.linear = linear
         
-        self.graph_diff_pool1 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear)
-        self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear)
-        self.graph_diff_pool3 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear)
+        self.graph_diff_pool1 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear , **args)
+        self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear , **args)
+        self.graph_diff_pool3 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear , **args)
         
         self.graph_attn_pool = GraphAttentionDifferencePooling(num_classes if not self.linear else hidden_channels , hidden_channels , num_classes , skip_connection , 'GATConv' )
         
@@ -672,9 +672,9 @@ class MultiGraphDiffPooling(pl.LightningModule):
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx , view_edge):
         
-        l_output1 , output1 , s1 , edge_index1 , lp1 , le1 = self.graph_diff_pool1( x1 , edge_index1 , edge_attr1 , batch1_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
-        l_output2 , output2 , s2 , edge_index2 , lp2 , le2 = self.graph_diff_pool2( x2 , edge_index2 , edge_attr2 , batch2_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
-        l_output3 , output3 , s3 , edge_index3 , lp3 , le3 = self.graph_diff_pool3( x3 , edge_index3 , edge_attr3 , batch3_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
+        l_output1 , output1 , s1 , edge_index1 , lp1 , le1 = self.graph_diff_pool1( x1 , edge_index1 , edge_attr1 , batch1_idx  ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
+        l_output2 , output2 , s2 , edge_index2 , lp2 , le2 = self.graph_diff_pool2( x2 , edge_index2 , edge_attr2 , batch2_idx  ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
+        l_output3 , output3 , s3 , edge_index3 , lp3 , le3 = self.graph_diff_pool3( x3 , edge_index3 , edge_attr3 , batch3_idx  ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
         #print("3 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
         #print("3 ---- Shape of s1: " , s1.size() , "| Shape of s2: " , s2.size())
         #print(f"Size: {output1.size()} {output2.size()} {output3.size()}")
@@ -714,18 +714,18 @@ class MultiGraphDiffPooling(pl.LightningModule):
         # optimize loss per omic data 
         opt1.zero_grad()
         loss1 = self.loss(output_x1 , batch_1.y) + loss_x1 
-        self.manual_backward(loss1)
-        opt1.step() 
+        self.manual_backward(loss1 , retain_graph=True)
+        # opt1.step() 
         
         opt2.zero_grad()
         loss2 = self.loss(output_x2 , batch_2.y) + loss_x2 
-        self.manual_backward(loss2)
-        opt2.step() 
-        
+        self.manual_backward(loss2, retain_graph=True)
+        # opt2.step() 
+         
         opt3.zero_grad()
         loss3 = self.loss(output_x3 , batch_3.y) + loss_x3 
-        self.manual_backward(loss3)
-        opt3.step() 
+        self.manual_backward(loss3, retain_graph=True)
+        # opt3.step() 
         
         # calculate acc per omic data 
         acc1 = self.acc(torch.nn.functional.softmax(output_x1 , dim=-1)  , batch_1.y)
@@ -748,6 +748,9 @@ class MultiGraphDiffPooling(pl.LightningModule):
             acc = torch.tensor(0 , dtype=torch.float)
             f1 = torch.tensor(0 , dtype=torch.float)
             auc = torch.tensor(0 , dtype=torch.float)
+            opt1.step()
+            opt2.step()
+            opt3.step()
         
         self.log("train_loss_x1" , loss1 , on_epoch=True)
         self.log("train_loss_x2" , loss2 , on_epoch=True)
@@ -937,6 +940,7 @@ def main():
     parser.add_argument("--use_quantile" , action="store_true")
     parser.add_argument("--decay" , type=float , default=0.0)
     parser.add_argument("--linear" , action="store_true")
+    parser.add_argument("--conv_dropout" , type=float , default=0.0)
     
     args = parser.parse_args()
     
@@ -1044,13 +1048,14 @@ def main():
             if args.pretrain_epoch >= args.max_epoch:
                 print("Pretrain epoch must be smaller than max_epoch. Exiting")
                 exit()
+            
             model = MultiGraphDiffPooling(
                 1 , args.hidden_embedding , 5 , 1000, 
                 skip_connection=True , 
                 lr=args.lr , 
                 pretrain_epoch=args.pretrain_epoch,
                 decay=args.decay, 
-                linear=args.linear 
+                linear=args.linear ,
             )
             #mlflow.set_experiment("multigraph_diff_pooling")
         elif args.model == 'dmongraph_pool':
