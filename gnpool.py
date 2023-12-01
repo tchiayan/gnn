@@ -1105,7 +1105,7 @@ def main():
         callbacks.append(modelTracker)
         
         if args.model == 'multigraph_diffpool': 
-            dynamicOptim = UpdateOptimizer(epoch=1,decay=args.decay, slr=args.slr, tlr=args.tlr)
+            dynamicOptim = UpdateOptimizer(epoch=args.pretrain_epoch,decay=args.decay, slr=args.slr, tlr=args.tlr)
             callbacks.append(dynamicOptim)
         
         # train model 
