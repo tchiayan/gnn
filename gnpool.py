@@ -644,7 +644,7 @@ class GraphAttentionDifferencePooling(torch.nn.Module):
 class MultiGraphDiffPooling(pl.LightningModule):
     
         
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 , linear=False , **args):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 , linear=False , slr=1e-4 , tlr=1e-4 , **args):
         super().__init__()
         
         self.skip_connection = skip_connection 
@@ -694,9 +694,6 @@ class MultiGraphDiffPooling(pl.LightningModule):
     
     def training_step(self , batch , batch_idx):
         
-        if self.current_epoch == self.pretrain_epoch+1:
-            self.mode = 'train'
-            
         opt1 , opt2 , opt3 , opt = self.optimizers()
         
         
@@ -762,6 +759,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
         self.log("train_loss" , loss , prog_bar=True, on_epoch=True)
         self.log('train_auc' , auc)
         self.log('train_f1' , f1)
+        
     
     def validation_step(self , batch , batch_idx): 
         
@@ -899,6 +897,26 @@ class MultiGraphGeneralPooling(pl.LightningModule):
         self.log('val_auc' , auc , prog_bar=True)
         self.log('val_f1' , f1 , prog_bar=True)
 
+class UpdateOptimizer(Callback):
+    
+    def __init__(self , epoch=10 , decay=0 , slr=1e-5 , tlr=1e-6 ) -> None:
+        super().__init__()
+        self.epoch = epoch
+        self.decay = decay 
+        self.slr = slr 
+        self.tlr = tlr
+        
+    def on_train_epoch_start(self , trainer:pl.Trainer, pl_module: pl.LightningModule) -> None :
+        
+        if trainer.model.mode == 'pretrain' and trainer.current_epoch == self.epoch: 
+            trainer.model.mode = 'train'
+            
+            optimizer1 = optim.Adam(trainer.model.graph_diff_pool1.parameters() , lr=self.slr , weight_decay=self.decay)
+            optimizer2 = optim.Adam(trainer.model.graph_diff_pool2.parameters() , lr=self.slr , weight_decay=self.decay)
+            optimizer3 = optim.Adam(trainer.model.graph_diff_pool3.parameters() , lr=self.slr , weight_decay=self.decay)
+            optimizer = optim.Adam(trainer.model.graph_attn_pool.parameters() , lr=self.tlr , weight_decay=self.decay)
+            trainer.optimizers = [ optimizer1 , optimizer2 , optimizer3 , optimizer ]
+        
 class BestModelTracker(Callback):
     
     def __init__(self) -> None:
@@ -941,6 +959,8 @@ def main():
     parser.add_argument("--decay" , type=float , default=0.0)
     parser.add_argument("--linear" , action="store_true")
     parser.add_argument("--conv_dropout" , type=float , default=0.0)
+    parser.add_argument("--slr" , type=float , default=1e-4)
+    parser.add_argument("--tlr" , type=float , default=1e-4)
     
     args = parser.parse_args()
     
@@ -1056,6 +1076,8 @@ def main():
                 pretrain_epoch=args.pretrain_epoch,
                 decay=args.decay, 
                 linear=args.linear ,
+                slr=args.slr, 
+                tlr=args.tlr
             )
             #mlflow.set_experiment("multigraph_diff_pooling")
         elif args.model == 'dmongraph_pool':
@@ -1081,6 +1103,10 @@ def main():
         # model tracker 
         modelTracker = BestModelTracker()
         callbacks.append(modelTracker)
+        
+        if args.model == 'multigraph_diffpool': 
+            dynamicOptim = UpdateOptimizer(epoch=1,decay=args.decay, slr=args.slr, tlr=args.tlr)
+            callbacks.append(dynamicOptim)
         
         # train model 
         trainer = pl.Trainer(
