@@ -123,10 +123,10 @@ def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFr
         for i in range(len(cosine_similarity)):
             for j in range(len(cosine_similarity)):
                 if cosine_similarity[i][j] >= threshold:
-                    edge_index[0].append(i)
-                    edge_index[1].append(j)
-                    edge_index[0].append(j)
-                    edge_index[1].append(i)
+                    edge_index[0].extend([i , j])
+                    edge_index[1].extend([j , i]) 
+                    #edge_index[0].append(j)
+                    #edge_index[1].append(i)
 
                     c += 2
                     edge_attr.extend([ cosine_similarity[i][j] ]*2)
@@ -247,17 +247,16 @@ if __name__ == "__main__":
     
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     
-    dense_edge = torch.tensor(
-        [[
-            [ 1 , 0 , 0 ] , 
-            [ 0 , 1 , 0 ] , 
-            [ 0 , 0 , 1 ] 
-        ]] , 
-        dtype=torch.float
-    )
-    
-    edge_tensor = geom_utils.to_torch_coo_tensor(dense_edge)
-    print(edge_tensor)
+    # read labels
+    labels = os.path.join(base_path, "labels_tr.csv")
+    df_labels = read_features_file(labels) 
+
+    ## mRNA Features
+    feature1 = os.path.join(base_path, "1_tr.csv")
+    df1 = read_features_file(feature1)
+    name1 = os.path.join(base_path, "1_featname.csv")
+    df1_header = read_features_file(name1)
+    gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=0.8, rescale=True, integration='pearson' , use_quantile=True)
     
     
     
