@@ -121,16 +121,23 @@ def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFr
         edge_index = [[], []]
         edge_attr = []
         for i in range(len(cosine_similarity)):
-            for j in range(len(cosine_similarity)):
-                if cosine_similarity[i][j] >= threshold:
-                    edge_index[0].extend([i , j])
-                    edge_index[1].extend([j , i]) 
-                    #edge_index[0].append(j)
-                    #edge_index[1].append(i)
+            filter = [ [j , cm]  for j , cm in enumerate(cosine_similarity[i]) if cm  >= threshold]
+            for j , cm in filter: 
+                edge_index[0].extend([i , j])
+                edge_index[1].extend([j , i]) 
+                edge_attr.extend([ cm ]*2)
+            c += len(filter)*2
+            pbar.set_description("Number of edges: {}".format(c))
+            # for j in range(len(cosine_similarity)):
+            #     if cosine_similarity[i][j] >= threshold:
+            #         edge_index[0].extend([i , j])
+            #         edge_index[1].extend([j , i]) 
+            #         # edge_index[0].append(j)
+            #         # edge_index[1].append(i)
 
-                    c += 2
-                    edge_attr.extend([ cosine_similarity[i][j] ]*2)
-                    pbar.set_description("Number of edges: {}".format(c))
+            #         c += 2
+            #         edge_attr.extend([ cosine_similarity[i][j] ]*2)
+            #         pbar.set_description("Number of edges: {}".format(c))
             pbar.update(1)
         pbar.close()
         
