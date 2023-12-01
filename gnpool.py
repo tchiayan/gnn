@@ -634,7 +634,7 @@ class GraphAttentionDifferencePooling(torch.nn.Module):
 class MultiGraphDiffPooling(pl.LightningModule):
     
         
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 ):
         super().__init__()
         
         self.skip_connection = skip_connection 
@@ -642,6 +642,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
         self.mode = "pretrain"
         self.automatic_optimization = False
         self.pretrain_epoch = pretrain_epoch
+        self.decay = decay
         
         self.graph_diff_pool1 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
         self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
@@ -671,10 +672,10 @@ class MultiGraphDiffPooling(pl.LightningModule):
         return x , xloss , output1.squeeze(1) , output2.squeeze(1) , output3.squeeze(1) , lp1+le1 , lp2+le2 , lp3+le3
         
     def configure_optimizers(self):
-        optimizer1 = optim.Adam(self.graph_diff_pool1.parameters() , lr=self.lr)
-        optimizer2 = optim.Adam(self.graph_diff_pool2.parameters() , lr=self.lr)
-        optimizer3 = optim.Adam(self.graph_diff_pool3.parameters() , lr=self.lr)
-        optimizer = optim.Adam(self.graph_attn_pool.parameters() , lr=self.lr)
+        optimizer1 = optim.Adam(self.graph_diff_pool1.parameters() , lr=self.lr , weight_decay=self.decay)
+        optimizer2 = optim.Adam(self.graph_diff_pool2.parameters() , lr=self.lr , weight_decay=self.decay)
+        optimizer3 = optim.Adam(self.graph_diff_pool3.parameters() , lr=self.lr , weight_decay=self.decay)
+        optimizer = optim.Adam(self.graph_attn_pool.parameters() , lr=self.lr , weight_decay=self.decay)
         return [ optimizer1 , optimizer2 , optimizer3 , optimizer ] 
     
     def training_step(self , batch , batch_idx):
@@ -920,6 +921,7 @@ def main():
     parser.add_argument("--pretrain_epoch" , type=int , default=0)
     parser.add_argument("--disable_early_stopping" , action="store_true")
     parser.add_argument("--use_quantile" , action="store_true")
+    parser.add_argument("--decay" , type=float , default=0.0)
     
     args = parser.parse_args()
     
@@ -1027,7 +1029,13 @@ def main():
             if args.pretrain_epoch >= args.max_epoch:
                 print("Pretrain epoch must be smaller than max_epoch. Exiting")
                 exit()
-            model = MultiGraphDiffPooling(1 , args.hidden_embedding , 5 , 1000, skip_connection=True , lr=args.lr , pretrain_epoch=args.pretrain_epoch)
+            model = MultiGraphDiffPooling(
+                1 , args.hidden_embedding , 5 , 1000, 
+                skip_connection=True , 
+                lr=args.lr , 
+                pretrain_epoch=args.pretrain_epoch,
+                decay=args.decay
+            )
             #mlflow.set_experiment("multigraph_diff_pooling")
         elif args.model == 'dmongraph_pool':
             model = DmonGraphPooling(1 , args.hidden_embedding , 5 ,1000 , args.lr)
