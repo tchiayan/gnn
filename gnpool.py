@@ -534,7 +534,7 @@ class SingleGraphDiffPooling(pl.LightningModule):
 
 class GraphDiffPoolConv(torch.nn.Module): 
     
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False, type='SAGEConv'):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False, type='SAGEConv' , linear=False):
         super().__init__()
         
         self.skip_connection = skip_connection
@@ -554,9 +554,14 @@ class GraphDiffPoolConv(torch.nn.Module):
         # Pooling layer 3 
         node_size = ceil(node_size * 0.5)
         input_hidden_channels = 3 * hidden_channels if skip_connection  else hidden_channels
-        self.graph_em_31 = DenseGCN( input_hidden_channels , hidden_channels , num_classes  , lin=True, type=type)
+        self.graph_em_31 = DenseGCN( input_hidden_channels , hidden_channels , num_classes if not linear else hidden_channels  , lin=True, type=type)
         self.graph_pl_31 = DenseGCN( input_hidden_channels , hidden_channels , 1  , skip_connection, type=type)
         
+        if linear:
+            self.linear = torch.nn.Linear(hidden_channels , num_classes)
+        else: 
+            self.linear = None 
+            
     def forward(self , x1 , edge_index1 , edge_attr1 , batch1_idx , view_edge):
         
         # Convert to dense batch
@@ -587,7 +592,12 @@ class GraphDiffPoolConv(torch.nn.Module):
         
         x1 , edge_index1 , l31 , e31 = geom_nn.dense_diff_pool(x1 , edge_index1 , s1)
         
-        return x1 , s1 , edge_index1 , l11+l21+l31 , e11+e21+e31
+        if self.linear is not None: 
+            x_linear = self.linear(x1.squeeze(1))
+        else: 
+            x_linear = None
+        
+        return x_linear , x1 , s1 , edge_index1 , l11+l21+l31 , e11+e21+e31
 
 class GraphAttentionDifferencePooling(torch.nn.Module): 
     
@@ -634,7 +644,7 @@ class GraphAttentionDifferencePooling(torch.nn.Module):
 class MultiGraphDiffPooling(pl.LightningModule):
     
         
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 ):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 , linear=False ):
         super().__init__()
         
         self.skip_connection = skip_connection 
@@ -643,12 +653,13 @@ class MultiGraphDiffPooling(pl.LightningModule):
         self.automatic_optimization = False
         self.pretrain_epoch = pretrain_epoch
         self.decay = decay
+        self.linear = linear
         
-        self.graph_diff_pool1 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
-        self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
-        self.graph_diff_pool3 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type)
+        self.graph_diff_pool1 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear)
+        self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear)
+        self.graph_diff_pool3 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear)
         
-        self.graph_attn_pool = GraphAttentionDifferencePooling(num_classes , hidden_channels , num_classes , skip_connection , 'GATConv')
+        self.graph_attn_pool = GraphAttentionDifferencePooling(num_classes if not self.linear else hidden_channels , hidden_channels , num_classes , skip_connection , 'GATConv' )
         
         # self.sofmax = torch.nn.Softmax()
         self.loss = torch.nn.CrossEntropyLoss()
@@ -661,15 +672,18 @@ class MultiGraphDiffPooling(pl.LightningModule):
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx , view_edge):
         
-        output1 , s1 , edge_index1 , lp1 , le1 = self.graph_diff_pool1( x1 , edge_index1 , edge_attr1 , batch1_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
-        output2 , s2 , edge_index2 , lp2 , le2 = self.graph_diff_pool2( x2 , edge_index2 , edge_attr2 , batch2_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
-        output3 , s3 , edge_index3 , lp3 , le3 = self.graph_diff_pool3( x3 , edge_index3 , edge_attr3 , batch3_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
+        l_output1 , output1 , s1 , edge_index1 , lp1 , le1 = self.graph_diff_pool1( x1 , edge_index1 , edge_attr1 , batch1_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
+        l_output2 , output2 , s2 , edge_index2 , lp2 , le2 = self.graph_diff_pool2( x2 , edge_index2 , edge_attr2 , batch2_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
+        l_output3 , output3 , s3 , edge_index3 , lp3 , le3 = self.graph_diff_pool3( x3 , edge_index3 , edge_attr3 , batch3_idx , view_edge ) # Expected dimension for output -> [ Batch , 1 , number_of_classes ]
         #print("3 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
         #print("3 ---- Shape of s1: " , s1.size() , "| Shape of s2: " , s2.size())
         #print(f"Size: {output1.size()} {output2.size()} {output3.size()}")
         x , xloss = self.graph_attn_pool(output1 , output2 , output3 , view_edge)
         
-        return x , xloss , output1.squeeze(1) , output2.squeeze(1) , output3.squeeze(1) , lp1+le1 , lp2+le2 , lp3+le3
+        if self.linear:
+            return x , xloss , l_output1 , l_output2 , l_output3 , lp1+le1 , lp2+le2 , lp3+le3
+        else: 
+            return x , xloss , output1.squeeze(1) , output2.squeeze(1) , output3.squeeze(1) , lp1+le1 , lp2+le2 , lp3+le3
         
     def configure_optimizers(self):
         optimizer1 = optim.Adam(self.graph_diff_pool1.parameters() , lr=self.lr , weight_decay=self.decay)
@@ -922,6 +936,7 @@ def main():
     parser.add_argument("--disable_early_stopping" , action="store_true")
     parser.add_argument("--use_quantile" , action="store_true")
     parser.add_argument("--decay" , type=float , default=0.0)
+    parser.add_argument("--linear" , action="store_true")
     
     args = parser.parse_args()
     
@@ -1034,7 +1049,8 @@ def main():
                 skip_connection=True , 
                 lr=args.lr , 
                 pretrain_epoch=args.pretrain_epoch,
-                decay=args.decay
+                decay=args.decay, 
+                linear=args.linear 
             )
             #mlflow.set_experiment("multigraph_diff_pooling")
         elif args.model == 'dmongraph_pool':
