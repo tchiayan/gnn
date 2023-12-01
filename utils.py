@@ -107,10 +107,11 @@ def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFr
         
         return graph_data
     
-    elif integration == 'pearson':
+    elif integration == 'pearson' or integration == 'cosine_similarity':
         #coor = feature_selection.mutual_info_classif(df , labels)
         
-        cosine_similarity = metrics.pairwise.cosine_similarity(df.T)
+        cosine_similarity = metrics.pairwise.cosine_similarity(df.T) if integration == 'cosine_similarity' else df.corr().to_numpy()
+        
         if use_quantile:
             threshold = np.quantile(cosine_similarity , threshold)
         
@@ -263,7 +264,7 @@ if __name__ == "__main__":
     df1 = read_features_file(feature1)
     name1 = os.path.join(base_path, "1_featname.csv")
     df1_header = read_features_file(name1)
-    gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=0.8, rescale=True, integration='pearson' , use_quantile=True)
+    gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=0.25, rescale=True, integration='pearson' , use_quantile=True)
     
     
     
