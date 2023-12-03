@@ -5,7 +5,7 @@ from torch_geometric.data import Data
 import torch_geometric.utils as geom_utils 
 from typing import List
 from tqdm import tqdm
-from sklearn import feature_selection , preprocessing , scale
+from sklearn import feature_selection , preprocessing 
 from sklearn import metrics
 import itertools
 import numpy as np
@@ -157,7 +157,7 @@ def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFr
             # min_max_scalar = preprocessing.MinMaxScaler()
             # x_scaled = min_max_scalar.fit_transform(x)
             # df = pd.DataFrame(x_scaled)
-            x_scaled = scale(x , with_std=True)
+            x_scaled = preprocessing.scale(x , with_std=True)
             
         pbar = tqdm(total=len(df))
         pbar.set_description("Generate graph data")
