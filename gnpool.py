@@ -835,7 +835,7 @@ def main():
     parser.add_argument("--hidden_embedding" , default=32 , type=int)
     parser.add_argument("--max_epoch" , type=int , default=100 , help="Maximum epochs")
     parser.add_argument("--lr" , type=float , default=1e-3 , help="Learning rate of the experiment")
-    parser.add_argument("--build_graph", type=str , default='PPI' , choices=['PPI' , 'pearson'] )
+    parser.add_argument("--build_graph", type=str , default='PPI' , choices=['PPI' , 'pearson','cosine_similarity'] )
     parser.add_argument("--edge_threshold" , type=float , default=1 , help="Edge threshold")
     parser.add_argument("--convolution" , type=str , default='SAGEConv' , choices=list(gnn.keys()) )
     parser.add_argument("--batch_size" , type=int, default=50)
