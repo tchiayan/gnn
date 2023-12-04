@@ -867,45 +867,59 @@ def main():
     feature_info = {}
     
     ## mRNA Features
-    feature1 = os.path.join(base_path, "1_tr.csv")
-    df1 = read_features_file(feature1)
     name1 = os.path.join(base_path, "1_featname.csv")
     df1_header = read_features_file(name1)
-    gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph , use_quantile=args.use_quantile)
     
-    # print(gp1[0])
-    # degree = geom_utils.degree()
-    # print(gp1[0].has_isolated_nodes()) 
-    _ , _ , mask = geom_utils.remove_isolated_nodes(gp1[0].edge_index)
+    feature1_train = os.path.join(base_path, "1_tr.csv")
+    df1_train = read_features_file(feature1_train)
+    gp1_train = generate_graph(df1_train , df1_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph , use_quantile=args.use_quantile)
+    
+    feature1_test = os.path.join(base_path, "1_te.csv")
+    df1_test = read_features_file(feature1_test)
+    gp1_test = generate_graph(df1_test , df1_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph , use_quantile=args.use_quantile)
+    
+    _ , _ , mask = geom_utils.remove_isolated_nodes(gp1_train[0].edge_index)
     feature_info.update({
-        "feature1_isolated_node": gp1[0].x.shape[0] - mask.sum().item(), 
-        "feature1_network_number_of_edge": gp1[0].edge_index.shape[1]
+        "feature1_isolated_node": gp1_train[0].x.shape[0] - mask.sum().item(), 
+        "feature1_network_number_of_edge": gp1_train[0].edge_index.shape[1]
     })
-    #print("Number of isolated node: " , gp1[0].x.shape[0] - mask.sum().item())
+    
     
     ## DNA Methylation
-    feature2 = os.path.join(base_path, "2_tr.csv")
-    df2 = read_features_file(feature2)
     name2 = os.path.join(base_path, "2_featname.csv")
     df2_header = read_features_file(name2)
-    gp2 = generate_graph(df2 , df2_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph, use_quantile=args.use_quantile)
-    _ , _ , mask = geom_utils.remove_isolated_nodes(gp2[0].edge_index)
+    
+    feature2_train = os.path.join(base_path, "2_tr.csv")
+    df2_train = read_features_file(feature2_train)
+    gp2_train = generate_graph(df2_train , df2_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph, use_quantile=args.use_quantile)
+    
+    feature2_test = os.path.join(base_path, "2_te.csv")
+    df2_test = read_features_file(feature2_test)
+    gp2_test = generate_graph(df2_test , df2_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph, use_quantile=args.use_quantile)
+    
+    _ , _ , mask = geom_utils.remove_isolated_nodes(gp2_train[0].edge_index)
     feature_info.update({
-        "feature2_isolated_node": gp2[0].x.shape[0] - mask.sum().item(), 
-        "feature2_network_number_of_edge": gp2[0].edge_index.shape[1]
+        "feature2_isolated_node": gp2_train[0].x.shape[0] - mask.sum().item(), 
+        "feature2_network_number_of_edge": gp2_train[0].edge_index.shape[1]
     })
     
     ## miRNA Feature
-    feature3 = os.path.join(base_path , "3_tr.csv")
-    df3 = read_features_file(feature3)
     name3 = os.path.join(base_path , "3_featname.csv")
     df3_header = read_features_file(name3)
-    gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson' , use_quantile=args.use_quantile)
+    
+    feature3_train = os.path.join(base_path , "3_tr.csv")
+    df3_train = read_features_file(feature3_train)
+    gp3_train = generate_graph(df3_train , df3_header , df_labels[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson' , use_quantile=args.use_quantile)
+    
+    feature3_test = os.path.join(base_path , "3_te.csv")
+    df3_test = read_features_file(feature3_test)
+    gp3_test = generate_graph(df3_test , df3_header , df_labels[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson' , use_quantile=args.use_quantile)
+    
     # gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration='pearson')
-    _ , _ , mask = geom_utils.remove_isolated_nodes(gp3[0].edge_index)
+    _ , _ , mask = geom_utils.remove_isolated_nodes(gp3_train[0].edge_index)
     feature_info.update({
-        "feature3_isolated_node": gp3[0].x.shape[0] - mask.sum().item(), 
-        "feature3_network_number_of_edge": gp3[0].edge_index.shape[1]
+        "feature3_isolated_node": gp3_train[0].x.shape[0] - mask.sum().item(), 
+        "feature3_network_number_of_edge": gp3_train[0].edge_index.shape[1]
     })
     
     kf = StratifiedKFold(n_splits=10 , shuffle=True)
@@ -933,102 +947,97 @@ def main():
     #         mlflow.log_params(feature_info)
         
     #     parent_run_metrics = {}
+    
+    datasetA_tr = gp1_train
+    datasetB_tr = gp2_train
+    datasetC_tr = gp3_train
+    pair_dataset_tr = PairDataset(datasetA_tr , datasetB_tr , datasetC_tr)
+    dataloader_tr = torch.utils.data.DataLoader(pair_dataset_tr, batch_size=batch_size, shuffle=True, collate_fn=collate, drop_last=True)
+    
+    datasetA_te = gp1_test 
+    datasetB_te = gp2_test
+    datasetC_te = gp3_test
+    pair_dataset_te = PairDataset(datasetA_te , datasetB_te , datasetC_te)
+    dataloader_te = torch.utils.data.DataLoader(pair_dataset_te, batch_size=batch_size, shuffle=False, collate_fn=collate, drop_last=True)
+    
+    # batch_size
+    # Define model 
+    if args.model == 'multigraph_diffpool':
+        if args.pretrain_epoch >= args.max_epoch:
+            print("Pretrain epoch must be smaller than max_epoch. Exiting")
+            exit()
         
-    for i , (train_index , test_index) in enumerate(kf.split(df2.values , df_labels[0].values)):
+        model = MultiGraphDiffPooling(
+            1 , args.hidden_embedding , 5 , 1000, 
+            skip_connection=True , 
+            lr=args.lr , 
+            pretrain_epoch=args.pretrain_epoch,
+            decay=args.decay, 
+            linear=args.linear ,
+            slr=args.slr, 
+            tlr=args.tlr, 
+            gcn_conv=args.gcn_conv
+        )
+        #mlflow.set_experiment("multigraph_diff_pooling")
+    elif args.model == 'dmongraph_pool':
+        model = DmonGraphPooling(1 , args.hidden_embedding , 5 ,1000 , args.lr)
+    
+    mode = {
+        'val_loss': 'min', 
+        'val_accuracy': 'max'
+    }
+    
+    callbacks = []
+    if not args.disable_early_stopping:
+        early_stopping = EarlyStopping(monitor='val_loss' , patience=10 , mode='min')
+        callbacks.append(early_stopping)
         
-        datasetA_tr = [gp1[idx] for idx in train_index] 
-        datasetB_tr = [gp2[idx] for idx in train_index]
-        datasetC_tr = [gp3[idx] for idx in train_index]
-        pair_dataset_tr = PairDataset(datasetA_tr , datasetB_tr , datasetC_tr)
-        dataloader_tr = torch.utils.data.DataLoader(pair_dataset_tr, batch_size=batch_size, shuffle=True, collate_fn=collate, drop_last=True)
+    # model checkpoint 
+    # checkpoint = ModelCheckpoint(monitor='val_acc' , mode='max' , save_top_k=1)
+    # callbacks.append(checkpoint)
+    
+    # model tracker 
+    modelTracker = BestModelTracker()
+    callbacks.append(modelTracker)
+    
+    if args.model == 'multigraph_diffpool': 
+        dynamicOptim = UpdateOptimizer(epoch=args.pretrain_epoch,decay=args.decay, slr=args.slr, tlr=args.tlr)
+        callbacks.append(dynamicOptim)
+    
+    # train model 
+    trainer = pl.Trainer(
+        max_epochs=args.max_epoch , 
+        callbacks=callbacks, 
+        # accumulate_grad_batches=3, 
+        # gradient_clip_val=0.5
+    )
+    
+    
+    with mlflow.start_run() as child_run:
         
-        datasetA_te = [gp1[idx] for idx in test_index] 
-        datasetB_te = [gp2[idx] for idx in test_index]
-        datasetC_te = [gp3[idx] for idx in test_index]
-        pair_dataset_te = PairDataset(datasetA_te , datasetB_te , datasetC_te)
-        dataloader_te = torch.utils.data.DataLoader(pair_dataset_te, batch_size=batch_size, shuffle=False, collate_fn=collate, drop_last=True)
-        
-        # batch_size
-        # Define model 
-        
-        if args.model == 'multigraph_diffpool':
-            if args.pretrain_epoch >= args.max_epoch:
-                print("Pretrain epoch must be smaller than max_epoch. Exiting")
-                exit()
+        for arg in vars(args):
+            mlflow.log_param(arg , getattr(args , arg))
             
-            model = MultiGraphDiffPooling(
-                1 , args.hidden_embedding , 5 , 1000, 
-                skip_connection=True , 
-                lr=args.lr , 
-                pretrain_epoch=args.pretrain_epoch,
-                decay=args.decay, 
-                linear=args.linear ,
-                slr=args.slr, 
-                tlr=args.tlr, 
-                gcn_conv=args.gcn_conv
-            )
-            #mlflow.set_experiment("multigraph_diff_pooling")
-        elif args.model == 'dmongraph_pool':
-            model = DmonGraphPooling(1 , args.hidden_embedding , 5 ,1000 , args.lr)
+        # mlflow.log_param("kfold" , i)
+        mlflow.log_params(feature_info)
         
-        mode = {
-            'val_loss': 'min', 
-            'val_accuracy': 'max'
-        }
-        
-        callbacks = []
-        if not args.disable_early_stopping:
-            early_stopping = EarlyStopping(monitor='val_loss' , patience=10 , mode='min')
-            callbacks.append(early_stopping)
-            
-        # model checkpoint 
-        # checkpoint = ModelCheckpoint(monitor='val_acc' , mode='max' , save_top_k=1)
-        # callbacks.append(checkpoint)
-        
-        # model tracker 
-        modelTracker = BestModelTracker()
-        callbacks.append(modelTracker)
-        
-        if args.model == 'multigraph_diffpool': 
-            dynamicOptim = UpdateOptimizer(epoch=args.pretrain_epoch,decay=args.decay, slr=args.slr, tlr=args.tlr)
-            callbacks.append(dynamicOptim)
-        
-        # train model 
-        trainer = pl.Trainer(
-            max_epochs=args.max_epoch , 
-            callbacks=callbacks, 
-            # accumulate_grad_batches=3, 
-            # gradient_clip_val=0.5
+        trainer.fit(
+            model=model , 
+            train_dataloaders=dataloader_tr, 
+            val_dataloaders=dataloader_te
         )
         
-        
-        with mlflow.start_run() as child_run:
+        #trainer.logged_metrics
+        #run_data = mlflow.get_run(child_run.info.run_id)
+        print(modelTracker.best_model)
+        mlflow.log_metrics(modelTracker.best_model)
+        # subrun_metrics = mlflow.get_run(child_run.info.run_id).data.metrics
+        # for key , value in subrun_metrics.items():
+        #     if not key in parent_run_metrics:
+        #         parent_run_metrics[key] = [ value ]
+        #     else:
+        #         parent_run_metrics[key].append(value)
             
-            for arg in vars(args):
-                mlflow.log_param(arg , getattr(args , arg))
-                
-            # mlflow.log_param("kfold" , i)
-            mlflow.log_params(feature_info)
-            
-            trainer.fit(
-                model=model , 
-                train_dataloaders=dataloader_tr, 
-                val_dataloaders=dataloader_te
-            )
-            
-            #trainer.logged_metrics
-            #run_data = mlflow.get_run(child_run.info.run_id)
-            print(modelTracker.best_model)
-            mlflow.log_metrics(modelTracker.best_model)
-            # subrun_metrics = mlflow.get_run(child_run.info.run_id).data.metrics
-            # for key , value in subrun_metrics.items():
-            #     if not key in parent_run_metrics:
-            #         parent_run_metrics[key] = [ value ]
-            #     else:
-            #         parent_run_metrics[key].append(value)
-            
-        if i+1 == args.runkfold :
-            break
             
         # for key , value in parent_run_metrics.items():
         #     parent_run_metrics[key] = sum(parent_run_metrics[key])/len(parent_run_metrics[key])
