@@ -10,7 +10,7 @@ import lightning as pl
 from torch import optim
 from torchmetrics import Accuracy , AUROC , F1Score
 import os 
-from utils import  generate_graph , read_features_file
+from utils import  generate_graph , read_features_file , get_omic_graph
 import mlflow 
 from lightning.pytorch.callbacks.early_stopping import EarlyStopping
 from lightning.pytorch.callbacks.model_checkpoint import ModelCheckpoint
@@ -900,7 +900,7 @@ def main():
     parser.add_argument("--hidden_embedding" , default=32 , type=int)
     parser.add_argument("--max_epoch" , type=int , default=100 , help="Maximum epochs")
     parser.add_argument("--lr" , type=float , default=1e-3 , help="Learning rate of the experiment")
-    parser.add_argument("--build_graph", type=str , default='PPI' , choices=['PPI' , 'pearson','cosine_similarity'] )
+    parser.add_argument("--build_graph", type=str , default='PPI' , choices=['PPI' , 'pearson','cosine_similarity' , 'dynamic'] )
     parser.add_argument("--edge_threshold" , type=float , default=1 , help="Edge threshold")
     parser.add_argument("--convolution" , type=str , default='SAGEConv' , choices=list(gnn.keys()) )
     parser.add_argument("--batch_size" , type=int, default=50)
@@ -926,67 +926,78 @@ def main():
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     
     # read labels
-    labels = os.path.join(base_path, "labels_tr.csv")
-    df_labels = read_features_file(labels) 
+    labels_train = os.path.join(base_path, "labels_tr.csv")
+    df_labels_train = read_features_file(labels_train)
+    
+    labels_test = os.path.join(base_path, "labels_tr.csv")
+    df_labels_test = read_features_file(labels_test)  
 
     
     feature_info = {}
     
     ## mRNA Features
-    name1 = os.path.join(base_path, "1_featname.csv")
-    df1_header = read_features_file(name1)
-    
-    feature1_train = os.path.join(base_path, "1_tr.csv")
-    df1_train = read_features_file(feature1_train)
-    gp1_train = generate_graph(df1_train , df1_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph , use_quantile=args.use_quantile)
-    
-    feature1_test = os.path.join(base_path, "1_te.csv")
-    df1_test = read_features_file(feature1_test)
-    gp1_test = generate_graph(df1_test , df1_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph , use_quantile=args.use_quantile)
-    
-    _ , _ , mask = geom_utils.remove_isolated_nodes(gp1_train[0].edge_index)
-    feature_info.update({
-        "feature1_isolated_node": gp1_train[0].x.shape[0] - mask.sum().item(), 
-        "feature1_network_number_of_edge": gp1_train[0].edge_index.shape[1]
-    })
-    
-    
-    ## DNA Methylation
-    name2 = os.path.join(base_path, "2_featname.csv")
-    df2_header = read_features_file(name2)
-    
-    feature2_train = os.path.join(base_path, "2_tr.csv")
-    df2_train = read_features_file(feature2_train)
-    gp2_train = generate_graph(df2_train , df2_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph, use_quantile=args.use_quantile)
-    
-    feature2_test = os.path.join(base_path, "2_te.csv")
-    df2_test = read_features_file(feature2_test)
-    gp2_test = generate_graph(df2_test , df2_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph, use_quantile=args.use_quantile)
-    
-    _ , _ , mask = geom_utils.remove_isolated_nodes(gp2_train[0].edge_index)
-    feature_info.update({
-        "feature2_isolated_node": gp2_train[0].x.shape[0] - mask.sum().item(), 
-        "feature2_network_number_of_edge": gp2_train[0].edge_index.shape[1]
-    })
-    
-    ## miRNA Feature
-    name3 = os.path.join(base_path , "3_featname.csv")
-    df3_header = read_features_file(name3)
-    
-    feature3_train = os.path.join(base_path , "3_tr.csv")
-    df3_train = read_features_file(feature3_train)
-    gp3_train = generate_graph(df3_train , df3_header , df_labels[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson' , use_quantile=args.use_quantile)
-    
-    feature3_test = os.path.join(base_path , "3_te.csv")
-    df3_test = read_features_file(feature3_test)
-    gp3_test = generate_graph(df3_test , df3_header , df_labels[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson' , use_quantile=args.use_quantile)
-    
-    # gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration='pearson')
-    _ , _ , mask = geom_utils.remove_isolated_nodes(gp3_train[0].edge_index)
-    feature_info.update({
-        "feature3_isolated_node": gp3_train[0].x.shape[0] - mask.sum().item(), 
-        "feature3_network_number_of_edge": gp3_train[0].edge_index.shape[1]
-    })
+    if args.build_graph == 'dynamic':
+        gp1_train = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv')
+        gp2_train = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'labels_tr.csv')
+        gp3_train = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'labels_tr.csv')
+        gp1_test = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'labels_te.csv')
+        gp2_test = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv')
+        gp3_test = get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv')
+    else:
+        name1 = os.path.join(base_path, "1_featname.csv")
+        df1_header = read_features_file(name1)
+        
+        feature1_train = os.path.join(base_path, "1_tr.csv")
+        df1_train = read_features_file(feature1_train)
+        gp1_train = generate_graph(df1_train , df1_header , df_labels_train[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph , use_quantile=args.use_quantile)
+        
+        feature1_test = os.path.join(base_path, "1_te.csv")
+        df1_test = read_features_file(feature1_test)
+        gp1_test = generate_graph(df1_test , df1_header , df_labels_test[0].tolist(), threshold=args.edge_threshold, rescale=True, integration=args.build_graph , use_quantile=args.use_quantile)
+        
+        _ , _ , mask = geom_utils.remove_isolated_nodes(gp1_train[0].edge_index)
+        feature_info.update({
+            "feature1_isolated_node": gp1_train[0].x.shape[0] - mask.sum().item(), 
+            "feature1_network_number_of_edge": gp1_train[0].edge_index.shape[1]
+        })
+        
+        
+        ## DNA Methylation
+        name2 = os.path.join(base_path, "2_featname.csv")
+        df2_header = read_features_file(name2)
+        
+        feature2_train = os.path.join(base_path, "2_tr.csv")
+        df2_train = read_features_file(feature2_train)
+        gp2_train = generate_graph(df2_train , df2_header , df_labels_train[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph, use_quantile=args.use_quantile)
+        
+        feature2_test = os.path.join(base_path, "2_te.csv")
+        df2_test = read_features_file(feature2_test)
+        gp2_test = generate_graph(df2_test , df2_header , df_labels_test[0].tolist(), threshold=args.edge_threshold, rescale=True , integration=args.build_graph, use_quantile=args.use_quantile)
+        
+        _ , _ , mask = geom_utils.remove_isolated_nodes(gp2_train[0].edge_index)
+        feature_info.update({
+            "feature2_isolated_node": gp2_train[0].x.shape[0] - mask.sum().item(), 
+            "feature2_network_number_of_edge": gp2_train[0].edge_index.shape[1]
+        })
+        
+        ## miRNA Feature
+        name3 = os.path.join(base_path , "3_featname.csv")
+        df3_header = read_features_file(name3)
+        
+        feature3_train = os.path.join(base_path , "3_tr.csv")
+        df3_train = read_features_file(feature3_train)
+        gp3_train = generate_graph(df3_train , df3_header , df_labels_train[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson' , use_quantile=args.use_quantile)
+        
+        feature3_test = os.path.join(base_path , "3_te.csv")
+        df3_test = read_features_file(feature3_test)
+        gp3_test = generate_graph(df3_test , df3_header , df_labels_test[0].tolist() , threshold=args.edge_threshold, rescale=True , integration= 'GO&KEGG' if args.build_graph == 'PPI' else 'pearson' , use_quantile=args.use_quantile)
+        
+        # gp3 = generate_graph(df3 , df3_header , df_labels[0].tolist(), threshold=args.edge_threshold, rescale=True , integration='pearson')
+        _ , _ , mask = geom_utils.remove_isolated_nodes(gp3_train[0].edge_index)
+        feature_info.update({
+            "feature3_isolated_node": gp3_train[0].x.shape[0] - mask.sum().item(), 
+            "feature3_network_number_of_edge": gp3_train[0].edge_index.shape[1]
+        })
     
     kf = StratifiedKFold(n_splits=10 , shuffle=True)
     batch_size = args.batch_size
@@ -1034,7 +1045,7 @@ def main():
             exit()
         
         model = MultiGraphDiffPooling(
-            1 , args.hidden_embedding , 5 , 1000, 
+            1 , args.hidden_embedding , 5 , 1000 if args.build_graph != 'dynamic' else 500, 
             skip_connection=True , 
             lr=args.lr , 
             pretrain_epoch=args.pretrain_epoch,

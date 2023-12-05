@@ -9,6 +9,7 @@ from sklearn import feature_selection , preprocessing
 from sklearn import metrics
 import itertools
 import numpy as np
+from scipy.sparse import coo_matrix
 
 def read_features_file(path):
     df = pd.read_csv(path, header=None)
@@ -257,21 +258,202 @@ def generate_graph(df:pd.DataFrame , header_name:pd.DataFrame , labels:pd.DataFr
         pbar.close()
         
         return graph_data
+
+def get_PPI_info():
+    PPI_filepath = r"PPI/9606.protein.links.v12.0.txt"
+    PPI_annotation = r"PPI/9606.protein.info.v12.0.txt"
+
+    ## Read PPI Annotation file 
+    PPI_annotation = pd.read_csv(PPI_annotation , sep="\t")
+    # print(PPI_annotation.head())
+
+    ## Read PPI file
+    PPI = pd.read_csv(PPI_filepath , sep=" ")
+    # print(PPI.head())
+
+    # convert protein id to gene name 
+    PPI_merge = pd.merge(PPI , PPI_annotation , left_on="protein1" , right_on="#string_protein_id", how="left")
+    PPI_merge.drop(columns=["#string_protein_id" , "protein_size" , "annotation"] , inplace=True , axis=1)
+    PPI_merge.rename(columns={"preferred_name":"protein1_name"} , inplace=True)
+
+    PPI_merge = pd.merge(PPI_merge , PPI_annotation , left_on="protein2" , right_on="#string_protein_id", how="left")
+    PPI_merge.drop(columns=["#string_protein_id" , "protein_size" , "annotation"] , inplace=True , axis=1)
+    PPI_merge.rename(columns={"preferred_name":"protein2_name"} , inplace=True)
+    
+    return PPI_merge
+
+def symmetric_matrix_to_coo(matrix , threshold):
+    # Find the nonzero entries in the upper triangle (including the main diagonal)
+    rows, cols = np.triu_indices_from(matrix, k=0)
+
+    # Extract the corresponding values from the upper triangle
+    data = matrix[rows, cols]
+
+    # Filter entries based on the threshold
+    mask = data >= threshold
+    rows = rows[mask]
+    cols = cols[mask]
+    data = data[mask]
+    
+    # Create a COO matrix
+    coo = coo_matrix((data, (rows, cols)), shape=matrix.shape)
+
+    return coo
+
+# Function to convert COO matrix to PyTorch Geometric Data object
+def coo_to_pyg_data(coo_matrix , node_features , label):
+    values = torch.FloatTensor(coo_matrix.data).unsqueeze(1)
+    indices = torch.LongTensor(np.vstack((coo_matrix.row, coo_matrix.col)))
+    size = torch.Size(coo_matrix.shape)
+
+    return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label)
+
+def get_omic_graph(feature_path , conversion_path , label_path):
+    base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
+    david_path = os.path.join(os.path.dirname(os.path.realpath(__file__)) , "david")
+
+    feature1 = os.path.join(base_path, feature_path)
+    df1 = read_features_file(feature1)
+    name1 = os.path.join(david_path, conversion_path)
+    df1_header = pd.read_csv(name1)
+    labels = read_features_file(os.path.join(base_path, label_path))[0].values
+    
+    omic_1_name = df1_header['official gene symbol'].to_list()
+    omic_1_id = df1_header['gene id'].astype('Int64').astype('str').to_list()
+    omic_1 = np.zeros((len(omic_1_name) , len(omic_1_name)))
+    
+    # Generate ppi/kegg/go transaction
+    ppi_info = get_PPI_info()
+    filter_PPI = ppi_info[ppi_info['protein1_name'].isin(omic_1_name)]
+    filter_PPI = filter_PPI[filter_PPI['protein2_name'].isin(omic_1_name)]
+    
+    vector_idx = np.array(list(zip([ omic_1_name.index(x) for x in filter_PPI['protein2_name'] ] , [ omic_1_name.index(x) for x in filter_PPI['protein1_name'] ])))
+    ## Expectin vector_idx to have shape of [n , 2]
+    if vector_idx.shape[0] > 0:
+        omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
+    
+    kegg_go_df = pd.read_csv(os.path.join(david_path , "consol_anno_chart.tsv") , sep='\t')
+    for idx ,  row in kegg_go_df.iterrows():
+        related_genes = row['Genes'].split(", ")
+        genes_idx = [ omic_1_id.index(x) for x in related_genes if x in omic_1_id]
+        genes_idx.sort()
+        if len(genes_idx) <= 1: 
+            continue
+        vector_idx = np.array([x for x in itertools.combinations(genes_idx , 2)])
+        omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
+        
+    #coo = symmetric_matrix_to_coo(omic_1 , 0.1)
+    #indices , values , size = coo_to_pyg_data(coo)
+    #print("Generated len of edge: {}".format(values.shape[0]))
+    
+    mean_dict = torch.FloatTensor(df1.mean().to_list())
+    graph_data  = []
+    
+    try: 
+        
+        
+        pbar = tqdm(total=len(df1))
+            
+        pbar.set_description("Generate graph data")
+        for idx , [ index , row ] in enumerate(df1.iterrows()):
+            node_features = torch.FloatTensor(row.values)
+            significant_node_indices = torch.nonzero(node_features > mean_dict, as_tuple=True)[0]
+            
+            subgraph_features = node_features[significant_node_indices]
+            subgraph_adjacency = omic_1[significant_node_indices][: , significant_node_indices]
+            subgraph_coo = symmetric_matrix_to_coo(subgraph_adjacency , 0.1)
+            graph =coo_to_pyg_data(subgraph_coo , subgraph_features.unsqueeze(1) , torch.tensor(labels[idx] , dtype=torch.long))
+            graph_data.append(graph)
+            pbar.update(1)
+        pbar.close()
+        
+        
+    except Exception as e: 
+        print("Error in generating graph")
+        print(e)
+        
+    return graph_data
         
 if __name__ == "__main__":
     
-    base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     
-    # read labels
-    labels = os.path.join(base_path, "labels_tr.csv")
-    df_labels = read_features_file(labels) 
-
-    ## mRNA Features
-    feature1 = os.path.join(base_path, "1_tr.csv")
-    df1 = read_features_file(feature1)
-    name1 = os.path.join(base_path, "1_featname.csv")
-    df1_header = read_features_file(name1)
-    gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=0.25, rescale=True, integration='pearson' , use_quantile=True)
+    # # read labels
+    # labels = os.path.join(base_path, "labels_tr.csv")
+    # df_labels = read_features_file(labels) 
+    
+    # ## mRNA Features
+    print("Generating mRNA omic data graph")
+    get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv')
+    
+    # ## miRNA Feature 
+    # print("Generating miRNA omic data graph")
+    # get_omic_graph('2_tr.csv' , '2_featname_conversion.csv')
+    
+    # # ## DNA Feature 
+    # print("Generating DNA omic data graph")
+    # get_omic_graph('3_tr.csv' , '3_featname_conversion.csv')
+    # feature1 = os.path.join(base_path, "1_tr.csv")
+    # df1 = read_features_file(feature1)
+    # name1 = os.path.join(david_path, "1_featname_conversion.csv")
+    # df1_header = pd.read_csv(name1)
+    
+    # omic_1_name = df1_header['official gene symbol'].to_list()
+    # omic_1_id = df1_header['gene id'].astype('Int64').astype('str').to_list()
+    
+    # # Generate ppi/kegg/go transaction
+    # kegg_go_df = pd.read_csv(os.path.join(david_path , "consol_anno_chart.tsv") , sep='\t')
+    
+    # omic_1 = np.zeros((1000 , 1000))
+    
+    # ppi_info = get_PPI_info()
+    # filter_PPI = ppi_info[ppi_info['protein1_name'].isin(omic_1_name)]
+    # filter_PPI = filter_PPI[filter_PPI['protein2_name'].isin(omic_1_name)]
+    
+    # vector_idx = np.array(list(zip([ omic_1_name.index(x) for x in filter_PPI['protein2_name'] ] , [ omic_1_name.index(x) for x in filter_PPI['protein1_name'] ])))
+    # omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
+    
+    
+    # i = 0
+    # pbar = tqdm(total=len(kegg_go_df))
+    # pbar.set_description("Generate graph data")
+    
+    # try: 
+    #     for idx ,  row in kegg_go_df.iterrows():
+    #         related_genes = row['Genes'].split(", ")
+    #         genes_idx = [ omic_1_id.index(x) for x in related_genes if x in omic_1_id]
+    #         genes_idx.sort()
+    #         if len(genes_idx) <= 1: 
+    #             continue
+    #         vector_idx = np.array([x for x in itertools.combinations(genes_idx , 2)])
+    #         omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
+    #         i += 1 
+    #         pbar.update(i)
+    # except Exception as e: 
+    #     print("Error occur")
+    #     print(e)
+    #     print(genes_idx)
+    # finally: 
+    #     print(omic_1)
+    #     print(omic_1.sum())
+    #     pbar.close()
+        
+    # coo = symmetric_matrix_to_coo(omic_1 , 0.1)
+    # indice , values , size = coo_to_pyg_data(coo)
+    # print(indice.shape)
+    
+    # gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=0.25, rescale=True, integration='pearson' , use_quantile=True)
+    
+    # a = [0, 1 , 2 , 3]
+    
+    # combination = itertools.combinations(a , 2)
+    # a = np.ones((4 ,4))
+    # b = np.zeros_like(a)
+    # c = np.array([list(x) for x in combination])
+    # print(c)
+    # b[c[:,0] , c[:,1]] = 1
+    # print(b)
+    # coo = symmetric_matrix_to_coo(b)
+    # print(coo)
     
     
     
