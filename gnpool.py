@@ -485,6 +485,33 @@ class GraphDiffPoolConv(torch.nn.Module):
         
         return x_linear , x1 , s1 , edge_index1 , l11+l21+l31 , e11+e21+e31
 
+class GraphGeneralPooling(torch.nn.Module):
+    def __init__(self , hidden_channels , num_classes ):
+        super().__init__()
+        
+        self.head = torch.nn.Sequential(
+            torch.nn.Linear(3*hidden_channels , 1024),
+            torch.nn.Dropout(0.1),
+            torch.nn.ReLU(), 
+            torch.nn.BatchNorm1d(1024), 
+            torch.nn.Linear(1024 , 1024),
+            torch.nn.Dropout(0.1),
+            torch.nn.ReLU(), 
+            torch.nn.BatchNorm1d(1024), 
+            torch.nn.Linear(1024 , 512),
+            torch.nn.Dropout(0.1),
+            torch.nn.ReLU(), 
+            torch.nn.BatchNorm1d(512), 
+            torch.nn.Linear(512 , num_classes), 
+        ) 
+        
+    def forward(self , x1 , x2 , x3 ):
+        x_concat = torch.cat([x1 , x2 , x3] , dim = -1).squeeze(1) # number_of_sample , 3 * hidden_embedding
+        
+        x = self.head(x_concat)
+        
+        return x
+    
 class GraphAttentionDifferencePooling(torch.nn.Module): 
     
     def __init__(self , in_channels , hidden_channels , num_classes , skip_connection , type='SAGEConv'):
@@ -530,7 +557,7 @@ class GraphAttentionDifferencePooling(torch.nn.Module):
 class MultiGraphDiffPooling(pl.LightningModule):
     
         
-    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 , linear=False , slr=1e-4 , tlr=1e-4 , gcn_conv='DenseGCN' ,**args):
+    def __init__(self , in_channels , hidden_channels , num_classes , input_size , skip_connection=False , lr=1e-3, type='SAGEConv', pretrain_epoch = 0 , decay=0 , linear=False , slr=1e-4 , tlr=1e-4 , gcn_conv='DenseGCN' , last_pooling = 'general' ,**args):
         super().__init__()
         
         self.skip_connection = skip_connection 
@@ -545,7 +572,11 @@ class MultiGraphDiffPooling(pl.LightningModule):
         self.graph_diff_pool2 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear , gcn_conv=gcn_conv , **args)
         self.graph_diff_pool3 = GraphDiffPoolConv(in_channels , hidden_channels , num_classes , input_size , skip_connection , type , linear=linear , gcn_conv=gcn_conv , **args)
         
-        self.graph_attn_pool = GraphAttentionDifferencePooling(num_classes if not self.linear else hidden_channels , hidden_channels , num_classes , skip_connection , 'GATConv' )
+        if last_pooling == 'general':
+            self.graph_general_pool = GraphGeneralPooling(hidden_channels,num_classes)
+        else:
+            self.graph_attn_pool = GraphAttentionDifferencePooling(num_classes if not self.linear else hidden_channels , hidden_channels , num_classes , skip_connection , 'GATConv' )
+        self.last_pooling = last_pooling
         
         # self.sofmax = torch.nn.Softmax()
         self.loss = torch.nn.CrossEntropyLoss()
@@ -564,29 +595,39 @@ class MultiGraphDiffPooling(pl.LightningModule):
         #print("3 ---- Shape of x1: " , x1.size() , "| Shape of x2: " , x2.size())
         #print("3 ---- Shape of s1: " , s1.size() , "| Shape of s2: " , s2.size())
         #print(f"Size: {output1.size()} {output2.size()} {output3.size()}")
-        x , xloss = self.graph_attn_pool(output1 , output2 , output3 , view_edge)
+        # if self.last_pooling == 'general':
+        #     x = self.graph_general_pool(output1 , output2 , output3)
+        #     if self.linear:
+        #         return x , None , l_output1 , l_output2 , l_output3 , lp1+le1 , lp2+le2 , lp3+le3
+        #     else: 
+        #         return x , None , output1.squeeze(1) , output2.squeeze(1) , output3.squeeze(1) , lp1+le1 , lp2+le2 , lp3+le3
+        # else: 
+        #     x , xloss = self.graph_attn_pool(output1 , output2 , output3 , view_edge)
         
-        if self.linear:
-            return x , xloss , l_output1 , l_output2 , l_output3 , lp1+le1 , lp2+le2 , lp3+le3
-        else: 
-            return x , xloss , output1.squeeze(1) , output2.squeeze(1) , output3.squeeze(1) , lp1+le1 , lp2+le2 , lp3+le3
+        #     if self.linear:
+        #         return x , xloss , l_output1 , l_output2 , l_output3 , lp1+le1 , lp2+le2 , lp3+le3
+        #     else: 
+        #         return x , xloss , output1.squeeze(1) , output2.squeeze(1) , output3.squeeze(1) , lp1+le1 , lp2+le2 , lp3+le3
+        return l_output1 , l_output2 , l_output3 , output1 , output2 , output3 , lp1+le1 , lp2+le2 , lp3+le3
         
     def configure_optimizers(self):
         optimizer1 = optim.Adam(self.graph_diff_pool1.parameters() , lr=self.lr , weight_decay=self.decay)
         optimizer2 = optim.Adam(self.graph_diff_pool2.parameters() , lr=self.lr , weight_decay=self.decay)
         optimizer3 = optim.Adam(self.graph_diff_pool3.parameters() , lr=self.lr , weight_decay=self.decay)
-        optimizer = optim.Adam(self.graph_attn_pool.parameters() , lr=self.lr , weight_decay=self.decay)
+        if self.last_pooling == 'general':
+            optimizer = optim.Adam(self.graph_general_pool.parameters() , lr=self.lr , weight_decay=self.decay)
+        else:
+            optimizer = optim.Adam(self.graph_attn_pool.parameters() , lr=self.lr , weight_decay=self.decay)
         return [ optimizer1 , optimizer2 , optimizer3 , optimizer ] 
     
     def training_step(self , batch , batch_idx):
         
         opt1 , opt2 , opt3 , opt = self.optimizers()
         
-        
         #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
         batch_1 , batch_2 , batch_3 , view_edge = batch
         
-        output , diffpool_entropy_loss , output_x1 , output_x2 , output_x3 , loss_x1 , loss_x2 , loss_x3 = self.forward(
+        output_x1 , output_x2 , output_x3 , houtput_x1 , houtput_x2 , houtput_x3 , loss_x1 , loss_x2 , loss_x3 = self.forward(
             batch_1.x , batch_1.edge_index , batch_1.edge_attr , 
             batch_2.x , batch_2.edge_index , batch_2.edge_attr , 
             batch_3.x , batch_3.edge_index , batch_3.edge_attr , 
@@ -597,29 +638,48 @@ class MultiGraphDiffPooling(pl.LightningModule):
         # optimize loss per omic data 
         opt1.zero_grad()
         loss1 = self.loss(output_x1 , batch_1.y) + loss_x1 
-        self.manual_backward(loss1 , retain_graph=True)
-        # opt1.step() 
+        self.manual_backward(loss1)
+        opt1.step() 
         
         opt2.zero_grad()
         loss2 = self.loss(output_x2 , batch_2.y) + loss_x2 
-        self.manual_backward(loss2, retain_graph=True)
-        # opt2.step() 
+        self.manual_backward(loss2)
+        opt2.step() 
          
         opt3.zero_grad()
         loss3 = self.loss(output_x3 , batch_3.y) + loss_x3 
-        self.manual_backward(loss3, retain_graph=True)
-        # opt3.step() 
+        self.manual_backward(loss3)
+        opt3.step() 
         
         # calculate acc per omic data 
         acc1 = self.acc(torch.nn.functional.softmax(output_x1 , dim=-1)  , batch_1.y)
         acc2 = self.acc(torch.nn.functional.softmax(output_x2 , dim=-1)  , batch_2.y)
         acc3 = self.acc(torch.nn.functional.softmax(output_x3 , dim=-1)  , batch_3.y)
         
-        #print("Output dimension: ", output.size())
+        
+        self.log("train_loss_x1" , loss1 , on_epoch=True)
+        self.log("train_loss_x2" , loss2 , on_epoch=True)
+        self.log("train_loss_x3" , loss3 , on_epoch=True)
+        self.log("train_acc_x1" , acc1 , on_epoch=True)
+        self.log("train_acc_x2" , acc2 , on_epoch=True)
+        self.log("train_acc_x3" , acc3 , on_epoch=True)
+        
         
         if not self.mode == 'pretrain':
             opt.zero_grad()
-            loss = self.loss(output , batch_1.y)  + diffpool_entropy_loss #+ self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
+            output_x1 , output_x2 , output_x3 , houtput_x1 , houtput_x2 , houtput_x3 , loss_x1 , loss_x2 , loss_x3 = self.forward(
+                batch_1.x , batch_1.edge_index , batch_1.edge_attr , 
+                batch_2.x , batch_2.edge_index , batch_2.edge_attr , 
+                batch_3.x , batch_3.edge_index , batch_3.edge_attr , 
+                batch_1.batch , batch_2.batch , batch_3.batch , 
+                view_edge
+            ) 
+            if self.last_pooling == 'general':
+                output = self.graph_general_pool(houtput_x1 , houtput_x2 , houtput_x3)
+                loss = self.loss(output , batch_1.y)    
+            else:
+                output , diffpool_entropy_loss = self.graph_general_pool(houtput_x1 , houtput_x2 , houtput_x3 , view_edge)
+                loss = self.loss(output , batch_1.y) + diffpool_entropy_loss # + self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
             acc = self.acc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
             f1 = self.f1(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
             auc = self.auc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
@@ -631,16 +691,11 @@ class MultiGraphDiffPooling(pl.LightningModule):
             acc = torch.tensor(0 , dtype=torch.float)
             f1 = torch.tensor(0 , dtype=torch.float)
             auc = torch.tensor(0 , dtype=torch.float)
-            opt1.step()
-            opt2.step()
-            opt3.step()
+            # opt1.step()
+            # opt2.step()
+            # opt3.step()
         
-        self.log("train_loss_x1" , loss1 , on_epoch=True)
-        self.log("train_loss_x2" , loss2 , on_epoch=True)
-        self.log("train_loss_x3" , loss3 , on_epoch=True)
-        self.log("train_acc_x1" , acc1 , on_epoch=True)
-        self.log("train_acc_x2" , acc2 , on_epoch=True)
-        self.log("train_acc_x3" , acc3 , on_epoch=True)
+       
         self.log("train_acc" , acc , prog_bar=True, on_epoch=True)
         self.log("train_loss" , loss , prog_bar=True, on_epoch=True)
         self.log('train_auc' , auc)
@@ -652,7 +707,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
         #print("x shape:", batch.x.size() , "| egdge_index shape: " , batch.edge_index.size() , "| edge_attr shape: ", batch.edge_attr.size() , "| batch shape: ", batch.batch.size())
         batch_1 , batch_2 , batch_3 , view_edge = batch
         
-        output , diffpool_entropy_loss , output_x1 , output_x2 , output_x3 , loss_x1 , loss_x2 , loss_x3 = self.forward(
+        output_x1 , output_x2 , output_x3 , houtput_x1 , houtput_x2 , houtput_x3 , loss_x1 , loss_x2 , loss_x3 = self.forward(
             batch_1.x , batch_1.edge_index , batch_1.edge_attr , 
             batch_2.x , batch_2.edge_index , batch_2.edge_attr , 
             batch_3.x , batch_3.edge_index , batch_3.edge_attr , 
@@ -670,10 +725,22 @@ class MultiGraphDiffPooling(pl.LightningModule):
         acc2 = self.acc(torch.nn.functional.softmax(output_x2 , dim=-1)  , batch_2.y)
         acc3 = self.acc(torch.nn.functional.softmax(output_x3 , dim=-1)  , batch_3.y)
         
-        #print("Output dimension: ", output.size())
+        
+        self.log("val_loss_x1" , loss1 , on_epoch=True)
+        self.log("val_loss_x2" , loss2 , on_epoch=True)
+        self.log("val_loss_x3" , loss3 , on_epoch=True)
+        self.log("val_acc_x1" , acc1 , on_epoch=True)
+        self.log("val_acc_x2" , acc2 , on_epoch=True)
+        self.log("val_acc_x3" , acc3 , on_epoch=True)
+        
         
         if not self.mode == 'pretrain':
-            loss = self.loss(output , batch_1.y)  + diffpool_entropy_loss #+ self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
+            if self.last_pooling == 'general':
+                output = self.graph_general_pool(houtput_x1 , houtput_x2 , houtput_x3)
+                loss = self.loss(output , batch_1.y)    
+            else:
+                output , diffpool_entropy_loss = self.graph_general_pool(houtput_x1 , houtput_x2 , houtput_x3 , view_edge)
+                loss = self.loss(output , batch_1.y) + diffpool_entropy_loss # + self.x1loss(output_x1 , batch_1.y) + self.x2loss(output_x2 , batch_2.y) 
             acc = self.acc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
             f1 = self.f1(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
             auc = self.auc(torch.nn.functional.softmax(output , dim=-1)  , batch_1.y)
@@ -683,12 +750,7 @@ class MultiGraphDiffPooling(pl.LightningModule):
             f1 = torch.tensor(0 , dtype=torch.float)
             auc = torch.tensor(0 , dtype=torch.float)
         
-        self.log("val_loss_x1" , loss1 , on_epoch=True)
-        self.log("val_loss_x2" , loss2 , on_epoch=True)
-        self.log("val_loss_x3" , loss3 , on_epoch=True)
-        self.log("val_acc_x1" , acc1 , on_epoch=True)
-        self.log("val_acc_x2" , acc2 , on_epoch=True)
-        self.log("val_acc_x3" , acc3 , on_epoch=True)
+       
         self.log("val_acc" , acc , prog_bar=True, on_epoch=True)
         self.log("val_loss" , loss , prog_bar=True, on_epoch=True)
         self.log('val_auc' , auc)
@@ -800,7 +862,10 @@ class UpdateOptimizer(Callback):
             optimizer1 = optim.Adam(trainer.model.graph_diff_pool1.parameters() , lr=self.slr , weight_decay=self.decay)
             optimizer2 = optim.Adam(trainer.model.graph_diff_pool2.parameters() , lr=self.slr , weight_decay=self.decay)
             optimizer3 = optim.Adam(trainer.model.graph_diff_pool3.parameters() , lr=self.slr , weight_decay=self.decay)
-            optimizer = optim.Adam(trainer.model.graph_attn_pool.parameters() , lr=self.tlr , weight_decay=self.decay)
+            if trainer.model.last_pooling == 'general':
+                optimizer = optim.Adam(trainer.model.graph_general_pool.parameters() , lr=self.tlr , weight_decay=self.decay)
+            else:
+                optimizer = optim.Adam(trainer.model.graph_attn_pool.parameters() , lr=self.tlr , weight_decay=self.decay)
             trainer.optimizers = [ optimizer1 , optimizer2 , optimizer3 , optimizer ]
         
 class BestModelTracker(Callback):
@@ -848,6 +913,7 @@ def main():
     parser.add_argument("--conv_dropout" , type=float , default=0.0)
     parser.add_argument("--slr" , type=float , default=1e-4)
     parser.add_argument("--tlr" , type=float , default=1e-4)
+    parser.add_argument("--last_pooling" , type=str , default='general' , choices=['general', 'diff_pooling'])
     
     args = parser.parse_args()
     
@@ -976,7 +1042,8 @@ def main():
             linear=args.linear ,
             slr=args.slr, 
             tlr=args.tlr, 
-            gcn_conv=args.gcn_conv
+            gcn_conv=args.gcn_conv, 
+            last_pooling=args.last_pooling
         )
         #mlflow.set_experiment("multigraph_diff_pooling")
     elif args.model == 'dmongraph_pool':
