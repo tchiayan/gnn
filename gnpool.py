@@ -657,12 +657,12 @@ class MultiGraphDiffPooling(pl.LightningModule):
         acc3 = self.acc(torch.nn.functional.softmax(output_x3 , dim=-1)  , batch_3.y)
         
         
-        self.log("train_loss_x1" , loss1 , on_epoch=True)
-        self.log("train_loss_x2" , loss2 , on_epoch=True)
-        self.log("train_loss_x3" , loss3 , on_epoch=True)
-        self.log("train_acc_x1" , acc1 , on_epoch=True)
-        self.log("train_acc_x2" , acc2 , on_epoch=True)
-        self.log("train_acc_x3" , acc3 , on_epoch=True)
+        self.log("train_loss_x1" , loss1 , on_epoch=True , batch_size=batch_1.batch.shape[0])
+        self.log("train_loss_x2" , loss2 , on_epoch=True , batch_size=batch_2.batch.shape[0])
+        self.log("train_loss_x3" , loss3 , on_epoch=True , batch_size=batch_3.batch.shape[0])
+        self.log("train_acc_x1" , acc1 , on_epoch=True , batch_size=batch_1.batch.shape[0])
+        self.log("train_acc_x2" , acc2 , on_epoch=True , batch_size=batch_2.batch.shape[0])
+        self.log("train_acc_x3" , acc3 , on_epoch=True , batch_size=batch_3.batch.shape[0])
         
         
         if not self.mode == 'pretrain':
@@ -696,10 +696,10 @@ class MultiGraphDiffPooling(pl.LightningModule):
             # opt3.step()
         
        
-        self.log("train_acc" , acc , prog_bar=True, on_epoch=True)
-        self.log("train_loss" , loss , prog_bar=True, on_epoch=True)
-        self.log('train_auc' , auc)
-        self.log('train_f1' , f1)
+        self.log("train_acc" , acc , prog_bar=True, on_epoch=True , batch_size=batch_1.batch.shape[0])
+        self.log("train_loss" , loss , prog_bar=True, on_epoch=True , batch_size=batch_1.batch.shape[0])
+        self.log('train_auc' , auc , batch_size=batch_1.batch.shape[0])
+        self.log('train_f1' , f1 , batch_size=batch_1.batch.shape[0])
         
     
     def validation_step(self , batch , batch_idx): 
@@ -726,12 +726,12 @@ class MultiGraphDiffPooling(pl.LightningModule):
         acc3 = self.acc(torch.nn.functional.softmax(output_x3 , dim=-1)  , batch_3.y)
         
         
-        self.log("val_loss_x1" , loss1 , on_epoch=True)
-        self.log("val_loss_x2" , loss2 , on_epoch=True)
-        self.log("val_loss_x3" , loss3 , on_epoch=True)
-        self.log("val_acc_x1" , acc1 , on_epoch=True)
-        self.log("val_acc_x2" , acc2 , on_epoch=True)
-        self.log("val_acc_x3" , acc3 , on_epoch=True)
+        self.log("val_loss_x1" , loss1 , on_epoch=True , batch_size=batch_1.batch.shape[0])
+        self.log("val_loss_x2" , loss2 , on_epoch=True , batch_size=batch_2.batch.shape[0])
+        self.log("val_loss_x3" , loss3 , on_epoch=True , batch_size=batch_3.batch.shape[0])
+        self.log("val_acc_x1" , acc1 , on_epoch=True , batch_size=batch_1.batch.shape[0])
+        self.log("val_acc_x2" , acc2 , on_epoch=True , batch_size=batch_2.batch.shape[0])
+        self.log("val_acc_x3" , acc3 , on_epoch=True , batch_size=batch_3.batch.shape[0])
         
         
         if not self.mode == 'pretrain':
@@ -751,10 +751,10 @@ class MultiGraphDiffPooling(pl.LightningModule):
             auc = torch.tensor(0 , dtype=torch.float)
         
        
-        self.log("val_acc" , acc , prog_bar=True, on_epoch=True)
-        self.log("val_loss" , loss , prog_bar=True, on_epoch=True)
-        self.log('val_auc' , auc)
-        self.log('val_f1' , f1)
+        self.log("val_acc" , acc , prog_bar=True, on_epoch=True , batch_size=batch_1.batch.shape[0])
+        self.log("val_loss" , loss , prog_bar=True, on_epoch=True , batch_size=batch_1.batch.shape[0])
+        self.log('val_auc' , auc , batch_size=batch_1.batch.shape[0])
+        self.log('val_f1' , f1 , batch_size=batch_1.batch.shape[0])
         
 class MultiGraphGeneralPooling(pl.LightningModule):
     
