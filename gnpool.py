@@ -950,10 +950,10 @@ def main():
         feature_info.update({
             "feature1_isolated_node": feat1_n, 
             "feature1_network_number_of_edge": feat1_e,
-            "feature1_isolated_node": feat2_n, 
-            "feature1_network_number_of_edge": feat2_e,
-            "feature1_isolated_node": feat3_n, 
-            "feature1_network_number_of_edge": feat3_e
+            "feature2_isolated_node": feat2_n, 
+            "feature2_network_number_of_edge": feat2_e,
+            "feature3_isolated_node": feat3_n, 
+            "feature3_network_number_of_edge": feat3_e
         })
         
     else:
