@@ -306,6 +306,8 @@ def coo_to_pyg_data(coo_matrix , node_features , label):
     indices = torch.LongTensor(np.vstack((coo_matrix.row, coo_matrix.col)))
     size = torch.Size(coo_matrix.shape)
 
+    indices , values = geom_utils.to_undirected(indices , values)
+    
     return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label)
 
 def get_omic_graph(feature_path , conversion_path , label_path):
