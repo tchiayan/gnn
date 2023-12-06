@@ -310,7 +310,7 @@ def coo_to_pyg_data(coo_matrix , node_features , label):
     
     return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label)
 
-def get_omic_graph(feature_path , conversion_path , label_path):
+def get_omic_graph(feature_path , conversion_path , label_path , weighted=True , filter_ppi = None , filter_p_value = None):
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     david_path = os.path.join(os.path.dirname(os.path.realpath(__file__)) , "david")
 
@@ -329,13 +329,24 @@ def get_omic_graph(feature_path , conversion_path , label_path):
     filter_PPI = ppi_info[ppi_info['protein1_name'].isin(omic_1_name)]
     filter_PPI = filter_PPI[filter_PPI['protein2_name'].isin(omic_1_name)]
     
+    if filter_ppi is not None: 
+        assert isinstance(filter_ppi , int)  , "PPI score must be integer type"
+        filter_PPI = filter_PPI[filter_PPI['combined_score'] == filter_ppi]
+    
     vector_idx = np.array(list(zip([ omic_1_name.index(x) for x in filter_PPI['protein2_name'] ] , [ omic_1_name.index(x) for x in filter_PPI['protein1_name'] ])))
     ## Expectin vector_idx to have shape of [n , 2]
     if vector_idx.shape[0] > 0:
         omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
     
     kegg_go_df = pd.read_csv(os.path.join(david_path , "consol_anno_chart.tsv") , sep='\t')
-    for idx ,  row in kegg_go_df.iterrows():
+    
+    if filter_p_value is not None:
+        assert isinstance(filter_p_value , float) , "P value must be float type"
+        kegg_go_df = kegg_go_df[kegg_go_df['PValue'] <= filter_p_value]
+    
+    
+    
+    for _ ,  row in kegg_go_df.iterrows():
         related_genes = row['Genes'].split(", ")
         genes_idx = [ omic_1_id.index(x) for x in related_genes if x in omic_1_id]
         genes_idx.sort()
@@ -344,18 +355,22 @@ def get_omic_graph(feature_path , conversion_path , label_path):
         vector_idx = np.array([x for x in itertools.combinations(genes_idx , 2)])
         omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
         
+    if not weighted: 
+        omic_1 = (omic_1 > 0).astype(float)
+        
     #coo = symmetric_matrix_to_coo(omic_1 , 0.1)
     #indices , values , size = coo_to_pyg_data(coo)
     #print("Generated len of edge: {}".format(values.shape[0]))
     
     mean_dict = torch.FloatTensor(df1.mean().to_list())
     graph_data  = []
+    node_per_graph = []
+    edge_per_graph = []
     
     try: 
         
         
         pbar = tqdm(total=len(df1))
-            
         pbar.set_description("Generate graph data")
         for idx , [ index , row ] in enumerate(df1.iterrows()):
             node_features = torch.FloatTensor(row.values)
@@ -365,6 +380,11 @@ def get_omic_graph(feature_path , conversion_path , label_path):
             subgraph_adjacency = omic_1[significant_node_indices][: , significant_node_indices]
             subgraph_coo = symmetric_matrix_to_coo(subgraph_adjacency , 0.1)
             graph =coo_to_pyg_data(subgraph_coo , subgraph_features.unsqueeze(1) , torch.tensor(labels[idx] , dtype=torch.long))
+            # caculate node degree 
+            #print("Max value: " , torch.max(graph.edge_attr) )
+            
+            node_per_graph.append(graph.num_nodes)
+            edge_per_graph.append(graph.edge_index.shape[1])
             graph_data.append(graph)
             pbar.update(1)
         pbar.close()
@@ -373,8 +393,12 @@ def get_omic_graph(feature_path , conversion_path , label_path):
     except Exception as e: 
         print("Error in generating graph")
         print(e)
-        
-    return graph_data
+    
+    avg_node_per_graph = np.mean(np.array(node_per_graph))
+    avg_edge_per_graph = np.mean(np.array(edge_per_graph))
+    avg_nodedegree_per_graph = avg_edge_per_graph/avg_node_per_graph/avg_node_per_graph
+    #print(avg_node_per_graph , avg_edge_per_graph , avg_nodedegree_per_graph)
+    return graph_data , avg_node_per_graph , avg_edge_per_graph , avg_nodedegree_per_graph
         
 if __name__ == "__main__":
     
@@ -385,7 +409,7 @@ if __name__ == "__main__":
     
     # ## mRNA Features
     print("Generating mRNA omic data graph")
-    get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv')
+    get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_ppi=200 , filter_p_value=0.05)
     
     # ## miRNA Feature 
     # print("Generating miRNA omic data graph")

@@ -914,6 +914,9 @@ def main():
     parser.add_argument("--slr" , type=float , default=1e-4)
     parser.add_argument("--tlr" , type=float , default=1e-4)
     parser.add_argument("--last_pooling" , type=str , default='general' , choices=['general', 'diff_pooling'])
+    parser.add_argument("--filter_ppi" , type=int , default=None)
+    parser.add_argument("--filter_p_value" , type=float , default=None)
+    parser.add_argument("--weight" , action='store_true')
     
     args = parser.parse_args()
     
@@ -937,12 +940,22 @@ def main():
     
     ## mRNA Features
     if args.build_graph == 'dynamic':
-        gp1_train = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv')
-        gp2_train = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'labels_tr.csv')
-        gp3_train = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'labels_tr.csv')
-        gp1_test = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'labels_te.csv')
-        gp2_test = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv')
-        gp3_test = get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv')
+        gp1_train , feat1_n , feat1_e , feat1_d = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
+        gp2_train , feat2_n , feat2_e , feat2_d = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
+        gp3_train , feat3_n , feat3_e , feat3_d = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
+        gp1_test , _ , _ , _ = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'labels_te.csv')
+        gp2_test , _ , _ , _ = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv')
+        gp3_test , _ , _ , _= get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv')
+        
+        feature_info.update({
+            "feature1_isolated_node": feat1_n, 
+            "feature1_network_number_of_edge": feat1_e,
+            "feature1_isolated_node": feat2_n, 
+            "feature1_network_number_of_edge": feat2_e,
+            "feature1_isolated_node": feat3_n, 
+            "feature1_network_number_of_edge": feat3_e
+        })
+        
     else:
         name1 = os.path.join(base_path, "1_featname.csv")
         df1_header = read_features_file(name1)
