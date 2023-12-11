@@ -26,8 +26,8 @@ df = pd.DataFrame(est.transform(df))
 df_label = pd.read_csv(os.path.join(base_path , "labels_tr.csv"), names=['class'])
 df = df.join(df_label)
 
-# for column in df.columns: 
-#     df[column] = df[column].astype(str)
+for column in df.columns: 
+    df[column] = df[column].astype(str)
 #     df[column] = "Feature " + str(column) + " : " + df[column]
 print(df.head())
 print(df.describe())
