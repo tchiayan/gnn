@@ -80,6 +80,7 @@ class GraphClassification(pl.LightningModule):
         
         # Graph Pooling 
         self.pooling = geom_nn.TopKPooling(in_channels=hidden_channels*3 , ratio=0.5) # TopK pooling much stable than SAGPooling
+        self.graph_norm1 = geom_nn.GraphNorm(hidden_channels*3)
         # self.pooling = geom_nn.DMoNPooling(channels=hidden_channels*3 , k=100)
         
         # Graph Convolution
@@ -87,6 +88,7 @@ class GraphClassification(pl.LightningModule):
         
         # Graph Pooling 
         self.pooling2 = geom_nn.TopKPooling(in_channels=hidden_channels*3 , ratio=0.5) # TopK pooling much stable than SAGPooling
+        self.graph_norm2 = geom_nn.GraphNorm(hidden_channels*3)
         # self.pooling = geom_nn.DMoNPooling(channels=hidden_channels*3 , k=10)
         
         # Graph Convolution 
@@ -116,11 +118,12 @@ class GraphClassification(pl.LightningModule):
         # First layer graph convolution
         x = self.graph_conv1(x , edge_index , edge_attr)
         x , edge_index , _ , batch ,  _ , _ = self.pooling(x , edge_index , edge_attr , batch)
+        x = self.graph_norm1(x , batch)
         
         # Second layer graph convolution
         x = self.graph_conv2(x , edge_index)
         x , edge_index , _ , batch ,  _ , _ = self.pooling2(x , edge_index , batch=batch)
-        
+        x = self.graph_norm2(x , batch)
         # Third layer graph convolution
         # x = self.graph_conv3(x , edge_index)
         # x , edge_index , _ , batch ,  _ , _ = self.pooling3(x , edge_index , batch=batch)
@@ -212,10 +215,10 @@ def main():
         log_every_n_step=0
     )
     
-    gp1_train , feat1_n , feat1_e , feat1_d = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_p_value=0.05 , filter_ppi=300 , significant_q=0)
+    gp1_train , _ , _ , _ = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0)
     # gp2_train , feat2_n , feat2_e , feat2_d = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
     # gp3_train , feat3_n , feat3_e , feat3_d = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
-    gp1_test , _ , _ , _ = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'labels_te.csv' , weighted=False , filter_p_value=0.05 , filter_ppi=300, significant_q=0)
+    gp1_test , _ , _ , _ = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0)
     # gp2_test , _ , _ , _ = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv')
     # gp3_test , _ , _ , _= get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv')
 

@@ -310,7 +310,7 @@ def coo_to_pyg_data(coo_matrix , node_features , label):
     
     return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label)
 
-def get_omic_graph(feature_path , conversion_path , label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5):
+def get_omic_graph(feature_path , conversion_path , label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5 , ppi=True , go_kegg=True):
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     david_path = os.path.join(os.path.dirname(os.path.realpath(__file__)) , "david")
 
@@ -325,35 +325,37 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
     omic_1 = np.zeros((len(omic_1_name) , len(omic_1_name)))
     
     # Generate ppi/kegg/go transaction
-    ppi_info = get_PPI_info()
-    filter_PPI = ppi_info[ppi_info['protein1_name'].isin(omic_1_name)]
-    filter_PPI = filter_PPI[filter_PPI['protein2_name'].isin(omic_1_name)]
+    if ppi:
+        ppi_info = get_PPI_info()
+        filter_PPI = ppi_info[ppi_info['protein1_name'].isin(omic_1_name)]
+        filter_PPI = filter_PPI[filter_PPI['protein2_name'].isin(omic_1_name)]
+        
+        if filter_ppi is not None: 
+            assert isinstance(filter_ppi , int)  , "PPI score must be integer type"
+            filter_PPI = filter_PPI[filter_PPI['combined_score'] == filter_ppi]
     
-    if filter_ppi is not None: 
-        assert isinstance(filter_ppi , int)  , "PPI score must be integer type"
-        filter_PPI = filter_PPI[filter_PPI['combined_score'] == filter_ppi]
+        vector_idx = np.array(list(zip([ omic_1_name.index(x) for x in filter_PPI['protein2_name'] ] , [ omic_1_name.index(x) for x in filter_PPI['protein1_name'] ])))
+        ## Expectin vector_idx to have shape of [n , 2]
+        if vector_idx.shape[0] > 0:
+            omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
     
-    vector_idx = np.array(list(zip([ omic_1_name.index(x) for x in filter_PPI['protein2_name'] ] , [ omic_1_name.index(x) for x in filter_PPI['protein1_name'] ])))
-    ## Expectin vector_idx to have shape of [n , 2]
-    if vector_idx.shape[0] > 0:
-        omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
-    
-    kegg_go_df = pd.read_csv(os.path.join(david_path , "consol_anno_chart.tsv") , sep='\t')
-    
-    if filter_p_value is not None:
-        assert isinstance(filter_p_value , float) , "P value must be float type"
-        kegg_go_df = kegg_go_df[kegg_go_df['PValue'] <= filter_p_value]
-    
-    
-    
-    for _ ,  row in kegg_go_df.iterrows():
-        related_genes = row['Genes'].split(", ")
-        genes_idx = [ omic_1_id.index(x) for x in related_genes if x in omic_1_id]
-        genes_idx.sort()
-        if len(genes_idx) <= 1: 
-            continue
-        vector_idx = np.array([x for x in itertools.combinations(genes_idx , 2)])
-        omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
+    if go_kegg:
+        kegg_go_df = pd.read_csv(os.path.join(david_path , "consol_anno_chart.tsv") , sep='\t')
+        
+        if filter_p_value is not None:
+            assert isinstance(filter_p_value , float) , "P value must be float type"
+            kegg_go_df = kegg_go_df[kegg_go_df['PValue'] <= filter_p_value]
+        
+        
+        
+        for _ ,  row in kegg_go_df.iterrows():
+            related_genes = row['Genes'].split(", ")
+            genes_idx = [ omic_1_id.index(x) for x in related_genes if x in omic_1_id]
+            genes_idx.sort()
+            if len(genes_idx) <= 1: 
+                continue
+            vector_idx = np.array([x for x in itertools.combinations(genes_idx , 2)])
+            omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
         
     if not weighted: 
         omic_1 = (omic_1 > 0).astype(float)
@@ -363,10 +365,11 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
     #print("Generated len of edge: {}".format(values.shape[0]))
     
     mean_dict = torch.FloatTensor(df1.quantile(q=significant_q).to_list())
-    print(mean_dict)
+    # print(mean_dict)
     graph_data  = []
     node_per_graph = []
     edge_per_graph = []
+    node_degree_per_graph = []
     
     try: 
         
@@ -386,6 +389,9 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
             
             node_per_graph.append(graph.num_nodes)
             edge_per_graph.append(graph.edge_index.shape[1])
+            
+            node_degree = geom_utils.degree(graph.edge_index , graph.num_nodes)
+            node_degree_per_graph.append(node_degree.float().mean().item())
             graph_data.append(graph)
             pbar.update(1)
         pbar.close()
@@ -395,13 +401,14 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
         print("Error in generating graph")
         print(e)
     
-    print(node_per_graph)
-    print(edge_per_graph)
+    # print(node_per_graph)
+    # print(edge_per_graph)
     avg_node_per_graph = np.mean(np.array(node_per_graph))
     avg_edge_per_graph = np.mean(np.array(edge_per_graph))
-    avg_nodedegree_per_graph = avg_edge_per_graph/avg_node_per_graph/avg_node_per_graph
+    # avg_nodedegree_per_graph = avg_edge_per_graph/avg_node_per_graph/avg_node_per_graph
+    avg_nodedegree = np.mean(np.array(node_degree_per_graph))
     #print(avg_node_per_graph , avg_edge_per_graph , avg_nodedegree_per_graph)
-    return graph_data , avg_node_per_graph , avg_edge_per_graph , avg_nodedegree_per_graph
+    return graph_data , avg_node_per_graph , avg_edge_per_graph , avg_nodedegree
         
 if __name__ == "__main__":
     
@@ -412,7 +419,9 @@ if __name__ == "__main__":
     
     # ## mRNA Features
     print("Generating mRNA omic data graph")
-    get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0)
+    _ , avgnodepergraph , avgnoedge , avgnodedegree = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0)
+    print(f"Omic data type 1: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree}")
+    
     
     # ## miRNA Feature 
     # print("Generating miRNA omic data graph")
