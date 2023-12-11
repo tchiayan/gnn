@@ -5,3 +5,6 @@
 __pycache__*
 lightning_logs*
 mlruns*
+
+# output AC 
+*.tsv
