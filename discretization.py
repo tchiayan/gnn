@@ -21,6 +21,7 @@ est.fit(df)
 
 print(df.head())
 df = pd.DataFrame(est.transform(df))
+# df.replace({1: True , 0: False} , inplace=True)
 
 df_label = pd.read_csv(os.path.join(base_path , "labels_tr.csv"), names=['class'])
 df = df.join(df_label)
@@ -33,7 +34,8 @@ print(df.describe())
 class_label = df['class'].unique().tolist()
 print(class_label)
 
-frequent_itemsets = fpgrowth(df , min_support=0.5 , use_colnames=True)
+print(df.values)
+# frequent_itemsets = fpgrowth(df , min_support=0.5 , use_colnames=True)
 
 # print("Generate FP Tree")
 # tree = FPTree(df.values , 200 , None , None)
