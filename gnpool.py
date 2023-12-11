@@ -943,9 +943,9 @@ def main():
         gp1_train , feat1_n , feat1_e , feat1_d = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
         gp2_train , feat2_n , feat2_e , feat2_d = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
         gp3_train , feat3_n , feat3_e , feat3_d = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
-        gp1_test , _ , _ , _ = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'labels_te.csv')
-        gp2_test , _ , _ , _ = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv')
-        gp3_test , _ , _ , _= get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv')
+        gp1_test , _ , _ , _ = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'labels_te.csv', weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
+        gp2_test , _ , _ , _ = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv', weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
+        gp3_test , _ , _ , _= get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv', weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
         
         feature_info.update({
             "feature1_isolated_node": feat1_n, 

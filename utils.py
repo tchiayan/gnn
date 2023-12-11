@@ -310,7 +310,7 @@ def coo_to_pyg_data(coo_matrix , node_features , label):
     
     return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label)
 
-def get_omic_graph(feature_path , conversion_path , label_path , weighted=True , filter_ppi = None , filter_p_value = None):
+def get_omic_graph(feature_path , conversion_path , label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5):
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     david_path = os.path.join(os.path.dirname(os.path.realpath(__file__)) , "david")
 
@@ -362,7 +362,8 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
     #indices , values , size = coo_to_pyg_data(coo)
     #print("Generated len of edge: {}".format(values.shape[0]))
     
-    mean_dict = torch.FloatTensor(df1.mean().to_list())
+    mean_dict = torch.FloatTensor(df1.quantile(q=significant_q).to_list())
+    print(mean_dict)
     graph_data  = []
     node_per_graph = []
     edge_per_graph = []
@@ -374,7 +375,7 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
         pbar.set_description("Generate graph data")
         for idx , [ index , row ] in enumerate(df1.iterrows()):
             node_features = torch.FloatTensor(row.values)
-            significant_node_indices = torch.nonzero(node_features > mean_dict, as_tuple=True)[0]
+            significant_node_indices = torch.nonzero(node_features >= mean_dict, as_tuple=True)[0]
             
             subgraph_features = node_features[significant_node_indices]
             subgraph_adjacency = omic_1[significant_node_indices][: , significant_node_indices]
@@ -394,6 +395,8 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
         print("Error in generating graph")
         print(e)
     
+    print(node_per_graph)
+    print(edge_per_graph)
     avg_node_per_graph = np.mean(np.array(node_per_graph))
     avg_edge_per_graph = np.mean(np.array(edge_per_graph))
     avg_nodedegree_per_graph = avg_edge_per_graph/avg_node_per_graph/avg_node_per_graph
@@ -409,7 +412,7 @@ if __name__ == "__main__":
     
     # ## mRNA Features
     print("Generating mRNA omic data graph")
-    get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_ppi=200 , filter_p_value=0.05)
+    get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0)
     
     # ## miRNA Feature 
     # print("Generating miRNA omic data graph")

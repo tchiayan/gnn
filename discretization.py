@@ -15,9 +15,10 @@ data = [
 ]
 
 df = pd.read_csv(os.path.join(base_path , "1_tr.csv"))
-est = preprocessing.KBinsDiscretizer(n_bins=3 , encode='ordinal' , strategy='uniform')
+est = preprocessing.KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
 est.fit(df)
 
+print(df.head())
 df = pd.DataFrame(est.transform(df))
 
 df_label = pd.read_csv(os.path.join(base_path , "labels_tr.csv"), names=['class'])
