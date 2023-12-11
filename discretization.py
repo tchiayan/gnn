@@ -38,8 +38,8 @@ print(df.values)
 # frequent_itemsets = fpgrowth(df , min_support=0.5 , use_colnames=True)
 
 # print("Generate FP Tree")
-# tree = FPTree(df.values , 200 , None , None)
-# patterns = tree.mine_patterns(200) #return dict with key: item-set , value: support score
+tree = FPTree(df.values , 200 , None , None)
+patterns = tree.mine_patterns(200) #return dict with key: item-set , value: support score
 
 
 # print("Generate CARs")
