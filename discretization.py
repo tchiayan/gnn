@@ -4,7 +4,6 @@ import os
 from fpgrowth import FPTree
 import itertools
 import sys 
-from mlxtend.frequent_patterns import fpgrowth , association_rules
 
 sys.setrecursionlimit(5000)
 base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")

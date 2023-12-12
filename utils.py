@@ -390,7 +390,7 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
             node_per_graph.append(graph.num_nodes)
             edge_per_graph.append(graph.edge_index.shape[1])
             
-            node_degree = geom_utils.degree(graph.edge_index , graph.num_nodes)
+            node_degree = geom_utils.degree(graph.edge_index[0] , graph.num_nodes)
             node_degree_per_graph.append(node_degree.float().mean().item())
             graph_data.append(graph)
             pbar.update(1)

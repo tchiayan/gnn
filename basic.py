@@ -204,6 +204,7 @@ def main():
     parser.add_argument("--lr" , default=0.0001 , type=float , help="Learning rate")
     parser.add_argument("--gene_filter" , default=0.5 , type=float , help="Filter significant gene based on quantile value")
     parser.add_argument("--hidden_embedding" , default=32 , type=int , help="Hidden embedding dimension for convolution and MLP")
+    parser.add_argument("--dataset" , type='str' , choices=['miRNA' , 'mRNA' , 'DNA'])
     
     args = parser.parse_args()
     
@@ -215,15 +216,28 @@ def main():
         log_every_n_step=0
     )
     
-    gp1_train , _ , _ , _ = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0)
+    if args.dataset == 'mRNA':
+        train_datapath = '1_tr.csv'
+        test_datapath = '1_te.csv'
+        conversionpath = '1_featname_conversion.csv'
+    elif args.dataset == 'miRNA':
+        train_datapath = '2_tr.csv'
+        test_datapath = '2_te.csv'
+        conversionpath = '2_featname_conversion.csv'
+    elif args.dataset == 'DNA':
+        train_datapath = '3_tr.csv'
+        test_datapath = '3_te.csv'
+        conversionpath = '3_featname_conversion.csv'
+    
+    gp_train , _ , _ , _ = get_omic_graph(train_datapath , conversionpath , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0)
     # gp2_train , feat2_n , feat2_e , feat2_d = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
     # gp3_train , feat3_n , feat3_e , feat3_d = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
-    gp1_test , _ , _ , _ = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0)
+    gp_test , _ , _ , _ = get_omic_graph(test_datapath , conversionpath , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0)
     # gp2_test , _ , _ , _ = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv')
     # gp3_test , _ , _ , _= get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv')
 
-    train_dataloaders = DataLoader(gp1_train , 30 , True)
-    val_dataloaders = DataLoader(gp1_test , 30 , True)
+    train_dataloaders = DataLoader(gp_train , 30 , True)
+    val_dataloaders = DataLoader(gp_test , 30 , True)
     
     # model tracker 
     modelTracker = BestModelTracker()
