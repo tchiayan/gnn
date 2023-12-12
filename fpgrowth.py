@@ -1,4 +1,7 @@
 import itertools, math
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder, KBinsDiscretizer, scale, OrdinalEncoder
+from sklearn.feature_selection import mutual_info_classif , chi2
+import pandas as pd
 
 class FPNode(object):
     """
@@ -243,3 +246,78 @@ class FPTree(object):
 
         return patterns
 
+def information_gain(data, class_column):
+    """
+    This function calculates the information gain (IG) of each feature with the target in the dataset, it is used in preprocessing
+    of the dataset, which is rule ranking and feature selection. It also removes redundant features in the dataset which has an information
+    gain lower than 0.
+
+    Args:
+        data (pd.DataFrame): The dataset which has been preprocessed to contain only categorical attributes
+        class_column (int): The index of the target in the dataset
+
+    Returns:
+        dict: A dictionary where the key is the index of the column and the value is the information gain.
+    """
+    assert class_column != None, "Class column is not provided"
+    assert isinstance(data, pd.DataFrame), "Data in wrong format, it should be in pandas dataframe"
+    assert isinstance(class_column, int), "Class column provided is not of type int"
+    assert class_column < len(data.columns) | class_column >= 0, "Invalid class column"
+
+    target = data[class_column]
+    features = data.drop(columns=class_column, axis=1)
+    feature_columns = list(features.columns)
+
+    # calculating information gain of the features with the target
+    # print(features.values)
+    
+    # feature_values =  [ [ col.split(":")[1].strip() for col in row ] for row in features.values.tolist()]
+    ordinal_encoder = OrdinalEncoder()
+    features = ordinal_encoder.fit_transform(features)
+    features = pd.DataFrame(features)
+    
+    #print(features.values[0:2 , :])
+    print("Calculate information gain")
+    print(target.unique())
+    #print(features.values)
+    information_gain = mutual_info_classif(features.values , target, discrete_features=True)
+
+    # make a dictionary and obtain the columns of the features to be removed from the dataset
+    info_gain = {}
+    columns_removed = []
+    for index in range(len(information_gain)):
+        if information_gain[index] > 0:
+            info_gain[feature_columns[index]] = information_gain[index]
+        else:
+            columns_removed.append(feature_columns[index])
+
+    print("Remove redundant features (0 IG): {}".format(columns_removed))
+    #print("Information gain: {}".format(info_gain))
+    # remove the redundant features
+    data.drop(columns=columns_removed, axis=1, inplace=True)
+    return info_gain
+
+
+def correlation(data, class_column):
+    """
+    This function calculates how correlated the attribute is to the class column. It is used together with information gain for rule
+    ranking and feature selection
+
+    Args:
+        data (pd.DataFrame): The dataset which has been preprocessed to contain only categorical attributes
+        class_column (int): The index of the target in the dataset
+
+    Returns:
+        list : a list containing the correlation value of each attribute to the class column
+    """
+    assert class_column != None, "Class column is not provided"
+    assert isinstance(data, pd.DataFrame), "Data in wrong format, it should be in pandas dataframe"
+    assert isinstance(class_column, int), "Class column provided is not of type int"
+    assert class_column < len(data.columns) | class_column >= 0, "Invalid class column"
+
+    ordinal_encoder = OrdinalEncoder()
+    data = ordinal_encoder.fit_transform(data)
+    data = pd.DataFrame(data)
+    corr = data.corr()[class_column].values.tolist()   # obtain the correlation of attributes with the class label
+    # print("Correlation:" , corr)
+    return corr
