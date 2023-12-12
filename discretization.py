@@ -60,7 +60,7 @@ for label in class_labels:
 
     
     print("Generate FP Tree")
-    min_support = args.min_support if not args.percentage else int(args.min_support * len(subdf.shape[0]))
+    min_support = args.min_support if not args.percentage else int(args.min_support * subdf.shape[0])
     tree = FPTree(transactions , min_support , None , None ,)
     print(f"Mine patterns [Support: {min_support}]")
     patterns = tree.mine_patterns(min_support) #return dict with key: item-set , value: support score
