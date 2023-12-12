@@ -7,7 +7,7 @@ import sys
 import argparse
 
 parser = argparse.ArgumentParser("Discretization")
-parser.add_argument("--min_support" , default=100, type=int , help="Min support")
+parser.add_argument("--min_support" , default=100, type=float , help="Min support")
 parser.add_argument("--min_confidence" , default=0.1, type=float , help="Min confidence")
 parser.add_argument("--percentage", action="store_true")
 
