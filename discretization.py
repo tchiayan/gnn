@@ -9,6 +9,7 @@ import argparse
 parser = argparse.ArgumentParser("Discretization")
 parser.add_argument("--min_support" , default=100, type=int , help="Min support")
 parser.add_argument("--min_confidence" , default=0.1, type=float , help="Min confidence")
+parser.add_argument("--percentage", action="store_true")
 
 args = parser.parse_args()
 
@@ -59,9 +60,10 @@ for label in class_labels:
 
     
     print("Generate FP Tree")
-    tree = FPTree(transactions , args.min_support , None , None ,)
-    print("Mine patterns")
-    patterns = tree.mine_patterns(args.min_support) #return dict with key: item-set , value: support score
+    min_support = args.min_support if not args.percentage else int(args.min_support * len(subdf.shape[0]))
+    tree = FPTree(transactions , min_support , None , None ,)
+    print(f"Mine patterns [Support: {min_support}]")
+    patterns = tree.mine_patterns(min_support) #return dict with key: item-set , value: support score
     print(f"Generated frequent item set [Class: {label}]: {len(patterns)}")
     
     print("Generate CARs")
