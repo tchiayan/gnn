@@ -73,7 +73,7 @@ for label in class_labels:
         confidence = float(upper_support)/lower_support
         support = upper_support/len(df)
         
-        if confidence >= 0.0:
+        if confidence >= args.min_confidence:
             generated_cars += 1
             CARs[itemset] = ( label , confidence , support)
             output.append("\t".join([str(label) , str(confidence) , str(support) , ",".join(list(itemset))]))
