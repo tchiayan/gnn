@@ -1,10 +1,11 @@
 from sklearn import preprocessing
 import pandas as pd 
 import os 
-from fpgrowth import FPTree
+from fpgrowth import FPTree , information_gain , correlation
 import itertools
 import sys 
 import argparse
+import math
 
 parser = argparse.ArgumentParser("Discretization")
 parser.add_argument("--min_support" , default=100, type=float , help="Min support")
@@ -41,16 +42,20 @@ df_label['class'] = df_label['class'].astype(str)
 class_labels = df_label['class'].unique().tolist()
 print(f"Unique classes: {class_labels}")
 
+
+
+
 CARs = {}
 output = []
 for label in class_labels:
+    print("_______________________________________________________________________")
     print(f"Generate FPTree per class: {label}")
     subdf = df.loc[df_label[df_label['class'] == label].index]
     
     print(f"Build transaction | Data shape: {subdf.shape}")
     transactions = []
     for idx , row in subdf.iterrows():
-        transaction = [ f"Feature {idx}" for idx , i in enumerate(row.values) if i == 1 ]
+        transaction = [ f"{idx}" for idx , i in enumerate(row.values) if i == 1 ]
         transactions.append(transaction)
         
     # for idx , row in df_label.iterrows():
@@ -71,16 +76,20 @@ for label in class_labels:
     for itemset in patterns.keys():
         upper_support = patterns[itemset]
         
-        lower_support = len(patterns)
+        lower_support = subdf.shape[0]
+        #print(f"{lower_support} | {upper_support}")
         confidence = float(upper_support)/lower_support
         support = upper_support/len(df)
         
         if confidence >= args.min_confidence:
             generated_cars += 1
             CARs[itemset] = ( label , confidence , support)
-            output.append("\t".join([str(label) , str(confidence) , str(support) , ",".join(list(itemset))]))
-        
+            output.append([str(label) , str(confidence) , str(support) , ",".join(list(itemset))])
+    
+    
     print(f"Generated CARs [Class: {label}]: {generated_cars}")
+    print("--------------------------------------------------------------------")
+    
         #print(f"{upper_support}: {itemset}")
     #     for i in range(1 , len(itemset)):
     #         # Generate possible combination of itemsets (Subset of frequent itemset is frequet itemset)
@@ -105,6 +114,32 @@ for label in class_labels:
     #     ac_file.write("\n".join(output))
 
 
+print("Calculate information gain and correlation")
+merged_df = df.join(df_label)
+merged_df = merged_df.astype(str)
+
+class_column = merged_df.columns.to_list().index('class')
+merged_df.columns = [ x for x in range(len(merged_df.columns)) ]
+
+corr = correlation(merged_df , class_column)
+info_gain = information_gain(merged_df , class_column)
+
+for rule in output:
+    items = rule[3].split(",")
+    avg_ig = sum([ info_gain[int(x)] for x  in items ])/len(items)
+    avg_corr = sum([ corr[int(x)] for x  in items ])/len(items)
+    total_coor = 0 
+    
+    if avg_corr < 0:
+        interestingess = 1/(math.log2(avg_ig) - math.log2(-avg_corr))
+    else:
+        interestingess = 1/(math.log2(avg_ig) + math.log2(avg_corr))
+        
+    rule.append(str(interestingess))
+
+output = sorted(output , key = lambda x : float(x[4]) , reverse=True) # sort by interestingness
+
 with open("AC_rules.tsv" , 'w') as ac_file:
-    ac_file.write("\n".join(output))
+    string_row = [ "\t".join(x) for x in output ]
+    ac_file.write("\n".join(string_row))
 
