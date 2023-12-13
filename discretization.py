@@ -9,7 +9,7 @@ import math
 from mlxtend.frequent_patterns import apriori
 
 parser = argparse.ArgumentParser("Discretization")
-parser.add_argument("--min_support" , default=100, type=float , help="Min support")
+parser.add_argument("--min_support" , default=0.9, type=float , help="Min support")
 parser.add_argument("--min_confidence" , default=0.1, type=float , help="Min confidence")
 parser.add_argument("--percentage", action="store_true")
 parser.add_argument("--custom_support" , type=str , default=None)
@@ -52,8 +52,9 @@ CARs = {}
 output = []
 for label in class_labels:
     print("_______________________________________________________________________")
-    print(f"Generate FPTree per class: {label}")
     subdf = df.loc[df_label[df_label['class'] == label].index]
+    print(f"Generate FPTree per class: {label} | {subdf.shape}")
+    
     
     # print(f"Build transaction | Data shape: {subdf.shape}")
     # transactions = []
