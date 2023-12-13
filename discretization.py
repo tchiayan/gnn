@@ -13,6 +13,7 @@ parser.add_argument("--min_support" , default=100, type=float , help="Min suppor
 parser.add_argument("--min_confidence" , default=0.1, type=float , help="Min confidence")
 parser.add_argument("--percentage", action="store_true")
 parser.add_argument("--custom_support" , type=str , default=None)
+parser.add_argument("--low_memory" , action='store_true')
 
 args = parser.parse_args()
 
@@ -60,7 +61,7 @@ for label in class_labels:
     #     transaction = [ f"{idx}" for idx , i in enumerate(row.values) if i == 1 ]
     #     transactions.append(transaction)
 
-    frequent_itemsets = apriori(subdf , min_support=0.9)
+    frequent_itemsets = apriori(subdf , min_support=args.min_support , low_memory=args.low_memory)
     print(frequent_itemsets)
     # print("Generate FP Tree")
     # if custom_support is not None:
