@@ -7,6 +7,7 @@ import sys
 import argparse
 import math
 from mlxtend.frequent_patterns import apriori
+from efficient_apriori import apriori
 
 parser = argparse.ArgumentParser("Discretization")
 parser.add_argument("--min_support" , default=0.9, type=float , help="Min support")
@@ -56,14 +57,16 @@ for label in class_labels:
     print(f"Generate FPTree per class: {label} | {subdf.shape}")
     
     
-    # print(f"Build transaction | Data shape: {subdf.shape}")
-    # transactions = []
-    # for idx , row in subdf.iterrows():
-    #     transaction = [ f"{idx}" for idx , i in enumerate(row.values) if i == 1 ]
-    #     transactions.append(transaction)
+    print(f"Build transaction | Data shape: {subdf.shape}")
+    transactions = []
+    for idx , row in subdf.iterrows():
+        transaction = (f"{idx}" for idx , i in enumerate(row.values) if i )
+        transactions.append(transaction)
 
-    frequent_itemsets = apriori(subdf , min_support=args.min_support , low_memory=args.low_memory)
-    print(frequent_itemsets)
+    itemsets , rules = apriori(transactions , args.min_support , args.min_confidence)
+    print(itemsets)
+    #frequent_itemsets = apriori(subdf , min_support=args.min_support , low_memory=args.low_memory)
+    #print(frequent_itemsets)
     # print("Generate FP Tree")
     # if custom_support is not None:
     #     min_support = int(custom_support[label])
