@@ -310,7 +310,7 @@ def coo_to_pyg_data(coo_matrix , node_features , label):
     
     return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label)
 
-def get_omic_graph(feature_path , conversion_path , label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5 , ppi=True , go_kegg=True):
+def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5 , ppi=True , go_kegg=True , ac=True , k=50):
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     david_path = os.path.join(os.path.dirname(os.path.realpath(__file__)) , "david")
 
@@ -371,6 +371,39 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
     edge_per_graph = []
     node_degree_per_graph = []
     
+    if ac: 
+        add_omic = {}
+        rules = pd.read_csv(os.path.join(david_path , ac_rule_path),  names=['label' , 'support' , 'confidences' , 'itemset' , 'interestingness' ] , sep='\t')
+        
+        # Get each label 
+        unique_labels = rules['label'].unique()
+        
+        #print(rules.head())
+        #print(unique_labels)
+        
+        for label in unique_labels:
+            add_omic[label] = np.zeros((len(omic_1_name) , len(omic_1_name)))
+            
+            sub_df = rules[rules['label'] == label]
+            sub_df.sort_values(by='interestingness' , ascending=False)
+            topk_df = sub_df.iloc[:k , :]
+            
+            related_genes = []
+            for _ , row in topk_df.iterrows():
+                gene_sets = [x.split(":")[0] for x in row['itemset'].split(",")]
+                related_genes.extend(gene_sets)
+            related_genes = [int(x) for x in list(set(related_genes))]
+            related_genes.sort()
+            
+            #print(related_genes)
+            
+            vector_idx = np.array([x for x in itertools.combinations(related_genes , 2)])
+            #print(vector_idx)
+            #print(add_omic[label].shape)
+            add_omic[label][vector_idx[:,0] , vector_idx[:,1]] += 1
+            add_omic[label] = (add_omic[label] > 0).astype(float) # convert to 1 and zero only
+            
+            #print(topk_df.head())
     try: 
         
         
@@ -380,8 +413,14 @@ def get_omic_graph(feature_path , conversion_path , label_path , weighted=True ,
             node_features = torch.FloatTensor(row.values)
             significant_node_indices = torch.nonzero(node_features >= mean_dict, as_tuple=True)[0]
             
+            
             subgraph_features = node_features[significant_node_indices]
-            subgraph_adjacency = omic_1[significant_node_indices][: , significant_node_indices]
+            if ac and labels[idx] in add_omic: 
+                new_omic = omic_1.copy() + add_omic[labels[idx]]
+                subgraph_adjacency = new_omic[significant_node_indices][: , significant_node_indices]
+            else:
+                subgraph_adjacency = omic_1[significant_node_indices][: , significant_node_indices]
+                
             subgraph_coo = symmetric_matrix_to_coo(subgraph_adjacency , 0.1)
             graph =coo_to_pyg_data(subgraph_coo , subgraph_features.unsqueeze(1) , torch.tensor(labels[idx] , dtype=torch.long))
             # caculate node degree 
@@ -418,18 +457,20 @@ if __name__ == "__main__":
     # df_labels = read_features_file(labels) 
     
     # ## mRNA Features
-    print("Generating mRNA omic data graph")
-    _ , avgnodepergraph , avgnoedge , avgnodedegree = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0)
-    print(f"Omic data type 1: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree}")
+    # print("Generating mRNA omic data graph")
+    # _  , avgnodepergraph , avgnoedge , avgnodedegree = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' ,'ac_rule_1.tsv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=100)
+    # print(f"Omic data type 1: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree}")
     
     
     # ## miRNA Feature 
-    # print("Generating miRNA omic data graph")
-    # get_omic_graph('2_tr.csv' , '2_featname_conversion.csv')
+    print("Generating miRNA omic data graph")
+    _  , avgnodepergraph , avgnoedge , avgnodedegree = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' ,'ac_rule_2.tsv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=100)
+    print(f"Omic data type 2: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree}")
     
     # # ## DNA Feature 
     # print("Generating DNA omic data graph")
-    # get_omic_graph('3_tr.csv' , '3_featname_conversion.csv')
+    # _  , avgnodepergraph , avgnoedge , avgnodedegree = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' ,'ac_rule_3.tsv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=100)
+    # print(f"Omic data type 3: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree}")
     # feature1 = os.path.join(base_path, "1_tr.csv")
     # df1 = read_features_file(feature1)
     # name1 = os.path.join(david_path, "1_featname_conversion.csv")

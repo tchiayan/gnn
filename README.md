@@ -14,3 +14,7 @@ Pytorch geometric is the high level module for pytorch to build the graph neural
 ## Install other module dependancy
 Install other python dependancies using the command: `pip install -r requirements.txt`
 
+## Generate AC Rule with interestingness value 
+mRNA `python discretization.py --custom_support 77,87,29,302,100 --min_confidence 0.95`
+miRNA `Need to regenerate`
+DNA `python discretization.py --custom_support 77,87,28,302,99 --min_confidence 0.95`
