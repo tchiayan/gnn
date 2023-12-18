@@ -310,7 +310,7 @@ def coo_to_pyg_data(coo_matrix , node_features , label):
     
     return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label)
 
-def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5 , ppi=True , go_kegg=True , ac=True , k=50):
+def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5 , ppi=True , go_kegg=True , ac=True , correlation=False , k=50):
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
     david_path = os.path.join(os.path.dirname(os.path.realpath(__file__)) , "david")
 
@@ -369,6 +369,7 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
     graph_data  = []
     node_per_graph = []
     edge_per_graph = []
+    isolate_node_per_graph = []
     node_degree_per_graph = []
     
     if ac: 
@@ -404,6 +405,16 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
             add_omic[label] = (add_omic[label] > 0).astype(float) # convert to 1 and zero only
             
             #print(topk_df.head())
+            
+    if correlation: 
+        cosine_similarity  = df1.corr().to_numpy()
+        
+        # mask threshold < 0.80 to 0 
+        mask = (cosine_similarity < 0.80).astype(float)
+        cosine_similarity = cosine_similarity * mask
+        print(cosine_similarity.shape)
+        omic_1 += cosine_similarity
+    
     try: 
         
         
@@ -426,11 +437,16 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
             # caculate node degree 
             #print("Max value: " , torch.max(graph.edge_attr) )
             
+            
+            
             node_per_graph.append(graph.num_nodes)
             edge_per_graph.append(graph.edge_index.shape[1])
             
             node_degree = geom_utils.degree(graph.edge_index[0] , graph.num_nodes)
             node_degree_per_graph.append(node_degree.float().mean().item())
+            _ , _ , mask = geom_utils.remove_isolated_nodes(graph.edge_index)
+            isolate_node_per_graph.append(graph.num_nodes - mask.sum().item())
+            
             graph_data.append(graph)
             pbar.update(1)
         pbar.close()
@@ -446,8 +462,9 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
     avg_edge_per_graph = np.mean(np.array(edge_per_graph))
     # avg_nodedegree_per_graph = avg_edge_per_graph/avg_node_per_graph/avg_node_per_graph
     avg_nodedegree = np.mean(np.array(node_degree_per_graph))
+    avg_isolate_node_per_graph = np.mean(np.array(isolate_node_per_graph))
     #print(avg_node_per_graph , avg_edge_per_graph , avg_nodedegree_per_graph)
-    return graph_data , avg_node_per_graph , avg_edge_per_graph , avg_nodedegree
+    return graph_data , avg_node_per_graph , avg_edge_per_graph , avg_nodedegree , avg_isolate_node_per_graph
         
 if __name__ == "__main__":
     
@@ -464,8 +481,8 @@ if __name__ == "__main__":
     
     # ## miRNA Feature 
     print("Generating miRNA omic data graph")
-    _  , avgnodepergraph , avgnoedge , avgnodedegree = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' ,'ac_rule_2.tsv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=100)
-    print(f"Omic data type 2: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree}")
+    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' ,'ac_rule_2.tsv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=100)
+    print(f"Omic data type 2: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree} , avg isolate node per graph - {avgisolatenode}")
     
     # # ## DNA Feature 
     # print("Generating DNA omic data graph")

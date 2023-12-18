@@ -8,7 +8,8 @@ from torch_geometric.data import Batch
 import torch 
 import lightning as pl 
 from torch import optim
-from torchmetrics import Accuracy , AUROC , F1Score
+from torchmetrics import Accuracy , AUROC , F1Score 
+from torchmetrics.classification import MulticlassConfusionMatrix
 import os 
 from utils import  generate_graph , read_features_file , get_omic_graph
 import mlflow 
@@ -112,6 +113,7 @@ class GraphClassification(pl.LightningModule):
         self.loss = torch.nn.CrossEntropyLoss()
         self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
+        self.confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
         
     def forward(self , x , edge_index , edge_attr , batch):
         
@@ -163,6 +165,21 @@ class GraphClassification(pl.LightningModule):
         self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_idx.shape[0])   
         self.log("val_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_idx.shape[0])
         self.log("val_f1" , f1 , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_idx.shape[0])
+        
+    def test_step(self , batch):
+        x , edge_index , edge_attr , batch_idx ,  y = batch.x , batch.edge_index , batch.edge_attr , batch.batch ,  batch.y
+        
+        output = self.forward(x , edge_index , edge_attr , batch_idx)
+        
+        matrix = self.confusion_matrix(output , y)
+        self.log("test_confusion_matrix" , matrix.sum(dim=-1) , on_epoch=True)
+    
+    def predict_step(self , batch):
+        x , edge_index , edge_attr , batch_idx ,  y = batch.x , batch.edge_index , batch.edge_attr , batch.batch ,  batch.y
+        
+        output = self.forward(x , edge_index , edge_attr , batch_idx)
+        return output , y
+        
 
 class BestModelTracker(Callback):
     
@@ -206,14 +223,19 @@ def main():
     parser.add_argument("--hidden_embedding" , default=32 , type=int , help="Hidden embedding dimension for convolution and MLP")
     parser.add_argument("--dataset" , type=str , choices=['miRNA' , 'mRNA' , 'DNA'] , default='mRNA')
     parser.add_argument("--enrichment" , action="store_true")
+    parser.add_argument("--noppi" , action="store_true")
+    parser.add_argument("--nokegg" , action="store_true")
+    parser.add_argument("--corr" , action="store_true")
     parser.add_argument("--topk" , type=int , default=50 )
     parser.add_argument("--max_epoch" , type=int , default=400)
+    parser.add_argument("--disable_tracking" , action='store_true')
+    parser.add_argument("--experiment" , type=str , default="basic" , help="MLFlow expriement name")
     
     args = parser.parse_args()
     
     model = GraphClassification(1 , args.hidden_embedding , 5 , lr=args.lr)
     
-    mlflow.set_experiment("basic")
+    mlflow.set_experiment(args.experiment)
     mlflow.pytorch.autolog(
         log_every_n_epoch=1, 
         log_every_n_step=0
@@ -235,13 +257,29 @@ def main():
         conversionpath = '3_featname_conversion.csv'
         ac_datapath = 'ac_rule_3.tsv'
     
-    gp_train , _ , _ , _ = get_omic_graph(train_datapath , conversionpath , ac_datapath , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=args.enrichment , k=args.topk)
+    gp_train , train_avg_node_per_graph , train_avg_edge_per_graph , train_avg_nodedegree , train_avg_isolate_node_per_graph = get_omic_graph(train_datapath , conversionpath , ac_datapath , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
     # gp2_train , feat2_n , feat2_e , feat2_d = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
     # gp3_train , feat3_n , feat3_e , feat3_d = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
-    gp_test , _ , _ , _ = get_omic_graph(test_datapath , conversionpath , ac_datapath , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=args.enrichment , k=args.topk)
+    gp_test , test_avg_node_per_graph , test_avg_edge_per_graph , test_avg_nodedegree , test_avg_isolate_node_per_graph = get_omic_graph(test_datapath , conversionpath , ac_datapath , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
     # gp2_test , _ , _ , _ = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv')
     # gp3_test , _ , _ , _= get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv')
 
+    train_feature = { 
+        "train_avg_node": train_avg_node_per_graph, 
+        "train_avg_edge": train_avg_edge_per_graph, 
+        "train_avg_degree": train_avg_nodedegree,
+        "train_avg_isolated": train_avg_isolate_node_per_graph                 
+    }
+    
+    test_feature = { 
+        "test_avg_node": test_avg_node_per_graph, 
+        "test_avg_edge": test_avg_edge_per_graph, 
+        "test_avg_degree": test_avg_nodedegree,
+        "test_avg_isolated": test_avg_isolate_node_per_graph                 
+    }
+    
+    print("Train feature info: " , train_feature)
+    print("Test feature info: " , test_feature)
     train_dataloaders = DataLoader(gp_train , 30 , True)
     val_dataloaders = DataLoader(gp_test , 30 , True)
     
@@ -253,20 +291,63 @@ def main():
         callbacks=[ modelTracker ]
     )
     
-    with mlflow.start_run():
-        
-        for arg in vars(args):
-            mlflow.log_param(arg , getattr(args , arg))
+    if not args.disable_tracking:
+        with mlflow.start_run() as run:
             
+            for arg in vars(args):
+                mlflow.log_param(arg , getattr(args , arg))
+            
+            mlflow.log_params(train_feature)
+            mlflow.log_params(test_feature)
+                
+            trainer.fit(
+                model=model, 
+                train_dataloaders=train_dataloaders, 
+                val_dataloaders=val_dataloaders, 
+            )
+            
+            print(modelTracker.best_model , modelTracker.best_train_acc)
+            mlflow.log_metrics(modelTracker.best_model)
+            mlflow.log_metric('best_train_acc', modelTracker.best_train_acc)
+            
+            prediction = trainer.predict(model , val_dataloaders)
+            output = torch.concat([ x[0] for x in prediction ])
+            actual = torch.concat([ x[1] for x in prediction ])
+            
+            confusion_matrix = MulticlassConfusionMatrix(num_classes=5)
+            confusion_matrix.update(output, actual)
+            #cfm = confusion_matrix(output, actual)
+            #print(cfm)
+            
+            fig , ax  = confusion_matrix.plot()
+            #ax.set_fontsize(fs=20)
+            #fig.set_title("Multiclass Confusion Matrix")
+            fig.savefig(f"confusion-matrix-{run.info.run_name}.png")
+    else: 
         trainer.fit(
             model=model, 
             train_dataloaders=train_dataloaders, 
             val_dataloaders=val_dataloaders, 
         )
+            
+        # test = trainer.test(model , val_dataloaders)
+        # print(test)
+        prediction = trainer.predict(model , val_dataloaders)
+        output = torch.concat([ x[0] for x in prediction ])
+        actual = torch.concat([ x[1] for x in prediction ])
         
-        print(modelTracker.best_model , modelTracker.best_train_acc)
-        mlflow.log_metrics(modelTracker.best_model)
-        mlflow.log_metric('best_train_acc', modelTracker.best_train_acc)
+        confusion_matrix = MulticlassConfusionMatrix(num_classes=5)
+        confusion_matrix.update(output, actual)
+        #cfm = confusion_matrix(output, actual)
+        #print(cfm)
+        
+        fig , ax  = confusion_matrix.plot()
+        #ax.set_fontsize(fs=20)
+        #fig.set_title("Multiclass Confusion Matrix")
+        fig.savefig("confusion_matrix.png")
+        
+        # output = torch.concat(prediction[:,0] , dim=-1)
+        # print(output)
     
     
 if __name__ == '__main__':

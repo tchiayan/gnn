@@ -1,10 +1,9 @@
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.95
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.9
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.8
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.7
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.6
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.5
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.4
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.3
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.2
-python gnpool.py --model multigraph_diffpool --max_epoch 300 --lr 0.00001 --build_graph pearson --convolution SAGEConv --batch_size 20 --disable_early_stopping --edge_threshold 0.1
+python basic.py --experiment ACGNN --dataset miRNA --max_epoch 400 
+python basic.py --experiment ACGNN --dataset mRNA --max_epoch 400 
+python basic.py --experiment ACGNN --dataset DNA --max_epoch 400 
+python basic.py --experiment ACGNN --dataset miRNA --max_epoch 400 --enrichment 
+python basic.py --experiment ACGNN --dataset mRNA --max_epoch 400 --enrichment
+python basic.py --experiment ACGNN --dataset DNA --max_epoch 400 --enrichment
+python basic.py --experiment ACGNN --dataset miRNA --max_epoch 400 --enrichment --noppi --nokegg
+python basic.py --experiment ACGNN --dataset mRNA --max_epoch 400 --enrichment --noppi --nokegg
+python basic.py --experiment ACGNN --dataset DNA --max_epoch 400 --enrichment --noppi --nokegg
