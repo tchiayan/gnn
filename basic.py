@@ -214,10 +214,10 @@ class MultiGraphClassification(pl.LightningModule):
         self.graph3 = GraphPooling(in_channels , hidden_channels)
         
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels*3 , hidden_channels),
+            torch.nn.Linear(hidden_channels*3*2 , hidden_channels*2),
             torch.nn.ReLU(), 
-            torch.nn.BatchNorm1d(hidden_channels),
-            torch.nn.Linear(hidden_channels , num_classes),
+            torch.nn.BatchNorm1d(hidden_channels*2),
+            torch.nn.Linear(hidden_channels*2 , num_classes),
         )
         
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
@@ -234,7 +234,7 @@ class MultiGraphClassification(pl.LightningModule):
         output2 = self.graph2(x2 , edge_index2 , edge_attr2 , batch2_idx)
         output3 = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
         
-        output = torch.stack([output1 , output2 , output3] , dim=-1).mean(dim=-1) # shape -> [ batch , hidden_dimension * 3 ]
+        output = torch.concat([output1 , output2 , output3] , dim=-1) # shape -> [ batch , hidden_dimension * 3 * 2 ]
         
         output = self.mlp(output)
         return output
@@ -374,8 +374,7 @@ def multiomics(args):
             # for arg in vars(args):
             #     mlflow.log_param(arg , getattr(args , arg))
             
-            # mlflow.log_params(train_feature)
-            # mlflow.log_params(test_feature)
+            mlflow.log_params(feature_info)
                 
             # trainer.fit(
             #     model=model, 
