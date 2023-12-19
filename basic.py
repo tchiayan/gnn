@@ -257,7 +257,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         return loss
     
-    def validation_setp(self , batch):
+    def validation_step(self , batch):
         batch1 , batch2 , batch3 = batch 
         x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
         x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
