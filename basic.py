@@ -317,8 +317,7 @@ def collate(data_list):
     batchA = Batch.from_data_list([data[0] for data in data_list])
     batchB = Batch.from_data_list([data[1] for data in data_list])
     batchC = Batch.from_data_list([data[2] for data in data_list])
-    view_edge = torch.ones(( len(data_list) , 3 , 3 ))
-    return batchA, batchB , batchC , view_edge
+    return batchA, batchB , batchC
     
 def multiomics(args):
     
@@ -332,27 +331,21 @@ def multiomics(args):
     
     feature_info  = {
         'train_avg_node_x1': train_avg_node_per_graph_x1 ,
-        #'train_avg_edge_x1': train_avg_edge_per_graph_x1 ,
         'train_avg_degree_x1': train_avg_nodedegree_x1 ,
         'train_avg_isolated_x1': train_avg_isolate_node_per_graph_x1 ,
         'train_avg_node_x2': train_avg_node_per_graph_x2 ,
-        #'train_avg_edge_x2': train_avg_edge_per_graph_x2 ,
         'train_avg_degree_x2': train_avg_nodedegree_x2 ,
         'train_avg_isolated_x2': train_avg_isolate_node_per_graph_x2 ,
         'train_avg_node_x3': train_avg_node_per_graph_x3 ,
-        #'train_avg_edge_x3': train_avg_edge_per_graph_x3 ,
         'train_avg_degree_x3': train_avg_nodedegree_x3 ,
         'train_avg_isolated_x3': train_avg_isolate_node_per_graph_x3 ,
         'test_avg_node_x1': test_avg_node_per_graph_x1 ,
-        #'test_avg_edge_x1': test_avg_edge_per_graph_x1 ,
         'test_avg_degree_x1': test_avg_nodedegree_x1 ,
         'test_avg_isolated_x1': test_avg_isolate_node_per_graph_x1 ,
         'test_avg_node_x2': test_avg_node_per_graph_x2 ,
-        #'test_avg_edge_x2': test_avg_edge_per_graph_x2 ,
         'test_avg_degree_x2': test_avg_nodedegree_x2 ,
         'test_avg_isolated_x2': test_avg_isolate_node_per_graph_x2 ,
         'test_avg_node_x3': test_avg_node_per_graph_x3 ,
-        #'test_avg_edge_x3': test_avg_edge_per_graph_x3 ,
         'test_avg_degree_x3': test_avg_nodedegree_x3 ,
         'test_avg_isolated_x3': test_avg_isolate_node_per_graph_x3 ,
     }
@@ -472,11 +465,7 @@ def main():
         ac_datapath = 'ac_rule_3.tsv'
     
     gp_train , train_avg_node_per_graph , train_avg_edge_per_graph , train_avg_nodedegree , train_avg_isolate_node_per_graph = get_omic_graph(train_datapath , conversionpath , ac_datapath , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
-    # gp2_train , feat2_n , feat2_e , feat2_d = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
-    # gp3_train , feat3_n , feat3_e , feat3_d = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'labels_tr.csv' , weighted=args.weight , filter_p_value=args.filter_p_value , filter_ppi=args.filter_ppi)
     gp_test , test_avg_node_per_graph , test_avg_edge_per_graph , test_avg_nodedegree , test_avg_isolate_node_per_graph = get_omic_graph(test_datapath , conversionpath , ac_datapath , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
-    # gp2_test , _ , _ , _ = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'labels_te.csv')
-    # gp3_test , _ , _ , _= get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'labels_te.csv')
 
     train_feature = { 
         "train_avg_node": train_avg_node_per_graph, 
