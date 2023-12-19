@@ -279,6 +279,16 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
     
+    def predict_step(self , batch):
+        batch1 , batch2 , batch3 = batch 
+        x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
+        x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
+        x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
+        
+        output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+        
+        return output , y1
+    
 class BestModelTracker(Callback):
     
     def __init__(self) -> None:
@@ -370,35 +380,32 @@ def multiomics(args):
     
     if not args.disable_tracking:
         with mlflow.start_run() as run:
-            pass
-            # for arg in vars(args):
-            #     mlflow.log_param(arg , getattr(args , arg))
+            for arg in vars(args):
+                if arg in ['dataset']: 
+                    continue
+                mlflow.log_param(arg , getattr(args , arg))
             
             mlflow.log_params(feature_info)
                 
-            # trainer.fit(
-            #     model=model, 
-            #     train_dataloaders=train_dataloaders, 
-            #     val_dataloaders=val_dataloaders, 
-            # )
+            trainer.fit(
+                model=model, 
+                train_dataloaders=dataloader_tr, 
+                val_dataloaders=dataloader_te, 
+            )
             
-            # print(modelTracker.best_model , modelTracker.best_train_acc)
-            # mlflow.log_metrics(modelTracker.best_model)
-            # mlflow.log_metric('best_train_acc', modelTracker.best_train_acc)
+            print(modelTracker.best_model , modelTracker.best_train_acc)
+            mlflow.log_metrics(modelTracker.best_model)
+            mlflow.log_metric('best_train_acc', modelTracker.best_train_acc)
             
-            # prediction = trainer.predict(model , val_dataloaders)
-            # output = torch.concat([ x[0] for x in prediction ])
-            # actual = torch.concat([ x[1] for x in prediction ])
+            prediction = trainer.predict(model , dataloader_te)
+            output = torch.concat([ x[0] for x in prediction ])
+            actual = torch.concat([ x[1] for x in prediction ])
             
-            # confusion_matrix = MulticlassConfusionMatrix(num_classes=5)
-            # confusion_matrix.update(output, actual)
-            # #cfm = confusion_matrix(output, actual)
-            # #print(cfm)
+            confusion_matrix = MulticlassConfusionMatrix(num_classes=5)
+            confusion_matrix.update(output, actual)
             
-            # fig , ax  = confusion_matrix.plot()
-            # #ax.set_fontsize(fs=20)
-            # #fig.set_title("Multiclass Confusion Matrix")
-            # fig.savefig(f"confusion-matrix-{run.info.run_name}.png")
+            fig , ax  = confusion_matrix.plot()
+            fig.savefig(f"confusion-matrix-{run.info.run_name}.png")
     else: 
         trainer.fit(
             model=model, 
@@ -406,15 +413,15 @@ def multiomics(args):
             val_dataloaders=dataloader_te, 
         )
             
-        # prediction = trainer.predict(model , dataloader_te)
-        # output = torch.concat([ x[0] for x in prediction ])
-        # actual = torch.concat([ x[1] for x in prediction ])
+        prediction = trainer.predict(model , dataloader_te)
+        output = torch.concat([ x[0] for x in prediction ])
+        actual = torch.concat([ x[1] for x in prediction ])
         
-        # confusion_matrix = MulticlassConfusionMatrix(num_classes=5)
-        # confusion_matrix.update(output, actual)
+        confusion_matrix = MulticlassConfusionMatrix(num_classes=5)
+        confusion_matrix.update(output, actual)
         
-        # fig , ax  = confusion_matrix.plot()
-        # fig.savefig("confusion_matrix.png")
+        fig , ax  = confusion_matrix.plot()
+        fig.savefig("confusion_matrix.png")
     
 def main():
     
