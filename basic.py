@@ -395,7 +395,7 @@ def collate(data_list):
     batchC = Batch.from_data_list([data[2] for data in data_list])
     return batchA, batchB , batchC
     
-def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_conversion_filepaths , ac_rule_filepaths , label_paths , ppi=True , kegg_go=True , corr=False , ac=True , topk=50 , disable_tracking = True , max_epoch=400 , experiment='basic' , lr=0.0001 , hidden_embedding=32 , remove_isolated_node=False , annotation_chart = './david/consol_anno_chart.tsv' ):
+def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_conversion_filepaths , ac_rule_filepaths , label_paths , ppi=True , kegg_go=True , corr=False , ac=True , topk=50 , disable_tracking = True , max_epoch=400 , experiment='basic' , lr=0.0001 , hidden_embedding=32 , remove_isolated_node=False , annotation_chart = './david/consol_anno_chart.tsv' , batch_size = 20 ):
     
     assert len(omic_test_data_filepaths) == 3 , "Only support 3 omics data"
     assert len(omic_train_data_filepaths) == 3 , "Only support 3 omics data"
@@ -432,7 +432,7 @@ def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_c
         'test_avg_isolated_x3': test_avg_isolate_node_per_graph_x3 ,
     }
     
-    batch_size = 20 
+    batch_size = batch_size 
     
     pair_dataset_tr = PairDataset(gp_train_x1 , gp_train_x2 , gp_train_x3)
     dataloader_tr = torch.utils.data.DataLoader(pair_dataset_tr, batch_size=batch_size, shuffle=True, collate_fn=collate, drop_last=True)
@@ -449,7 +449,7 @@ def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_c
         callbacks=[ modelTracker ]
     )
     
-    model = MultiGraphClassification(1 , hidden_embedding , 5 , lr=lr)
+    model = MultiGraphClassification(1 , hidden_embedding , 3 , lr=lr)
     
     if not disable_tracking:
         
@@ -507,11 +507,11 @@ def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_c
         output = torch.concat([ x[0] for x in prediction ])
         actual = torch.concat([ x[1] for x in prediction ])
         
-        confusion_matrix = MulticlassConfusionMatrix(num_classes=5)
+        confusion_matrix = MulticlassConfusionMatrix(num_classes=3)
         confusion_matrix.update(output, actual)
         
         fig , ax  = confusion_matrix.plot()
-        # fig.savefig("confusion_matrix.png")
+        fig.savefig("confusion_matrix.png")
         
     return modelTracker.rank , ( gp_train_x1 , gp_train_x2 , gp_train_x3 ) , ( gp_test_x1 , gp_test_x2 , gp_test_x3 )
     
@@ -521,7 +521,7 @@ def main():
     parser.add_argument("--lr" , default=0.0001 , type=float , help="Learning rate")
     parser.add_argument("--gene_filter" , default=0.5 , type=float , help="Filter significant gene based on quantile value")
     parser.add_argument("--hidden_embedding" , default=32 , type=int , help="Hidden embedding dimension for convolution and MLP")
-    parser.add_argument("--dataset" , type=str , choices=['miRNA' , 'mRNA' , 'DNA'] , default='mRNA')
+    # parser.add_argument("--dataset" , type=str , choices=['miRNA' , 'mRNA' , 'DNA'] , default='mRNA')
     parser.add_argument("--enrichment" , action="store_true")
     parser.add_argument("--ppi" , action="store_true")
     parser.add_argument("--kegg" , action="store_true")
@@ -533,6 +533,7 @@ def main():
     parser.add_argument("--remove_isolated_node" , action='store_true')
     parser.add_argument("--experiment" , type=str , default="basic" , help="MLFlow expriement name")
     parser.add_argument("--dataset" , type=str , choices=['BRCA', 'KIPAN'] , default='BRCA')
+    parser.add_argument("--batch_size" , type=int , default=20)
     
     args = parser.parse_args()
     
@@ -563,7 +564,8 @@ def main():
                 hidden_embedding=args.hidden_embedding ,
                 disable_tracking=args.disable_tracking ,
                 remove_isolated_node=args.remove_isolated_node, 
-                annotation_chart='david/consol_anno_chart.tsv'
+                annotation_chart='david/consol_anno_chart.tsv', 
+                batch_size=args.batch_size
             )
         else:
             multiomics(
@@ -583,7 +585,8 @@ def main():
                 hidden_embedding=args.hidden_embedding ,
                 disable_tracking=args.disable_tracking ,
                 remove_isolated_node=args.remove_isolated_node, 
-                annotation_chart='KIPAN/consol_anno_chart.tsv'
+                annotation_chart='KIPAN/consol_anno_chart.csv', 
+                batch_size=args.batch_size
             )
         return
     

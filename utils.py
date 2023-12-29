@@ -515,13 +515,13 @@ if __name__ == "__main__":
     
     # ## mRNA Features
     print("Generating mRNA omic data graph")
-    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('KIPAN/1_tr.csv' , 'KIPAN/1_featname_conversion.csv' ,'KIPAN/ac_rule_1.tsv' , 'KIPAN/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=None , go_kegg=None , ac=True , k=50 , remove_isolate_node=True , annotation_chart="KIPAN/consol_anno_chart.csv")
+    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('KIPAN/1_tr.csv' , 'KIPAN/1_featname_conversion.csv' ,'KIPAN/ac_rule_1.tsv' , 'KIPAN/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=50 , remove_isolate_node=True , annotation_chart="KIPAN/consol_anno_chart.csv")
     print(f"Omic data type 1: avg node per graph - {avgnodepergraph:.2f} , avg edge per graph - {avgnoedge:.2f} , avg node degree per grap - {avgnodedegree:.2f} , avg isolate node per graph - {avgisolatenode:.2f}")
     
     
     # ## miRNA Feature 
     print("Generating miRNA omic data graph")
-    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('KIPAN/2_tr.csv' , 'KIPAN/2_featname_conversion.csv' ,'KIPAN/ac_rule_2.tsv' , 'KIPAN/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=None , go_kegg=None , ac=True , k=50 , remove_isolate_node=True , annotation_chart="KIPAN/consol_anno_chart.csv")
+    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('KIPAN/2_tr.csv' , 'KIPAN/2_featname_conversion.csv' ,'KIPAN/ac_rule_2.tsv' , 'KIPAN/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=50 , remove_isolate_node=True , annotation_chart="KIPAN/consol_anno_chart.csv")
     print(f"Omic data type 2: avg node per graph - {avgnodepergraph:.2f} , avg edge per graph - {avgnoedge:.2f} , avg node degree per grap - {avgnodedegree:.2f} , avg isolate node per graph - {avgisolatenode:.2f}")
     
     # # ## DNA Feature 
