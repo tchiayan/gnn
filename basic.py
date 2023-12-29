@@ -491,7 +491,7 @@ def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_c
             output = torch.concat([ x[0] for x in prediction ])
             actual = torch.concat([ x[1] for x in prediction ])
             
-            confusion_matrix = MulticlassConfusionMatrix(num_classes=5)
+            confusion_matrix = MulticlassConfusionMatrix(num_classes=3)
             confusion_matrix.update(output, actual)
             
             fig , ax  = confusion_matrix.plot()
