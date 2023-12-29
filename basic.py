@@ -395,7 +395,7 @@ def collate(data_list):
     batchC = Batch.from_data_list([data[2] for data in data_list])
     return batchA, batchB , batchC
     
-def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_conversion_filepaths , ac_rule_filepaths , label_paths , ppi=True , kegg_go=True , corr=False , ac=True , topk=50 , disable_tracking = True , max_epoch=400 , experiment='basic' , lr=0.0001 , hidden_embedding=32 , remove_isolated_node=False ):
+def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_conversion_filepaths , ac_rule_filepaths , label_paths , ppi=True , kegg_go=True , corr=False , ac=True , topk=50 , disable_tracking = True , max_epoch=400 , experiment='basic' , lr=0.0001 , hidden_embedding=32 , remove_isolated_node=False , annotation_chart = './david/consol_anno_chart.tsv' ):
     
     assert len(omic_test_data_filepaths) == 3 , "Only support 3 omics data"
     assert len(omic_train_data_filepaths) == 3 , "Only support 3 omics data"
@@ -403,13 +403,13 @@ def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_c
     assert len(ac_rule_filepaths) == 3 , "Only support 3 omics data"
     assert len(label_paths) == 2 , "Only support 2 labels"
     
-    gp_train_x1 , train_avg_node_per_graph_x1 , _ , train_avg_nodedegree_x1 , train_avg_isolate_node_per_graph_x1 , _ = get_omic_graph(omic_train_data_filepaths[0] , feature_conversion_filepaths[0] , ac_rule_filepaths[0] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
-    gp_train_x2 , train_avg_node_per_graph_x2 , _ , train_avg_nodedegree_x2 , train_avg_isolate_node_per_graph_x2 , _ = get_omic_graph(omic_train_data_filepaths[1] , feature_conversion_filepaths[1] , ac_rule_filepaths[1] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
-    gp_train_x3 , train_avg_node_per_graph_x3 , _ , train_avg_nodedegree_x3 , train_avg_isolate_node_per_graph_x3 , _ = get_omic_graph(omic_train_data_filepaths[2] , feature_conversion_filepaths[2] , ac_rule_filepaths[2] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
+    gp_train_x1 , train_avg_node_per_graph_x1 , _ , train_avg_nodedegree_x1 , train_avg_isolate_node_per_graph_x1 , _ = get_omic_graph(omic_train_data_filepaths[0] , feature_conversion_filepaths[0] , ac_rule_filepaths[0] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node , annotation_chart=annotation_chart)
+    gp_train_x2 , train_avg_node_per_graph_x2 , _ , train_avg_nodedegree_x2 , train_avg_isolate_node_per_graph_x2 , _ = get_omic_graph(omic_train_data_filepaths[1] , feature_conversion_filepaths[1] , ac_rule_filepaths[1] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node , annotation_chart=annotation_chart)
+    gp_train_x3 , train_avg_node_per_graph_x3 , _ , train_avg_nodedegree_x3 , train_avg_isolate_node_per_graph_x3 , _ = get_omic_graph(omic_train_data_filepaths[2] , feature_conversion_filepaths[2] , ac_rule_filepaths[2] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node , annotation_chart=annotation_chart)
     
-    gp_test_x1 , test_avg_node_per_graph_x1 , _ , test_avg_nodedegree_x1 , test_avg_isolate_node_per_graph_x1 , _ = get_omic_graph(omic_test_data_filepaths[0] , feature_conversion_filepaths[0] , ac_rule_filepaths[0] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
-    gp_test_x2 , test_avg_node_per_graph_x2 , _ , test_avg_nodedegree_x2 , test_avg_isolate_node_per_graph_x2 , _ = get_omic_graph(omic_test_data_filepaths[1] , feature_conversion_filepaths[1] , ac_rule_filepaths[1] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
-    gp_test_x3 , test_avg_node_per_graph_x3 , _ , test_avg_nodedegree_x3 , test_avg_isolate_node_per_graph_x3 , _ = get_omic_graph(omic_test_data_filepaths[2] , feature_conversion_filepaths[2] , ac_rule_filepaths[2] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
+    gp_test_x1 , test_avg_node_per_graph_x1 , _ , test_avg_nodedegree_x1 , test_avg_isolate_node_per_graph_x1 , _ = get_omic_graph(omic_test_data_filepaths[0] , feature_conversion_filepaths[0] , ac_rule_filepaths[0] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node , annotation_chart=annotation_chart)
+    gp_test_x2 , test_avg_node_per_graph_x2 , _ , test_avg_nodedegree_x2 , test_avg_isolate_node_per_graph_x2 , _ = get_omic_graph(omic_test_data_filepaths[1] , feature_conversion_filepaths[1] , ac_rule_filepaths[1] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node , annotation_chart=annotation_chart) 
+    gp_test_x3 , test_avg_node_per_graph_x3 , _ , test_avg_nodedegree_x3 , test_avg_isolate_node_per_graph_x3 , _ = get_omic_graph(omic_test_data_filepaths[2] , feature_conversion_filepaths[2] , ac_rule_filepaths[2] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node , annotation_chart=annotation_chart)
     
     feature_info  = {
         'train_avg_node_x1': train_avg_node_per_graph_x1 ,
@@ -532,6 +532,7 @@ def main():
     parser.add_argument("--multiomics" , action='store_true')
     parser.add_argument("--remove_isolated_node" , action='store_true')
     parser.add_argument("--experiment" , type=str , default="basic" , help="MLFlow expriement name")
+    parser.add_argument("--dataset" , type=str , choices=['BRCA', 'KIPAN'] , default='BRCA')
     
     args = parser.parse_args()
     
@@ -544,24 +545,46 @@ def main():
     )
     
     if args.multiomics:
-        multiomics(
-            [r'BRCA/1_tr.csv' , r'BRCA/2_tr.csv' , r'BRCA/3_tr.csv'] ,
-            [r'BRCA/1_te.csv' , r'BRCA/2_te.csv' , r'BRCA/3_te.csv'] ,
-            [r'david/1_featname_conversion.csv' , r'david/2_featname_conversion.csv' , r'david/3_featname_conversion.csv'] ,
-            [r'david/ac_rule_1.tsv' , r'david/ac_rule_2.tsv' , r'david/ac_rule_3.tsv'] ,
-            [r'BRCA/labels_tr.csv' , r'BRCA/labels_te.csv'] ,
-            ppi=args.ppi ,
-            kegg_go=args.kegg ,
-            corr=args.corr ,
-            ac=args.enrichment ,
-            topk=args.topk ,
-            max_epoch=args.max_epoch ,
-            experiment=args.experiment ,
-            lr=args.lr ,
-            hidden_embedding=args.hidden_embedding ,
-            disable_tracking=args.disable_tracking ,
-            remove_isolated_node=args.remove_isolated_node
-        )
+        if args.dataset == 'BRCA':
+            multiomics(
+                [r'BRCA/1_tr.csv' , r'BRCA/2_tr.csv' , r'BRCA/3_tr.csv'] ,
+                [r'BRCA/1_te.csv' , r'BRCA/2_te.csv' , r'BRCA/3_te.csv'] ,
+                [r'david/1_featname_conversion.csv' , r'david/2_featname_conversion.csv' , r'david/3_featname_conversion.csv'] ,
+                [r'david/ac_rule_1.tsv' , r'david/ac_rule_2.tsv' , r'david/ac_rule_3.tsv'] ,
+                [r'BRCA/labels_tr.csv' , r'BRCA/labels_te.csv'] ,
+                ppi=args.ppi ,
+                kegg_go=args.kegg ,
+                corr=args.corr ,
+                ac=args.enrichment ,
+                topk=args.topk ,
+                max_epoch=args.max_epoch ,
+                experiment=args.experiment ,
+                lr=args.lr ,
+                hidden_embedding=args.hidden_embedding ,
+                disable_tracking=args.disable_tracking ,
+                remove_isolated_node=args.remove_isolated_node, 
+                annotation_chart='david/consol_anno_chart.tsv'
+            )
+        else:
+            multiomics(
+                [r'KIPAN/1_tr.csv' , r'KIPAN/2_tr.csv' , r'KIPAN/3_tr.csv'] ,
+                [r'KIPAN/1_te.csv' , r'KIPAN/2_te.csv' , r'KIPAN/3_te.csv'] ,
+                [r'KIPAN/1_featname_conversion.csv' , r'KIPAN/2_featname_conversion.csv' , r'KIPAN/3_featname_conversion.csv'] ,
+                [r'KIPAN/ac_rule_1.tsv' , r'KIPAN/ac_rule_2.tsv' , r'KIPAN/ac_rule_3.tsv'] ,
+                [r'KIPAN/labels_tr.csv' , r'KIPAN/labels_te.csv'] ,
+                ppi=args.ppi ,
+                kegg_go=args.kegg ,
+                corr=args.corr ,
+                ac=args.enrichment ,
+                topk=args.topk ,
+                max_epoch=args.max_epoch ,
+                experiment=args.experiment ,
+                lr=args.lr ,
+                hidden_embedding=args.hidden_embedding ,
+                disable_tracking=args.disable_tracking ,
+                remove_isolated_node=args.remove_isolated_node, 
+                annotation_chart='KIPAN/consol_anno_chart.tsv'
+            )
         return
     
     if args.dataset == 'mRNA':
