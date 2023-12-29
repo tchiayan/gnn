@@ -277,8 +277,6 @@ def information_gain(data, class_column):
     features = pd.DataFrame(features)
     
     #print(features.values[0:2 , :])
-    print("Calculate information gain")
-    print(target.unique())
     #print(features.values)
     information_gain = mutual_info_classif(features.values , target, discrete_features=True)
 
@@ -291,7 +289,7 @@ def information_gain(data, class_column):
         else:
             columns_removed.append(feature_columns[index])
 
-    print("Remove redundant features (0 IG): {}".format(columns_removed))
+    #print("Remove redundant features (0 IG): {}".format(columns_removed))
     #print("Information gain: {}".format(info_gain))
     # remove the redundant features
     data.drop(columns=columns_removed, axis=1, inplace=True)

@@ -1,4 +1,6 @@
 pandas
 fastparquet
 pyarrow
-mlxtend
+mlxtend # to be remove , 
+pyfim
+networkx

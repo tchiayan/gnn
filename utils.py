@@ -308,23 +308,20 @@ def coo_to_pyg_data(coo_matrix , node_features , label):
 
     indices , values = geom_utils.to_undirected(indices , values)
     
-    return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label)
+    return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=label , extra_label=torch.arange(node_features.size(0)))
 
-def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5 , ppi=True , go_kegg=True , ac=True , correlation=False , k=50):
-    base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "BRCA")
-    david_path = os.path.join(os.path.dirname(os.path.realpath(__file__)) , "david")
-
-    feature1 = os.path.join(base_path, feature_path)
-    df1 = read_features_file(feature1)
-    name1 = os.path.join(david_path, conversion_path)
-    df1_header = pd.read_csv(name1)
-    labels = read_features_file(os.path.join(base_path, label_path))[0].values
+def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path , weighted=True , filter_ppi = None , filter_p_value = None , significant_q = 0.5 , ppi=True , go_kegg=True , ac=True , correlation=False , k=50 , gene_info_only=False , remove_isolate_node=False , annotation_chart = './david/consol_anno_chart.tsv'):
+    
+    df1 = read_features_file(feature_path)
+    df1_header = pd.read_csv(conversion_path)
+    labels = read_features_file(label_path)[0].values
     
     omic_1_name = df1_header['official gene symbol'].to_list()
     omic_1_id = df1_header['gene id'].astype('Int64').astype('str').to_list()
     omic_1 = np.zeros((len(omic_1_name) , len(omic_1_name)))
     
     # Generate ppi/kegg/go transaction
+    ppi_filter_genes = []
     if ppi:
         ppi_info = get_PPI_info()
         filter_PPI = ppi_info[ppi_info['protein1_name'].isin(omic_1_name)]
@@ -333,30 +330,37 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
         if filter_ppi is not None: 
             assert isinstance(filter_ppi , int)  , "PPI score must be integer type"
             filter_PPI = filter_PPI[filter_PPI['combined_score'] == filter_ppi]
-    
+
+        ppi_filter_genes.extend([ omic_1_name.index(x) for x in filter_PPI['protein1_name'] ])
+        ppi_filter_genes.extend([ omic_1_name.index(x) for x in filter_PPI['protein2_name'] ])
         vector_idx = np.array(list(zip([ omic_1_name.index(x) for x in filter_PPI['protein2_name'] ] , [ omic_1_name.index(x) for x in filter_PPI['protein1_name'] ])))
         ## Expectin vector_idx to have shape of [n , 2]
         if vector_idx.shape[0] > 0:
             omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
+    ppi_filter_genes = list(set(ppi_filter_genes))
     
+    kegg_go_filter_genes = []
     if go_kegg:
-        kegg_go_df = pd.read_csv(os.path.join(david_path , "consol_anno_chart.tsv") , sep='\t')
+        if annotation_chart.endswith('.tsv'):
+            kegg_go_df = pd.read_csv(annotation_chart , sep='\t')
+        else:
+            kegg_go_df = pd.read_csv(annotation_chart , sep=',')
         
         if filter_p_value is not None:
             assert isinstance(filter_p_value , float) , "P value must be float type"
             kegg_go_df = kegg_go_df[kegg_go_df['PValue'] <= filter_p_value]
         
-        
-        
         for _ ,  row in kegg_go_df.iterrows():
             related_genes = row['Genes'].split(", ")
             genes_idx = [ omic_1_id.index(x) for x in related_genes if x in omic_1_id]
+            kegg_go_filter_genes.extend([x for x in genes_idx])
             genes_idx.sort()
             if len(genes_idx) <= 1: 
                 continue
             vector_idx = np.array([x for x in itertools.combinations(genes_idx , 2)])
             omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
-        
+    kegg_go_filter_genes = list(set(kegg_go_filter_genes))
+    
     if not weighted: 
         omic_1 = (omic_1 > 0).astype(float)
         
@@ -372,9 +376,10 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
     isolate_node_per_graph = []
     node_degree_per_graph = []
     
+    ac_filter_genes = []
     if ac: 
         add_omic = {}
-        rules = pd.read_csv(os.path.join(david_path , ac_rule_path),  names=['label' , 'support' , 'confidences' , 'itemset' , 'interestingness' ] , sep='\t')
+        rules = pd.read_csv(ac_rule_path,  names=['label' , 'support' , 'confidences' , 'itemset' , 'interestingness' ] , sep='\t')
         
         # Get each label 
         unique_labels = rules['label'].unique()
@@ -394,6 +399,7 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
                 gene_sets = [x.split(":")[0] for x in row['itemset'].split(",")]
                 related_genes.extend(gene_sets)
             related_genes = [int(x) for x in list(set(related_genes))]
+            ac_filter_genes.extend([ x for x in related_genes])
             related_genes.sort()
             
             #print(related_genes)
@@ -405,7 +411,8 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
             add_omic[label] = (add_omic[label] > 0).astype(float) # convert to 1 and zero only
             
             #print(topk_df.head())
-            
+    ac_filter_genes = list(set(ac_filter_genes))
+    
     if correlation: 
         cosine_similarity  = df1.corr().to_numpy()
         
@@ -438,14 +445,16 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
             #print("Max value: " , torch.max(graph.edge_attr) )
             
             
+            new_edge , new_attr , mask = geom_utils.remove_isolated_nodes(graph.edge_index , graph.edge_attr , num_nodes=graph.num_nodes)
+            isolate_node_per_graph.append(graph.num_nodes - mask.sum().item())
+            if remove_isolate_node:
+                graph = Data(x=graph.x[mask], edge_index=new_edge, edge_attr=new_attr, num_nodes=graph.x[mask].size(0) , y=graph.y , extra_label=graph.extra_label[mask])
             
             node_per_graph.append(graph.num_nodes)
             edge_per_graph.append(graph.edge_index.shape[1])
             
             node_degree = geom_utils.degree(graph.edge_index[0] , graph.num_nodes)
             node_degree_per_graph.append(node_degree.float().mean().item())
-            _ , _ , mask = geom_utils.remove_isolated_nodes(graph.edge_index)
-            isolate_node_per_graph.append(graph.num_nodes - mask.sum().item())
             
             graph_data.append(graph)
             pbar.update(1)
@@ -461,10 +470,24 @@ def get_omic_graph(feature_path , conversion_path , ac_rule_path ,  label_path ,
     avg_node_per_graph = np.mean(np.array(node_per_graph))
     avg_edge_per_graph = np.mean(np.array(edge_per_graph))
     # avg_nodedegree_per_graph = avg_edge_per_graph/avg_node_per_graph/avg_node_per_graph
+    
+    # remove nan value
+    node_degree_per_graph = [x for x in node_degree_per_graph if not np.isnan(x)]
     avg_nodedegree = np.mean(np.array(node_degree_per_graph))
+    
     avg_isolate_node_per_graph = np.mean(np.array(isolate_node_per_graph))
-    #print(avg_node_per_graph , avg_edge_per_graph , avg_nodedegree_per_graph)
-    return graph_data , avg_node_per_graph , avg_edge_per_graph , avg_nodedegree , avg_isolate_node_per_graph
+    
+    if gene_info_only:
+        # Visualize intersection of 3 filter genes 
+        print("Number of PPI filter genes: {}".format(len(ppi_filter_genes)))
+        print("Number of GO/KEGG filter genes: {}".format(len(kegg_go_filter_genes)))
+        print("Number of AC filter genes: {}".format(len(ac_filter_genes)))
+        print("Number of intersection between PPI and GO/KEGG: {}".format(len(set(ppi_filter_genes).intersection(set(kegg_go_filter_genes)))))
+        print("Number of intersection between PPI and AC: {}".format(len(set(ppi_filter_genes).intersection(set(ac_filter_genes)))))
+        print("Number of intersection between GO/KEGG and AC: {}".format(len(set(kegg_go_filter_genes).intersection(set(ac_filter_genes)))))
+        print("Common genes between PPI and GO/KEGG and AC: {}".format(len(set(ppi_filter_genes).intersection(set(kegg_go_filter_genes)).intersection(set(ac_filter_genes)))))
+    
+    return graph_data , avg_node_per_graph , avg_edge_per_graph , avg_nodedegree , avg_isolate_node_per_graph  , (ppi_filter_genes , kegg_go_filter_genes , ac_filter_genes)
         
 if __name__ == "__main__":
     
@@ -475,81 +498,36 @@ if __name__ == "__main__":
     
     # ## mRNA Features
     # print("Generating mRNA omic data graph")
-    # _  , avgnodepergraph , avgnoedge , avgnodedegree = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' ,'ac_rule_1.tsv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=100)
-    # print(f"Omic data type 1: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree}")
+    # _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('BRCA/1_tr.csv' , 'david/1_featname_conversion.csv' ,'david/ac_rule_1.tsv' , 'BRCA/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=None , go_kegg=None , ac=True , k=50 , remove_isolate_node=True)
+    # print(f"Omic data type 1: avg node per graph - {avgnodepergraph:.2f} , avg edge per graph - {avgnoedge:.2f} , avg node degree per grap - {avgnodedegree:.2f} , avg isolate node per graph - {avgisolatenode:.2f}")
+    
+    
+    # # ## miRNA Feature 
+    # print("Generating miRNA omic data graph")
+    # _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('BRCA/2_tr.csv' , 'david/2_featname_conversion.csv' ,'david/ac_rule_2.tsv' , 'BRCA/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=None , go_kegg=None , ac=True , k=50 , remove_isolate_node=True)
+    # print(f"Omic data type 2: avg node per graph - {avgnodepergraph:.2f} , avg edge per graph - {avgnoedge:.2f} , avg node degree per grap - {avgnodedegree:.2f} , avg isolate node per graph - {avgisolatenode:.2f}")
+    
+    # # # ## DNA Feature 
+    # print("Generating DNA omic data graph")
+    # _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('BRCA/3_tr.csv' , 'david/3_featname_conversion.csv' ,'david/ac_rule_3.tsv' , 'BRCA/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=None , go_kegg=None , ac=True , k=50 , remove_isolate_node=True)
+    # print(f"Omic data type 3: avg node per graph - {avgnodepergraph:.2f} , avg edge per graph - {avgnoedge:.2f} , avg node degree per grap - {avgnodedegree:.2f} , avg isolate node per graph - {avgisolatenode:.2f}")
+    
+    
+    # ## mRNA Features
+    print("Generating mRNA omic data graph")
+    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('KIPAN/1_tr.csv' , 'KIPAN/1_featname_conversion.csv' ,'KIPAN/ac_rule_1.tsv' , 'KIPAN/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=None , go_kegg=None , ac=True , k=50 , remove_isolate_node=True , annotation_chart="KIPAN/consol_anno_chart.csv")
+    print(f"Omic data type 1: avg node per graph - {avgnodepergraph:.2f} , avg edge per graph - {avgnoedge:.2f} , avg node degree per grap - {avgnodedegree:.2f} , avg isolate node per graph - {avgisolatenode:.2f}")
     
     
     # ## miRNA Feature 
     print("Generating miRNA omic data graph")
-    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' ,'ac_rule_2.tsv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=100)
-    print(f"Omic data type 2: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree} , avg isolate node per graph - {avgisolatenode}")
+    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('KIPAN/2_tr.csv' , 'KIPAN/2_featname_conversion.csv' ,'KIPAN/ac_rule_2.tsv' , 'KIPAN/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=None , go_kegg=None , ac=True , k=50 , remove_isolate_node=True , annotation_chart="KIPAN/consol_anno_chart.csv")
+    print(f"Omic data type 2: avg node per graph - {avgnodepergraph:.2f} , avg edge per graph - {avgnoedge:.2f} , avg node degree per grap - {avgnodedegree:.2f} , avg isolate node per graph - {avgisolatenode:.2f}")
     
     # # ## DNA Feature 
-    # print("Generating DNA omic data graph")
-    # _  , avgnodepergraph , avgnoedge , avgnodedegree = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' ,'ac_rule_3.tsv' , 'labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=True , go_kegg=True , ac=True , k=100)
-    # print(f"Omic data type 3: avg node per graph - {avgnodepergraph} , avg edge per graph - {avgnoedge} , avg node degree per grap - {avgnodedegree}")
-    # feature1 = os.path.join(base_path, "1_tr.csv")
-    # df1 = read_features_file(feature1)
-    # name1 = os.path.join(david_path, "1_featname_conversion.csv")
-    # df1_header = pd.read_csv(name1)
-    
-    # omic_1_name = df1_header['official gene symbol'].to_list()
-    # omic_1_id = df1_header['gene id'].astype('Int64').astype('str').to_list()
-    
-    # # Generate ppi/kegg/go transaction
-    # kegg_go_df = pd.read_csv(os.path.join(david_path , "consol_anno_chart.tsv") , sep='\t')
-    
-    # omic_1 = np.zeros((1000 , 1000))
-    
-    # ppi_info = get_PPI_info()
-    # filter_PPI = ppi_info[ppi_info['protein1_name'].isin(omic_1_name)]
-    # filter_PPI = filter_PPI[filter_PPI['protein2_name'].isin(omic_1_name)]
-    
-    # vector_idx = np.array(list(zip([ omic_1_name.index(x) for x in filter_PPI['protein2_name'] ] , [ omic_1_name.index(x) for x in filter_PPI['protein1_name'] ])))
-    # omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
-    
-    
-    # i = 0
-    # pbar = tqdm(total=len(kegg_go_df))
-    # pbar.set_description("Generate graph data")
-    
-    # try: 
-    #     for idx ,  row in kegg_go_df.iterrows():
-    #         related_genes = row['Genes'].split(", ")
-    #         genes_idx = [ omic_1_id.index(x) for x in related_genes if x in omic_1_id]
-    #         genes_idx.sort()
-    #         if len(genes_idx) <= 1: 
-    #             continue
-    #         vector_idx = np.array([x for x in itertools.combinations(genes_idx , 2)])
-    #         omic_1[vector_idx[:,0] , vector_idx[:,1]] += 1
-    #         i += 1 
-    #         pbar.update(i)
-    # except Exception as e: 
-    #     print("Error occur")
-    #     print(e)
-    #     print(genes_idx)
-    # finally: 
-    #     print(omic_1)
-    #     print(omic_1.sum())
-    #     pbar.close()
-        
-    # coo = symmetric_matrix_to_coo(omic_1 , 0.1)
-    # indice , values , size = coo_to_pyg_data(coo)
-    # print(indice.shape)
-    
-    # gp1 = generate_graph(df1 , df1_header , df_labels[0].tolist(), threshold=0.25, rescale=True, integration='pearson' , use_quantile=True)
-    
-    # a = [0, 1 , 2 , 3]
-    
-    # combination = itertools.combinations(a , 2)
-    # a = np.ones((4 ,4))
-    # b = np.zeros_like(a)
-    # c = np.array([list(x) for x in combination])
-    # print(c)
-    # b[c[:,0] , c[:,1]] = 1
-    # print(b)
-    # coo = symmetric_matrix_to_coo(b)
-    # print(coo)
+    print("Generating DNA omic data graph")
+    _  , avgnodepergraph , avgnoedge , avgnodedegree , avgisolatenode , _ = get_omic_graph('KIPAN/3_tr.csv' , 'KIPAN/3_featname_conversion.csv' ,'KIPAN/ac_rule_3.tsv' , 'KIPAN/labels_tr.csv' , weighted=False , filter_ppi=None , filter_p_value=None , significant_q=0 , ppi=None , go_kegg=None , ac=True , k=50 , remove_isolate_node=True , annotation_chart="KIPAN/consol_anno_chart.csv")
+    print(f"Omic data type 3: avg node per graph - {avgnodepergraph:.2f} , avg edge per graph - {avgnoedge:.2f} , avg node degree per grap - {avgnodedegree:.2f} , avg isolate node per graph - {avgisolatenode:.2f}")
     
     
     

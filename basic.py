@@ -116,19 +116,19 @@ class GraphPooling(torch.nn.Module):
         
         # First layer graph convolution
         x = self.graph_conv1(x , edge_index , edge_attr)
-        x , edge_index , _ , batch ,  _ , _ = self.pooling(x , edge_index , edge_attr , batch)
-        x = self.graph_norm1(x , batch)
+        x , edge_index , _ , batch1 ,  perm_1 , score_1 = self.pooling(x , edge_index , edge_attr , batch)
+        x = self.graph_norm1(x , batch1)
         
         # Second layer graph convolution
         x = self.graph_conv2(x , edge_index)
-        x , edge_index , _ , batch ,  _ , _ = self.pooling2(x , edge_index , batch=batch)
-        x = self.graph_norm2(x , batch)
+        x , edge_index , _ , batch2 ,  perm_2 , score_2 = self.pooling2(x , edge_index , batch=batch1)
+        x = self.graph_norm2(x , batch2)
         
-        x = geom_nn.global_mean_pool(x , batch)
+        x = geom_nn.global_mean_pool(x , batch2)
 
         x = self.mlp(x)
         
-        return x
+        return x , perm_1 , perm_2 , score_1 , score_2 , batch1 , batch2
         
 class GraphClassification(pl.LightningModule):
     def __init__(self, in_channels , hidden_channels , num_classes , lr=0.0001) -> None:
@@ -151,9 +151,9 @@ class GraphClassification(pl.LightningModule):
         
     def forward(self , x , edge_index , edge_attr , batch):
         # First layer graph convolution
-        x = self.graph(x , edge_index , edge_attr)
+        x , perm1 , perm2 , score1 , score2 = self.graph(x , edge_index , edge_attr)
         x = self.linear(x)
-        return x
+        return x 
     
     def configure_optimizers(self) -> OptimizerLRScheduler:
         return optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001) 
@@ -213,11 +213,21 @@ class MultiGraphClassification(pl.LightningModule):
         self.graph2 = GraphPooling(in_channels , hidden_channels)
         self.graph3 = GraphPooling(in_channels , hidden_channels)
         
+        self.rank = {}
+        self.genes = {
+            'omic1_pool1': [],
+            'omic1_pool2': [],  
+            'omic2_pool1': [], 
+            'omic2_pool2': [], 
+            'omic3_pool1': [],
+            'omic3_pool2': [],
+        }
+        
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels*3*2 , hidden_channels*2),
+            torch.nn.Linear(hidden_channels*3*2 , hidden_channels),
             torch.nn.ReLU(), 
-            torch.nn.BatchNorm1d(hidden_channels*2),
-            torch.nn.Linear(hidden_channels*2 , num_classes),
+            torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Linear(hidden_channels , num_classes),
         )
         
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
@@ -230,13 +240,19 @@ class MultiGraphClassification(pl.LightningModule):
         self.sensivity = Recall(task="multiclass" , num_classes=num_classes)
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
-        output1 = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx)
-        output2 = self.graph2(x2 , edge_index2 , edge_attr2 , batch2_idx)
-        output3 = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
+        output1 , perm11 , perm12 , score11 , score12 , batch11 , batch12 = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx)
+        output2 , perm21 , perm22 , score21 , score22 , batch21 , batch22 = self.graph2(x2 , edge_index2 , edge_attr2 , batch2_idx)
+        output3 , perm31 , perm32 , score31 , score32 , batch31 , batch32 = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
         
         output = torch.concat([output1 , output2 , output3] , dim=-1) # shape -> [ batch , hidden_dimension * 3 * 2 ]
         
         output = self.mlp(output)
+        
+        self.rank = {
+            'omic1': ( perm11 , perm12 , score11 , score12 , batch11 , batch12 ) ,
+            'omic2': ( perm21 , perm22 , score21 , score22 , batch21 , batch22 ) ,
+            'omic3': ( perm31 , perm32 , score31 , score32 , batch31 , batch32 ) ,
+        }
         return output
     
     def configure_optimizers(self) -> OptimizerLRScheduler:
@@ -257,6 +273,33 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         return loss
     
+    def get_rank_genes(self , pooling_info , batch_extra_label , batch_size , num_genes=1000):
+        perm_1 , perm2 , score1 , score2 , pollbatch1 , poolbatch2 = pooling_info
+        
+        #gene_perm1 = batch_extra_label[perm_1].view(batch_size , -1 ) # convert to batch size , gene size ( 0.5 ratio )
+        gene_perm1 , mask_pool_1 = geom_utils.to_dense_batch(batch_extra_label[perm_1] , pollbatch1)
+        #gene_score1 = score1.view(batch_size , -1) # convert to batch size , gene size ( 0.5 ratio )
+        gene_score1 , _ = geom_utils.to_dense_batch(score1 , pollbatch1)
+        
+        # gene_perm2 = batch_extra_label[perm_1][perm2].view(batch_size , -1) # convert to batch size , gene size (0.5*0.5 ratio)
+        gene_perm2 , mask_pool_2 = geom_utils.to_dense_batch(batch_extra_label[perm_1][perm2] , poolbatch2)
+        # gene_score2 = score2.view(batch_size , -1) # convert to batch size , gene size (0.5*0.5 ratio)
+        gene_score2 , _ = geom_utils.to_dense_batch(score2 , poolbatch2)
+        
+        pool1 = []
+        pool2 = []
+        
+        for i in range(batch_size):
+            _genes1_pool1 = torch.zeros(num_genes)
+            _genes1_pool1[gene_perm1[i][mask_pool_1[i]].cpu()] = gene_score1[i][mask_pool_1[i]].cpu()
+            pool1.append(_genes1_pool1)
+            
+            _genes1_pool2 = torch.zeros(num_genes)
+            _genes1_pool2[gene_perm2[i][mask_pool_2[i]].cpu()] = gene_score2[i][mask_pool_2[i]].cpu()
+            pool2.append(_genes1_pool2)
+            
+        return pool1 , pool2 
+        
     def validation_step(self , batch):
         batch1 , batch2 , batch3 = batch 
         x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
@@ -272,6 +315,19 @@ class MultiGraphClassification(pl.LightningModule):
         specificity = self.specificity(torch.nn.functional.softmax(output) , y1)
         sensivity = self.sensivity(torch.nn.functional.softmax(output) , y1)
         
+        if self.current_epoch == self.trainer.max_epochs - 1:
+            
+            omic1_pool1 , omic1_pool2 = self.get_rank_genes(self.rank['omic1'] , batch1.extra_label , batch1.num_graphs , 1000)
+            omic2_pool1 , omic2_pool2 = self.get_rank_genes(self.rank['omic2'] , batch2.extra_label , batch2.num_graphs , 1000)
+            omic3_pool1 , omic3_pool2 = self.get_rank_genes(self.rank['omic3'] , batch3.extra_label , batch3.num_graphs , 503)
+            
+            self.genes['omic1_pool1'].extend(omic1_pool1)
+            self.genes['omic1_pool2'].extend(omic1_pool2)
+            self.genes['omic2_pool1'].extend(omic2_pool1)
+            self.genes['omic2_pool2'].extend(omic2_pool2)
+            self.genes['omic3_pool1'].extend(omic3_pool1)
+            self.genes['omic3_pool2'].extend(omic3_pool2)
+            
         self.log("val_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
         self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         self.log("val_f1" , f1 , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
@@ -294,6 +350,8 @@ class BestModelTracker(Callback):
     def __init__(self) -> None:
         self.best_model = None 
         self.best_train_acc = None
+        self.rank = None
+        self.rank_genes = None
         
     def on_train_epoch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         outputs = trainer.logged_metrics
@@ -302,11 +360,19 @@ class BestModelTracker(Callback):
             self.best_train_acc = outputs['train_acc'].item() 
         elif self.best_train_acc < outputs['train_acc'].item():
             self.best_train_acc = outputs['train_acc'].item()
-        
+            
+        # store permunation and score
+        self.rank = pl_module.rank
+    
     def on_validation_epoch_end(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         
         outputs = trainer.logged_metrics
         
+        if trainer.current_epoch == trainer.max_epochs - 1:
+            for key , item in pl_module.genes.items():
+                pl_module.genes[key] = torch.stack(item, dim=-1).mean(dim=-1)
+            self.rank_genes = pl_module.genes
+            
         if self.best_model == None: 
             self.best_model = {
                 'best_val_acc': outputs['val_acc'].item(), 
@@ -329,15 +395,21 @@ def collate(data_list):
     batchC = Batch.from_data_list([data[2] for data in data_list])
     return batchA, batchB , batchC
     
-def multiomics(args):
+def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_conversion_filepaths , ac_rule_filepaths , label_paths , ppi=True , kegg_go=True , corr=False , ac=True , topk=50 , disable_tracking = True , max_epoch=400 , experiment='basic' , lr=0.0001 , hidden_embedding=32 , remove_isolated_node=False ):
     
-    gp_train_x1 , train_avg_node_per_graph_x1 , _ , train_avg_nodedegree_x1 , train_avg_isolate_node_per_graph_x1 = get_omic_graph('1_tr.csv' , '1_featname_conversion.csv' , 'ac_rule_1.tsv' , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
-    gp_train_x2 , train_avg_node_per_graph_x2 , _ , train_avg_nodedegree_x2 , train_avg_isolate_node_per_graph_x2 = get_omic_graph('2_tr.csv' , '2_featname_conversion.csv' , 'ac_rule_2.tsv' , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
-    gp_train_x3 , train_avg_node_per_graph_x3 , _ , train_avg_nodedegree_x3 , train_avg_isolate_node_per_graph_x3 = get_omic_graph('3_tr.csv' , '3_featname_conversion.csv' , 'ac_rule_3.tsv' , 'labels_tr.csv' , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
+    assert len(omic_test_data_filepaths) == 3 , "Only support 3 omics data"
+    assert len(omic_train_data_filepaths) == 3 , "Only support 3 omics data"
+    assert len(feature_conversion_filepaths) == 3 , "Only support 3 omics data"
+    assert len(ac_rule_filepaths) == 3 , "Only support 3 omics data"
+    assert len(label_paths) == 2 , "Only support 2 labels"
     
-    gp_test_x1 , test_avg_node_per_graph_x1 , _ , test_avg_nodedegree_x1 , test_avg_isolate_node_per_graph_x1 = get_omic_graph('1_te.csv' , '1_featname_conversion.csv' , 'ac_rule_1.tsv' , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
-    gp_test_x2 , test_avg_node_per_graph_x2 , _ , test_avg_nodedegree_x2 , test_avg_isolate_node_per_graph_x2 = get_omic_graph('2_te.csv' , '2_featname_conversion.csv' , 'ac_rule_2.tsv' , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
-    gp_test_x3 , test_avg_node_per_graph_x3 , _ , test_avg_nodedegree_x3 , test_avg_isolate_node_per_graph_x3 = get_omic_graph('3_te.csv' , '3_featname_conversion.csv' , 'ac_rule_3.tsv' , 'labels_te.csv' , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=args.enrichment , k=args.topk , go_kegg=(not args.nokegg) , ppi=(not args.noppi) , correlation=(args.corr))
+    gp_train_x1 , train_avg_node_per_graph_x1 , _ , train_avg_nodedegree_x1 , train_avg_isolate_node_per_graph_x1 , _ = get_omic_graph(omic_train_data_filepaths[0] , feature_conversion_filepaths[0] , ac_rule_filepaths[0] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
+    gp_train_x2 , train_avg_node_per_graph_x2 , _ , train_avg_nodedegree_x2 , train_avg_isolate_node_per_graph_x2 , _ = get_omic_graph(omic_train_data_filepaths[1] , feature_conversion_filepaths[1] , ac_rule_filepaths[1] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
+    gp_train_x3 , train_avg_node_per_graph_x3 , _ , train_avg_nodedegree_x3 , train_avg_isolate_node_per_graph_x3 , _ = get_omic_graph(omic_train_data_filepaths[2] , feature_conversion_filepaths[2] , ac_rule_filepaths[2] , label_paths[0] , weighted=False , filter_p_value=None , filter_ppi=None , significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
+    
+    gp_test_x1 , test_avg_node_per_graph_x1 , _ , test_avg_nodedegree_x1 , test_avg_isolate_node_per_graph_x1 , _ = get_omic_graph(omic_test_data_filepaths[0] , feature_conversion_filepaths[0] , ac_rule_filepaths[0] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
+    gp_test_x2 , test_avg_node_per_graph_x2 , _ , test_avg_nodedegree_x2 , test_avg_isolate_node_per_graph_x2 , _ = get_omic_graph(omic_test_data_filepaths[1] , feature_conversion_filepaths[1] , ac_rule_filepaths[1] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
+    gp_test_x3 , test_avg_node_per_graph_x3 , _ , test_avg_nodedegree_x3 , test_avg_isolate_node_per_graph_x3 , _ = get_omic_graph(omic_test_data_filepaths[2] , feature_conversion_filepaths[2] , ac_rule_filepaths[2] , label_paths[1] , weighted=False , filter_p_value=None , filter_ppi=None, significant_q=0 , ac=ac , k=topk , go_kegg=kegg_go , ppi=ppi , correlation=corr , remove_isolate_node=remove_isolated_node)
     
     feature_info  = {
         'train_avg_node_x1': train_avg_node_per_graph_x1 ,
@@ -359,6 +431,7 @@ def multiomics(args):
         'test_avg_degree_x3': test_avg_nodedegree_x3 ,
         'test_avg_isolated_x3': test_avg_isolate_node_per_graph_x3 ,
     }
+    
     batch_size = 20 
     
     pair_dataset_tr = PairDataset(gp_train_x1 , gp_train_x2 , gp_train_x3)
@@ -372,19 +445,35 @@ def multiomics(args):
     modelTracker = BestModelTracker()
     
     trainer = pl.Trainer(
-        max_epochs=args.max_epoch, 
+        max_epochs=max_epoch, 
         callbacks=[ modelTracker ]
     )
     
-    model = MultiGraphClassification(1 , args.hidden_embedding , 5 , lr=args.lr)
+    model = MultiGraphClassification(1 , hidden_embedding , 5 , lr=lr)
     
-    if not args.disable_tracking:
+    if not disable_tracking:
+        
+        mlflow.set_experiment(experiment)
+        mlflow.pytorch.autolog(
+            log_every_n_epoch=1, 
+            log_every_n_step=0
+        )
+        
         with mlflow.start_run() as run:
-            for arg in vars(args):
-                if arg in ['dataset']: 
-                    continue
-                mlflow.log_param(arg , getattr(args , arg))
             
+            experiment_settings = {
+                'topk': topk , 
+                'ppi': ppi ,
+                'kegg_go': kegg_go ,
+                'corr': corr ,
+                'ac': ac ,
+                'lr': lr, 
+                'hidden_embedding': hidden_embedding ,
+                'max_epoch': max_epoch ,
+                'remove_isolated_node': remove_isolated_node ,
+            }
+            
+            mlflow.log_params(experiment_settings)
             mlflow.log_params(feature_info)
                 
             trainer.fit(
@@ -394,6 +483,7 @@ def multiomics(args):
             )
             
             print(modelTracker.best_model , modelTracker.best_train_acc)
+            
             mlflow.log_metrics(modelTracker.best_model)
             mlflow.log_metric('best_train_acc', modelTracker.best_train_acc)
             
@@ -421,7 +511,9 @@ def multiomics(args):
         confusion_matrix.update(output, actual)
         
         fig , ax  = confusion_matrix.plot()
-        fig.savefig("confusion_matrix.png")
+        # fig.savefig("confusion_matrix.png")
+        
+    return modelTracker.rank , ( gp_train_x1 , gp_train_x2 , gp_train_x3 ) , ( gp_test_x1 , gp_test_x2 , gp_test_x3 )
     
 def main():
     
@@ -431,13 +523,14 @@ def main():
     parser.add_argument("--hidden_embedding" , default=32 , type=int , help="Hidden embedding dimension for convolution and MLP")
     parser.add_argument("--dataset" , type=str , choices=['miRNA' , 'mRNA' , 'DNA'] , default='mRNA')
     parser.add_argument("--enrichment" , action="store_true")
-    parser.add_argument("--noppi" , action="store_true")
-    parser.add_argument("--nokegg" , action="store_true")
+    parser.add_argument("--ppi" , action="store_true")
+    parser.add_argument("--kegg" , action="store_true")
     parser.add_argument("--corr" , action="store_true")
     parser.add_argument("--topk" , type=int , default=50 )
     parser.add_argument("--max_epoch" , type=int , default=400)
     parser.add_argument("--disable_tracking" , action='store_true')
     parser.add_argument("--multiomics" , action='store_true')
+    parser.add_argument("--remove_isolated_node" , action='store_true')
     parser.add_argument("--experiment" , type=str , default="basic" , help="MLFlow expriement name")
     
     args = parser.parse_args()
@@ -451,7 +544,24 @@ def main():
     )
     
     if args.multiomics:
-        multiomics(args)
+        multiomics(
+            [r'BRCA/1_tr.csv' , r'BRCA/2_tr.csv' , r'BRCA/3_tr.csv'] ,
+            [r'BRCA/1_te.csv' , r'BRCA/2_te.csv' , r'BRCA/3_te.csv'] ,
+            [r'david/1_featname_conversion.csv' , r'david/2_featname_conversion.csv' , r'david/3_featname_conversion.csv'] ,
+            [r'david/ac_rule_1.tsv' , r'david/ac_rule_2.tsv' , r'david/ac_rule_3.tsv'] ,
+            [r'BRCA/labels_tr.csv' , r'BRCA/labels_te.csv'] ,
+            ppi=args.ppi ,
+            kegg_go=args.kegg ,
+            corr=args.corr ,
+            ac=args.enrichment ,
+            topk=args.topk ,
+            max_epoch=args.max_epoch ,
+            experiment=args.experiment ,
+            lr=args.lr ,
+            hidden_embedding=args.hidden_embedding ,
+            disable_tracking=args.disable_tracking ,
+            remove_isolated_node=args.remove_isolated_node
+        )
         return
     
     if args.dataset == 'mRNA':
