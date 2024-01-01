@@ -395,7 +395,7 @@ def collate(data_list):
     batchC = Batch.from_data_list([data[2] for data in data_list])
     return batchA, batchB , batchC
     
-def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_conversion_filepaths , ac_rule_filepaths , label_paths , ppi=True , kegg_go=True , corr=False , ac=True , topk=50 , disable_tracking = True , max_epoch=400 , experiment='basic' , lr=0.0001 , hidden_embedding=32 , remove_isolated_node=False , annotation_chart = './david/consol_anno_chart.tsv' , batch_size = 20 ):
+def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_conversion_filepaths , ac_rule_filepaths , label_paths , ppi=True , kegg_go=True , corr=False , ac=True , topk=50 , disable_tracking = True , max_epoch=400 , experiment='basic' , lr=0.0001 , hidden_embedding=32 , remove_isolated_node=False , annotation_chart = './david/consol_anno_chart.tsv' , batch_size = 20 , num_of_classes =5  ):
     
     assert len(omic_test_data_filepaths) == 3 , "Only support 3 omics data"
     assert len(omic_train_data_filepaths) == 3 , "Only support 3 omics data"
@@ -449,7 +449,7 @@ def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_c
         callbacks=[ modelTracker ]
     )
     
-    model = MultiGraphClassification(1 , hidden_embedding , 3 , lr=lr)
+    model = MultiGraphClassification(1 , hidden_embedding , num_of_classes , lr=lr)
     
     if not disable_tracking:
         
@@ -491,7 +491,7 @@ def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_c
             output = torch.concat([ x[0] for x in prediction ])
             actual = torch.concat([ x[1] for x in prediction ])
             
-            confusion_matrix = MulticlassConfusionMatrix(num_classes=3)
+            confusion_matrix = MulticlassConfusionMatrix(num_classes=num_of_classes)
             confusion_matrix.update(output, actual)
             
             fig , ax  = confusion_matrix.plot()
@@ -507,7 +507,7 @@ def multiomics( omic_train_data_filepaths , omic_test_data_filepaths , feature_c
         output = torch.concat([ x[0] for x in prediction ])
         actual = torch.concat([ x[1] for x in prediction ])
         
-        confusion_matrix = MulticlassConfusionMatrix(num_classes=3)
+        confusion_matrix = MulticlassConfusionMatrix(num_classes=num_of_classes)
         confusion_matrix.update(output, actual)
         
         fig , ax  = confusion_matrix.plot()
@@ -565,7 +565,8 @@ def main():
                 disable_tracking=args.disable_tracking ,
                 remove_isolated_node=args.remove_isolated_node, 
                 annotation_chart='david/consol_anno_chart.tsv', 
-                batch_size=args.batch_size
+                batch_size=args.batch_size, 
+                num_of_classes=5
             )
         else:
             multiomics(
@@ -586,7 +587,8 @@ def main():
                 disable_tracking=args.disable_tracking ,
                 remove_isolated_node=args.remove_isolated_node, 
                 annotation_chart='KIPAN/consol_anno_chart.csv', 
-                batch_size=args.batch_size
+                batch_size=args.batch_size, 
+                num_of_classes=5
             )
         return
     
