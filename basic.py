@@ -147,7 +147,7 @@ class GraphClassification(pl.LightningModule):
         self.confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
         # Sensitivity and specificity 
         self.specificity = Specificity(task="multiclass" , num_classes=num_classes)
-        self.sensivity = Recall(task="multiclass" , num_classes=num_classes)
+        self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
         
     def forward(self , x , edge_index , edge_attr , batch):
         # First layer graph convolution
@@ -237,7 +237,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
         # Sensitivity and specificity 
         self.specificity = Specificity(task="multiclass" , num_classes=num_classes)
-        self.sensivity = Recall(task="multiclass" , num_classes=num_classes)
+        self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
         output1 , perm11 , perm12 , score11 , score12 , batch11 , batch12 = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx)
