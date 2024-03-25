@@ -1,6 +1,7 @@
 pandas
 fastparquet
 pyarrow
-mlxtend # to be remove , 
+# mlxtend # to be remove , 
 pyfim
 networkx
+seaborn

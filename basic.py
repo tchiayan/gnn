@@ -62,27 +62,33 @@ class GrapConvolution(torch.nn.Module):
     def forward(self , x , edge_index , edge_attr = None): 
         
         if edge_attr is not None:
-            x1 = self.graph_conv1(x , edge_index , edge_attr).relu() # batch
+            x1 , x1_edge_attr = self.graph_conv1(x , edge_index , edge_attr , return_attention_weights=True)
+            x1 = x1.relu() # batch
             x1 = self.batch_norm1(x1)
-            x2 = self.graph_conv2(x1 , edge_index , edge_attr).relu()
+            x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , edge_attr , return_attention_weights=True)
+            x2 - x2.relu()
             x2 = self.batch_norm2(x2)
-            x3 = self.graph_conv3(x2 , edge_index , edge_attr).relu()
+            x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , edge_attr , return_attention_weights=True)
+            x3 = x3.relu()
             x3 = self.batch_norm3(x3)
         else: 
-            x1 = self.graph_conv1(x , edge_index).relu() # batch
+            x1 , x1_edge_attr = self.graph_conv1(x , edge_index , return_attention_weights=True)
+            x1 = x1.relu() # batch
             x1 = self.batch_norm1(x1)
-            x2 = self.graph_conv2(x1 , edge_index).relu()
+            x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , return_attention_weights=True)
+            x2 = x2.relu()
             x2 = self.batch_norm2(x2)
-            x3 = self.graph_conv3(x2 , edge_index).relu()
+            x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , return_attention_weights=True)
+            x3 = x3.relu()
             x3 = self.batch_norm3(x3)
             
         # Jumping knowledge 
         # x = torch.stack([x1 , x2 , x3], dim=-1).mean(dim=-1)
         if self.jump:
             x = torch.concat([x1,x2,x3] , dim=-1)
-            return x 
+            return x , x1_edge_attr , x2_edge_attr , x3_edge_attr
         else: 
-            return x3
+            return x3 , x1_edge_attr , x2_edge_attr , x3_edge_attr
         
 class GraphPooling(torch.nn.Module):
     def __init__(self , in_channels , hidden_channels) -> None: 
@@ -115,17 +121,21 @@ class GraphPooling(torch.nn.Module):
     def forward(self , x , edge_index , edge_attr , batch):
         
         # First layer graph convolution
-        x = self.graph_conv1(x , edge_index , edge_attr)
+        x , gc1_k1_edge_attr , gc1_k2_edge_attr , gc1_k3_edge_attr = self.graph_conv1(x , edge_index , edge_attr)
         x , edge_index , _ , batch1 ,  perm_1 , score_1 = self.pooling(x , edge_index , edge_attr , batch)
         x = self.graph_norm1(x , batch1)
         
         # Second layer graph convolution
-        x = self.graph_conv2(x , edge_index)
+        x , gc2_k1_edge_attr , gc2_k2_edge_attr , gc2_k3_edge_attr  = self.graph_conv2(x , edge_index)
         x , edge_index , _ , batch2 ,  perm_2 , score_2 = self.pooling2(x , edge_index , batch=batch1)
         x = self.graph_norm2(x , batch2)
         
         x = geom_nn.global_mean_pool(x , batch2)
 
+        # print(gc1_k1_edge_attr[0].shape)
+        # print(gc1_k1_edge_attr[1].shape)
+        # print(gc2_k1_edge_attr[0].shape)
+        # print(gc2_k1_edge_attr[1].shape)
         x = self.mlp(x)
         
         return x , perm_1 , perm_2 , score_1 , score_2 , batch1 , batch2
@@ -214,6 +224,11 @@ class MultiGraphClassification(pl.LightningModule):
         self.graph3 = GraphPooling(in_channels , hidden_channels)
         
         self.rank = {}
+        self.allrank = {
+            'omic1': [] ,
+            'omic2': [] ,
+            'omic3': [] ,
+        }
         self.genes = {
             'omic1_pool1': [],
             'omic1_pool2': [],  
@@ -253,6 +268,7 @@ class MultiGraphClassification(pl.LightningModule):
             'omic2': ( perm21 , perm22 , score21 , score22 , batch21 , batch22 ) ,
             'omic3': ( perm31 , perm32 , score31 , score32 , batch31 , batch32 ) ,
         }
+        
         return output
     
     def configure_optimizers(self) -> OptimizerLRScheduler:
@@ -335,6 +351,43 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
     
+    def test_step(self , batch): 
+        batch1 , batch2 , batch3 = batch 
+        x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
+        x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
+        x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
+        
+        output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+        
+        loss = self.loss(output , y1)
+        acc = self.acc(torch.nn.functional.softmax(output) , y1)
+        f1 = self.f1(torch.nn.functional.softmax(output) , y1)
+        auroc = self.auc(torch.nn.functional.softmax(output) , y1)
+        specificity = self.specificity(torch.nn.functional.softmax(output) , y1)
+        sensivity = self.sensivity(torch.nn.functional.softmax(output) , y1)
+        
+        omic1_pool1 , omic1_pool2 = self.get_rank_genes(self.rank['omic1'] , batch1.extra_label , batch1.num_graphs , 1000)
+        omic2_pool1 , omic2_pool2 = self.get_rank_genes(self.rank['omic2'] , batch2.extra_label , batch2.num_graphs , 1000)
+        omic3_pool1 , omic3_pool2 = self.get_rank_genes(self.rank['omic3'] , batch3.extra_label , batch3.num_graphs , 503)
+        
+        self.genes['omic1_pool1'].extend(omic1_pool1)
+        self.genes['omic1_pool2'].extend(omic1_pool2)
+        self.genes['omic2_pool1'].extend(omic2_pool1)
+        self.genes['omic2_pool2'].extend(omic2_pool2)
+        self.genes['omic3_pool1'].extend(omic3_pool1)
+        self.genes['omic3_pool2'].extend(omic3_pool2)
+        
+        self.allrank['omic1'].append(self.rank['omic1'])
+        self.allrank['omic2'].append(self.rank['omic2'])
+        self.allrank['omic3'].append(self.rank['omic3'])
+        
+        self.log("test_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
+        self.log("test_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
+        self.log("test_f1" , f1 , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
+        self.log("test_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
+        self.log("test_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
+        self.log("test_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
+        
     def predict_step(self , batch):
         batch1 , batch2 , batch3 = batch 
         x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
