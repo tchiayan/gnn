@@ -36,8 +36,12 @@ def main():
     dataloader_te = torch.utils.data.DataLoader(pair_dataset_te, batch_size=20, shuffle=False , collate_fn=collate, drop_last=True)
     
     # load model using checkpoint
-    model = MultiGraphClassification.load_from_checkpoint(r'epoch=88-step=2670.ckpt' , in_channels=1, hidden_channels=32 , num_classes=5)
-    model.mlp[2].register_forward_hook(hook)
+    model = MultiGraphClassification.load_from_checkpoint(r'lightning_logs/version_365/checkpoints/epoch=99-step=3000.ckpt' , in_channels=1, hidden_channels=32 , num_classes=5)
+    model.mlp[2].register_forward_hook(hook) # register hook to get the activation (Embedding of 3 omics layers)
+    
+    # print model summary 
+    print(pl.utilities.model_summary.ModelSummary(model))
+    print(model)
     
     # pl trainer 
     trainer = pl.Trainer()

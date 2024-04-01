@@ -20,6 +20,7 @@ from sklearn.model_selection import StratifiedKFold
 from math import ceil
 import argparse
 
+pl.seed_everything(12345)
 
 # Get the pooling layer 
 geom_model = {
@@ -132,6 +133,12 @@ class GraphPooling(torch.nn.Module):
         
         x = geom_nn.global_mean_pool(x , batch2)
 
+        dense_edge = geom_utils.to_dense_adj(gc1_k1_edge_attr[0] , batch  , edge_attr=gc1_k1_edge_attr[1])
+        dense_edge2 = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
+        print(dense_edge2.shape)
+        #print(gc1_k1_edge_attr[0]) # shape (2 , number of edges)
+        #print(gc1_k1_edge_attr[1]) # shape 
+        #print(batch)
         # print(gc1_k1_edge_attr[0].shape)
         # print(gc1_k1_edge_attr[1].shape)
         # print(gc2_k1_edge_attr[0].shape)
