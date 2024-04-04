@@ -119,11 +119,13 @@ class GraphPooling(torch.nn.Module):
             torch.nn.BatchNorm1d(hidden_channels*2), 
         )
         
-    def forward(self , x , edge_index , edge_attr , batch):
+    def forward(self , x , edge_index , edge_attr , batch , batch_idx = None ,  log=False):
         
         # First layer graph convolution
         x , gc1_k1_edge_attr , gc1_k2_edge_attr , gc1_k3_edge_attr = self.graph_conv1(x , edge_index , edge_attr)
+        #print(x)
         x , edge_index , _ , batch1 ,  perm_1 , score_1 = self.pooling(x , edge_index , edge_attr , batch)
+        
         x = self.graph_norm1(x , batch1)
         
         # Second layer graph convolution
@@ -133,9 +135,37 @@ class GraphPooling(torch.nn.Module):
         
         x = geom_nn.global_mean_pool(x , batch2)
 
-        dense_edge = geom_utils.to_dense_adj(gc1_k1_edge_attr[0] , batch  , edge_attr=gc1_k1_edge_attr[1])
-        dense_edge2 = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
-        print(dense_edge2.shape)
+        
+         
+        gc1_k1_edge_attr_dense = geom_utils.to_dense_adj(gc1_k1_edge_attr[0] , batch  , edge_attr=gc1_k1_edge_attr[1])
+        gc1_k2_edge_attr_dense = geom_utils.to_dense_adj(gc1_k2_edge_attr[0] , batch  , edge_attr=gc1_k2_edge_attr[1])
+        gc1_k3_edge_attr_dense = geom_utils.to_dense_adj(gc1_k3_edge_attr[0] , batch  , edge_attr=gc1_k3_edge_attr[1])
+        gc1_dense = torch.stack([gc1_k1_edge_attr_dense , gc1_k2_edge_attr_dense , gc1_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
+        fea_attr_scr1 = gc1_dense.squeeze(dim=-1).mean(dim=0)
+        
+        if log: 
+            pass
+            #print(gc1_dense.shape)
+            #print(fea_attr_scr1.shape)
+        gc2_k1_edge_attr_dense = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
+        gc2_k2_edge_attr_dense = geom_utils.to_dense_adj(gc2_k2_edge_attr[0] , batch1 , edge_attr=gc2_k2_edge_attr[1])
+        gc2_k3_edge_attr_dense = geom_utils.to_dense_adj(gc2_k3_edge_attr[0] , batch1 , edge_attr=gc2_k3_edge_attr[1])
+        gc2_dense = torch.stack([gc2_k1_edge_attr_dense , gc2_k2_edge_attr_dense , gc2_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
+        fea_attr_scr2 = gc2_dense.squeeze(dim=-1).mean(dim=0)
+            
+        # dense_edge2 = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
+        # print(dense_edge2.shape)
+        # print(perm_1) # index of the selected node 
+        # perm_1_batch = geom_utils.to_dense_batch(perm_1 , batch1)[0]
+        
+        # k = torch.zeros(20 , dense_edge.shape[0] , dense_edge.shape[1])
+        # for i in range(20):
+        #     idx_tsr = perm_1_batch[i].cpu()
+        #     print(idx_tsr)
+        #     print(dense_edge2[i])
+        #     k[i][idx_tsr][idx_tsr] = dense_edge2[i]
+        # print(k)
+        
         #print(gc1_k1_edge_attr[0]) # shape (2 , number of edges)
         #print(gc1_k1_edge_attr[1]) # shape 
         #print(batch)
@@ -145,7 +175,7 @@ class GraphPooling(torch.nn.Module):
         # print(gc2_k1_edge_attr[1].shape)
         x = self.mlp(x)
         
-        return x , perm_1 , perm_2 , score_1 , score_2 , batch1 , batch2
+        return x , perm_1 , perm_2 , score_1 , score_2 , batch1 , batch2 , fea_attr_scr1 , fea_attr_scr2
         
 class GraphClassification(pl.LightningModule):
     def __init__(self, in_channels , hidden_channels , num_classes , lr=0.0001) -> None:
@@ -262,18 +292,18 @@ class MultiGraphClassification(pl.LightningModule):
         self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
-        output1 , perm11 , perm12 , score11 , score12 , batch11 , batch12 = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx)
-        output2 , perm21 , perm22 , score21 , score22 , batch21 , batch22 = self.graph2(x2 , edge_index2 , edge_attr2 , batch2_idx)
-        output3 , perm31 , perm32 , score31 , score32 , batch31 , batch32 = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
+        output1 , perm11 , perm12 , score11 , score12 , batch11 , batch12 , attr_score11 , attr_score12 = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx , log=True)
+        output2 , perm21 , perm22 , score21 , score22 , batch21 , batch22 , attr_score21 , attr_score22 = self.graph2(x2 , edge_index2 , edge_attr2 , batch2_idx)
+        output3 , perm31 , perm32 , score31 , score32 , batch31 , batch32 , attr_score31 , attr_score32 = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
         
         output = torch.concat([output1 , output2 , output3] , dim=-1) # shape -> [ batch , hidden_dimension * 3 * 2 ]
         
         output = self.mlp(output)
         
         self.rank = {
-            'omic1': ( perm11 , perm12 , score11 , score12 , batch11 , batch12 ) ,
-            'omic2': ( perm21 , perm22 , score21 , score22 , batch21 , batch22 ) ,
-            'omic3': ( perm31 , perm32 , score31 , score32 , batch31 , batch32 ) ,
+            'omic1': ( perm11 , perm12 , score11 , score12 , batch11 , batch12 , attr_score11 , attr_score12 ) ,
+            'omic2': ( perm21 , perm22 , score21 , score22 , batch21 , batch22 , attr_score21 , attr_score22 ) ,
+            'omic3': ( perm31 , perm32 , score31 , score32 , batch31 , batch32 , attr_score31 , attr_score32 ) ,
         }
         
         return output
@@ -297,7 +327,7 @@ class MultiGraphClassification(pl.LightningModule):
         return loss
     
     def get_rank_genes(self , pooling_info , batch_extra_label , batch_size , num_genes=1000):
-        perm_1 , perm2 , score1 , score2 , pollbatch1 , poolbatch2 = pooling_info
+        perm_1 , perm2 , score1 , score2 , pollbatch1 , poolbatch2 , _ , _ = pooling_info
         
         #gene_perm1 = batch_extra_label[perm_1].view(batch_size , -1 ) # convert to batch size , gene size ( 0.5 ratio )
         gene_perm1 , mask_pool_1 = geom_utils.to_dense_batch(batch_extra_label[perm_1] , pollbatch1)

@@ -49,7 +49,7 @@ def main():
     
     # # explaination 
     # explainer_algo = GNNExplainer(epochs=100)
-    # model_config = ModelConfig(
+    # model_config = ModelConfig('
     #     mode='multiclass_classification' , 
     #     task_level='graph', 
     #     return_type='log_probs'
@@ -84,36 +84,54 @@ def main():
     # print(batch1)
     # print(batch1.shape)
     
-    genes = torch.zeros(batch_size*len(model.allrank[omic_type]) , gene_count)
+    genes1 = torch.zeros(batch_size*len(model.allrank[omic_type]) , gene_count)
     genes2 = torch.zeros(batch_size*len(model.allrank[omic_type]) , gene_count)
     batch_end_idx = batch_size*len(model.allrank[omic_type])
-    for idx ,  ( perm1 , perm2 , score1 , score2 , batch1 , batch2 ) in enumerate(model.allrank[omic_type]):
+    for idx ,  ( perm1 , perm2 , score1 , score2 , batch1 , batch2 , attr_score1, attr_score2 ) in enumerate(model.allrank[omic_type]):
         
         # dense_batch , mask = geom_utils.to_dense_batch(perm1 , batch1 , batch_size=20 , max_num_nodes=500)
+        
+        # get batch of data from dataloader 
+        
+        sns.heatmap(attr_score1.cpu().numpy())
+        plt.savefig('connection1.png')
+        plt.clf()
+        
         dense_graph = geom_data.Batch.from_data_list(omic_1[idx*20:(idx+1)*20]) # convert list of graph to batch
-        # ranked = dense_graph.extra_label[perm1.cpu()].view(20 , 500) # batch , selected_genes_index
-        # score = score1.cpu().view(20 , 500)
+        rank1 = dense_graph.extra_label[perm1.cpu()].view(20 , 500) # batch , selected_genes_index
+        
+        dense_edge = geom_utils.to_dense_adj(dense_graph.edge_index , batch=dense_graph.batch , edge_attr=dense_graph.edge_attr)
+        print(dense_edge.shape)
+        
+        score1 = score1.cpu().view(20 , math.floor(gene_count*0.5))
 
         #genes = torch.zeros(20 , 1000)
     
         # given ranked contain index of selected genes
         # we need to put score to original gene 
 
-        # for i in range(batch_size):
-        #     genes[(idx*batch_size)+i , ranked[i]] = score[i]
-        
+        for i in range(batch_size):
+            genes1[(idx*batch_size)+i , rank1[i]] = score1[i] + attr_score1[i].sum(dim=-1).cpu()
+        #print(attr_score1.shape)
+        #print(attr_score2.shape)
     # discovery_genes , genes_score = genes.mean(dim=0).topk(20)
     # print(discovery_genes)
     # print(genes_score)
-    
+
+        sns.heatmap(attr_score2.cpu().numpy())
+        plt.savefig('connection2.png')
+        plt.clf()
+        
         rank2 = dense_graph.extra_label[perm1.cpu()][perm2.cpu()].view(20 , math.floor(gene_count*0.5*0.5))
         score2 = score2.cpu().view(20 , math.floor(gene_count*0.5*0.5))
 
     
         for i in range(batch_size):
-            genes2[(idx*batch_size)+i , rank2[i]] = score2[i]
+            genes2[(idx*batch_size)+i , rank2[i]] = score2[i] + attr_score2[i].sum(dim=-1).cpu()
         
-        
+    
+    genes2 = genes2 + genes1 
+    
     # Print heatmap of the ranked genes
     sns.heatmap(genes2.cpu().numpy())
     plt.savefig('heatmap.png')
