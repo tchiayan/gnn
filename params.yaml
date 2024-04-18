@@ -1,0 +1,4 @@
+embedding_training: 
+  learning_rate: 0.001
+  output_channel: 128
+  learning_epoch: 300
