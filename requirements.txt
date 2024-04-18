@@ -5,3 +5,6 @@ pyarrow
 pyfim
 networkx
 seaborn
+dvc
+gdown
+-e .
