@@ -7,4 +7,5 @@ networkx
 seaborn
 dvc
 gdown
+python-box
 -e .
