@@ -1,10 +1,15 @@
 # large file 
 /PPI/*
+/artifacts/*
+
+# prior knowledge data from david 
+/data*
 
 # misc 
 __pycache__*
 lightning_logs*
 mlruns*
+/logs*
 
 # output AC 
 *.png
