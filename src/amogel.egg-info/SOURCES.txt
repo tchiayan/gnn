@@ -1,0 +1,6 @@
+README.md
+setup.py
+src/amogel.egg-info/PKG-INFO
+src/amogel.egg-info/SOURCES.txt
+src/amogel.egg-info/dependency_links.txt
+src/amogel.egg-info/top_level.txt
