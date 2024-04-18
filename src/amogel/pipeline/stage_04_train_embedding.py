@@ -15,16 +15,16 @@ class TrainEmbeddingPipeline():
         embedding_trainer_config = config.get_embedding_trainer_config()
         
         # train omic embedding 2 
-        # embeddingTrainer = EmbeddingTrainer(
-        #     out_channels=embedding_trainer_config.output_channel , 
-        #     epochs=embedding_trainer_config.learning_epoch , 
-        #     lr=embedding_trainer_config.learning_rate , 
-        #     omic_type=2 , 
-        #     dataset="BRCA" , 
-        #     config=embedding_trainer_config
-        # )
-        # embeddingTrainer.run()
-        # embeddingTrainer.save_embedding()
+        embeddingTrainer = EmbeddingTrainer(
+            out_channels=embedding_trainer_config.output_channel , 
+            epochs=embedding_trainer_config.learning_epoch , 
+            lr=embedding_trainer_config.learning_rate , 
+            omic_type=2 , 
+            dataset="BRCA" , 
+            config=embedding_trainer_config
+        )
+        embeddingTrainer.run()
+        embeddingTrainer.save_embedding()
         
         # train omic embedding 3 
         embeddingTrainer = EmbeddingTrainer(
@@ -38,17 +38,17 @@ class TrainEmbeddingPipeline():
         embeddingTrainer.run()
         embeddingTrainer.save_embedding()
         
-        # # train omic embedding 1 
-        # embeddingTrainer = EmbeddingTrainer(
-        #     out_channels=embedding_trainer_config.output_channel , 
-        #     epochs=embedding_trainer_config.learning_epoch , 
-        #     lr=embedding_trainer_config.learning_rate , 
-        #     omic_type=1 , 
-        #     dataset="BRCA" , 
-        #     config=embedding_trainer_config
-        # )
-        # embeddingTrainer.run()
-        # embeddingTrainer.save_embedding()
+        # train omic embedding 1 
+        embeddingTrainer = EmbeddingTrainer(
+            out_channels=embedding_trainer_config.output_channel , 
+            epochs=embedding_trainer_config.learning_epoch , 
+            lr=embedding_trainer_config.learning_rate , 
+            omic_type=1 , 
+            dataset="BRCA" , 
+            config=embedding_trainer_config
+        )
+        embeddingTrainer.run()
+        embeddingTrainer.save_embedding()
         
         
         
