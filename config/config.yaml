@@ -19,15 +19,15 @@ ppi_data_preparation:
 data_preprocessing:
   root_dir: artifacts/data_preprocessing
   KIPAN: 
-    miRNA: artifacts\data_ingestion\unzip\KIPAN\miRNA\KIPAN.miRseq_RPKM.txt
-    mRNA: artifacts\data_ingestion\unzip\KIPAN\mRNA\KIPAN.uncv2.mRNAseq_RSEM_all.txt
-    DNA: artifacts\data_ingestion\unzip\KIPAN\DNA\KIPAN.meth.by_mean.data.txt
-    label: artifacts\data_ingestion\unzip\KIPAN\All_CDEs.txt
+    miRNA: artifacts/data_ingestion/unzip/KIPAN/miRNA/KIPAN.miRseq_RPKM.txt
+    mRNA: artifacts/data_ingestion/unzip/KIPAN/mRNA/KIPAN.uncv2.mRNAseq_RSEM_all.txt
+    DNA: artifacts/data_ingestion/unzip/KIPAN/DNA/KIPAN.meth.by_mean.data.txt
+    label: artifacts/data_ingestion/unzip/KIPAN/All_CDEs.txt
   BRCA:
-    miRNA: artifacts\data_ingestion\unzip\BRCA\miRNA\BRCA.miRseq_RPKM.txt
-    mRNA: artifacts\data_ingestion\unzip\BRCA\mRNA\BRCA.uncv2.mRNAseq_RSEM_all.txt
+    miRNA: artifacts/data_ingestion/unzip/BRCA/miRNA/BRCA.miRseq_RPKM.txt
+    mRNA: artifacts/data_ingestion/unzip/BRCA/mRNA/BRCA.uncv2.mRNAseq_RSEM_all.txt
     DNA: artifacts/data_ingestion/unzip/BRCA/DNA/BRCA.meth.by_mean.data.txt
-    label: artifacts\data_ingestion\unzip\BRCA\All_CDEs.txt
+    label: artifacts/data_ingestion/unzip/BRCA/All_CDEs.txt
 
 train_embedding: 
   root_dir: artifacts/train_embedding
