@@ -1,0 +1,37 @@
+artifacts_root: artifacts
+
+
+data_preparation:
+  datasets:
+    BRCA: 1YHglvHVO6_1Q3d7kBqV-2ZuDflLidbFy
+    KIPAN: 1rOZ8WHHDvGMyTUH1bc83cObscjPa47eD
+  root_dir: artifacts/data_ingestion
+  unzip_dir: artifacts/data_ingestion/unzip
+
+ppi_data_preparation:
+  root_dir: artifacts/ppi_data
+  protein_link_src: https://stringdb-downloads.org/download/protein.links.v12.0/9606.protein.links.v12.0.txt.gz
+  protein_info_src: https://stringdb-downloads.org/download/protein.info.v12.0/9606.protein.info.v12.0.txt.gz
+  # protein_src: https://stringdb-downloads.org/download/protein.links.v12.0/9606.protein.links.v12.0.txt.gz
+  save_dir: artifacts/ppi_data 
+  # save_file: ppi_data.gz
+
+data_preprocessing:
+  root_dir: artifacts/data_preprocessing
+  KIPAN: 
+    miRNA: artifacts\data_ingestion\unzip\KIPAN\miRNA\KIPAN.miRseq_RPKM.txt
+    mRNA: artifacts\data_ingestion\unzip\KIPAN\mRNA\KIPAN.uncv2.mRNAseq_RSEM_all.txt
+    DNA: artifacts\data_ingestion\unzip\KIPAN\DNA\KIPAN.meth.by_mean.data.txt
+    label: artifacts\data_ingestion\unzip\KIPAN\All_CDEs.txt
+  BRCA:
+    miRNA: artifacts\data_ingestion\unzip\BRCA\miRNA\BRCA.miRseq_RPKM.txt
+    mRNA: artifacts\data_ingestion\unzip\BRCA\mRNA\BRCA.uncv2.mRNAseq_RSEM_all.txt
+    DNA: artifacts/data_ingestion/unzip/BRCA/DNA/BRCA.meth.by_mean.data.txt
+    label: artifacts\data_ingestion\unzip\BRCA\All_CDEs.txt
+
+train_embedding: 
+  root_dir: artifacts/train_embedding
+  data_preprocessing_dir: artifacts/data_preprocessing
+
+model: 
+  root_dir: model

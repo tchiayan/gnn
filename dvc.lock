@@ -1,0 +1,57 @@
+schema: '2.0'
+stages:
+  data_preparation:
+    cmd: python src/amogel/pipeline/stage_01_data_preparation.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 4f549569bddb8c463cfe8486d1d51772
+      size: 1403
+    - path: src/amogel/pipeline/stage_01_data_preparation.py
+      hash: md5
+      md5: 842e194cd17a5681ca912ff0b3aef267
+      size: 920
+    outs:
+    - path: artifacts/data_ingestion
+      hash: md5
+      md5: b52c05f3826113310cb2042f81cb5de0.dir
+      size: 10757518768
+      nfiles: 50
+  ppi_data_prepration:
+    cmd: python src/amogel/pipeline/stage_02_ppi_preparation.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: 4f549569bddb8c463cfe8486d1d51772
+      size: 1403
+    - path: src/amogel/pipeline/stage_02_ppi_preparation.py
+      hash: md5
+      md5: 3983deecbc41d28fd372f3dabe17f50b
+      size: 887
+    outs:
+    - path: artifacts/ppi_data
+      hash: md5
+      md5: 254634439ce0bbc824ffb7320c2a6493.dir
+      size: 722301045
+      nfiles: 4
+  data_preprocessing:
+    cmd: python src\amogel\pipeline\stage_03_data_preprocessing.py
+    deps:
+    - path: config\config.yaml
+      hash: md5
+      md5: 4f549569bddb8c463cfe8486d1d51772
+      size: 1403
+    - path: src\amogel\components\data_preprocessing.py
+      hash: md5
+      md5: 7274ac64ad5bb57dd8a6092a685e1ee2
+      size: 14534
+    - path: src\amogel\pipeline\stage_03_data_preprocessing.py
+      hash: md5
+      md5: 6fda2847e05423cb8afe0da35c29f16f
+      size: 1239
+    outs:
+    - path: artifacts\data_preprocessing
+      hash: md5
+      md5: 57d60e85e3d8a4d100bd2ee8b91ceda3.dir
+      size: 187160106
+      nfiles: 14

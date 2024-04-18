@@ -1,0 +1,32 @@
+stages:
+  data_preparation:
+    cmd: python src/amogel/pipeline/stage_01_data_preparation.py
+    deps:
+    - src/amogel/pipeline/stage_01_data_preparation.py
+    - config/config.yaml
+    outs:
+    - artifacts/data_ingestion
+
+  ppi_data_prepration:
+    cmd: python src/amogel/pipeline/stage_02_ppi_preparation.py
+    deps:
+    - src/amogel/pipeline/stage_02_ppi_preparation.py
+    - config/config.yaml
+    outs:
+    - artifacts/ppi_data
+  data_preprocessing:
+    cmd: python src\amogel\pipeline\stage_03_data_preprocessing.py
+    deps:
+    - config\config.yaml
+    - src\amogel\pipeline\stage_03_data_preprocessing.py
+    - src\amogel\components\data_preprocessing.py
+    outs:
+    - artifacts\data_preprocessing
+  train_embedding:
+    cmd: python src\amogel\pipeline\stage_04_train_embedding.py
+    deps:
+    - config\config.yaml
+    - src\amogel\components\train_embedding.py
+    - src\amogel\pipeline\stage_04_train_embedding.py
+    outs:
+    - artifacts\train_embedding
