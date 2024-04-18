@@ -10,10 +10,6 @@ import math
 #from efficient_apriori import apriori
 from fim import ista
 
-
-
-
-
 def generate_ac_to_file(data_file , label_file , output_file , min_support=0.9 , min_confidence=0.1 ,  min_rule=False , min_rule_per_class=1000 , custom_support=None , low_memory=False):
     
     # Discretization
