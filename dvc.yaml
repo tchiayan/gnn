@@ -15,18 +15,18 @@ stages:
     outs:
     - artifacts/ppi_data
   data_preprocessing:
-    cmd: python src\amogel\pipeline\stage_03_data_preprocessing.py
+    cmd: python src/amogel/pipeline/stage_03_data_preprocessing.py
     deps:
-    - config\config.yaml
-    - src\amogel\pipeline\stage_03_data_preprocessing.py
-    - src\amogel\components\data_preprocessing.py
+    - config/config.yaml
+    - src/amogel/pipeline/stage_03_data_preprocessing.py
+    - src/amogel/components/data_preprocessing.py
     outs:
-    - artifacts\data_preprocessing
+    - artifacts/data_preprocessing
   train_embedding:
-    cmd: python src\amogel\pipeline\stage_04_train_embedding.py
+    cmd: python src/amogel/pipeline/stage_04_train_embedding.py
     deps:
-    - config\config.yaml
-    - src\amogel\components\train_embedding.py
-    - src\amogel\pipeline\stage_04_train_embedding.py
+    - config/config.yaml
+    - src/amogel/components/train_embedding.py
+    - src/amogel/pipeline/stage_04_train_embedding.py
     outs:
-    - artifacts\train_embedding
+    - artifacts/train_embedding
