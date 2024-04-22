@@ -74,7 +74,7 @@ class ConfigurationManager:
     
     def get_knowledge_graph_config(self) -> KnowledgeGraphConfig: 
         config = self.config.knowledge_graph
-        params = self.config.knowledge_graph
+        params = self.params.knowledge_graph
         
         knowledge_graph_config = KnowledgeGraphConfig(
             root_dir=config.root_dir,
