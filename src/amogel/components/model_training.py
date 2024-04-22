@@ -4,6 +4,7 @@ from torch_geometric.data import DataLoader
 import torch 
 import pytorch_lightning as pl
 from amogel.entity.config_entity import ModelTrainingConfig
+import mlflow
 
 class ModelTraining():
     
@@ -22,11 +23,17 @@ class ModelTraining():
         
     def training(self):
         logger.info("Model training started")
-        train_loader = DataLoader(self.traing_graph , batch_size=32 , shuffle=True)
-        test_loader = DataLoader(self.testing_graph , batch_size=32 , shuffle=False)
+        mlflow.pytorch.autolog()
         
-        trainer = pl.Trainer(max_epochs=self.config.learning_epoch)
-        trainer.fit(self.model , train_loader , test_loader)
-        
+        with mlflow.start_run():
+            mlflow.log_params(self.config.dict())
+            mlflow.pytorch.log_model(self.model , "model")
+            
+            train_loader = DataLoader(self.traing_graph , batch_size=32 , shuffle=True)
+            test_loader = DataLoader(self.testing_graph , batch_size=32 , shuffle=False)
+            
+            trainer = pl.Trainer(max_epochs=self.config.learning_epoch)
+            trainer.fit(self.model , train_loader , test_loader)
+            
         logger.info("Model training completed")
-        
+            

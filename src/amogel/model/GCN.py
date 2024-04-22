@@ -1,7 +1,7 @@
 # build simple GCN model for graph classification 
 from torch_geometric.loader import DataLoader   
 import pytorch_lightning as pl
-from torchmetrics.classification import Accuracy , Precision , Recall , AUROC , ConfusionMatrix 
+from torchmetrics.classification import Accuracy , Precision , Recall , AUROC , ConfusionMatrix , F1Score , Specificity
 import torch
 from torch.nn import Linear
 import torch.nn.functional as F
@@ -22,8 +22,10 @@ class GCN(pl.LightningModule):
         self.criterion = torch.nn.CrossEntropyLoss()
         self.accuracy = Accuracy(task="multiclass", num_classes=output_class)
         self.precision = Precision(task="multiclass" , num_classes=output_class)
-        self.recall = Recall(task="multiclass" , num_classes=output_class)
+        self.specificity = Specificity(task="multiclass" , num_classes=output_class)
+        self.recall = Recall(task="multiclass" , num_classes=output_class , average="macro")
         self.auroc = AUROC(task="multiclass" ,num_classes=output_class)
+        self.f1score = F1Score(task="multiclass" , num_classes=output_class , average="macro")
         self.cfm_training = ConfusionMatrix(task="multiclass", num_classes=output_class)
         self.cfm_testing = ConfusionMatrix(task="multiclass", num_classes=output_class)
         self.lr = lr
@@ -68,6 +70,8 @@ class GCN(pl.LightningModule):
         preci = self.precision(out, y)
         rec = self.recall(out, y)
         auroc = self.auroc(out, y)
+        spe = self.specificity(out, y)
+        f1score = self.f1score(out, y)
         cfm = self.cfm_testing(out, y)  
         
         self.log('val_loss' , loss , prog_bar=True, on_epoch=True)
@@ -75,22 +79,26 @@ class GCN(pl.LightningModule):
         self.log('val_preci' , preci , prog_bar=True, on_epoch=True)
         self.log('val_rec' , rec , prog_bar=True, on_epoch=True)
         self.log('val_auroc' , auroc , prog_bar=True , on_epoch=True)
+        self.log('val_f1score' , f1score , on_epoch=True)
+        self.log('val_spe' , spe , on_epoch=True)
     
     def on_train_epoch_end(self) -> None:
         
-        cfm = self.cfm_training.compute().cpu().numpy()
-        print("")
-        print("-------- Confusion Matrix [Training] --------")
-        print(cfm)
+        if self.current_epoch % 10 == 0:
+            cfm = self.cfm_training.compute().cpu().numpy()
+            print("")
+            print("-------- Confusion Matrix [Training] --------")
+            print(cfm)
         
         self.cfm_training.reset()
         
     def on_validation_epoch_end(self):
         
-        cfm = self.cfm_testing.compute().cpu().numpy()
-        print("")
-        print("-------- Confusion Matrix [Testing] --------")
-        print(cfm)
+        if self.current_epoch % 10 == 0:
+            cfm = self.cfm_testing.compute().cpu().numpy()
+            print("")
+            print("-------- Confusion Matrix [Testing] --------")
+            print(cfm)
         
         self.cfm_testing.reset()
     
