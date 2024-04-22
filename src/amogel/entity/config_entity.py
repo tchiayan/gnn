@@ -45,3 +45,10 @@ class EmbeddingTrainerConfig:
     learning_rate: float 
     output_channel: int 
     learning_epoch: int
+    
+@dataclass(frozen=True)
+class KnowledgeGraphConfig: 
+    root_dir: Path 
+    embedding_dir: Path 
+    ppi_dir: Path 
+    data_dir: Path

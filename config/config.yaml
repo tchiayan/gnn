@@ -33,5 +33,11 @@ train_embedding:
   root_dir: artifacts/train_embedding
   data_preprocessing_dir: artifacts/data_preprocessing
 
+knowledge_graph:
+  root_dir: artifacts/knowledge_graph 
+  embedding_dir: artifacts/train_embedding 
+  ppi_dir: artifacts/ppi_data/unzip
+  data_dir: artifacts/data_preprocessing
+
 model: 
   root_dir: model

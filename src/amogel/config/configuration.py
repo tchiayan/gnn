@@ -2,7 +2,7 @@ from amogel.constants import *
 import os
 from amogel import *
 from amogel.utils.common import read_yaml
-from amogel.entity.config_entity import DataPreparationConfig , PPIConfiguration , DataPreprocessingConfig , EmbeddingTrainerConfig
+from amogel.entity.config_entity import DataPreparationConfig , PPIConfiguration , DataPreprocessingConfig , EmbeddingTrainerConfig , KnowledgeGraphConfig
 
 class ConfigurationManager: 
     def __init__(
@@ -71,3 +71,15 @@ class ConfigurationManager:
         )
         
         return embedding_trainer_config
+    
+    def get_knowledge_graph_config(self) -> KnowledgeGraphConfig: 
+        config  = self.config 
+        
+        knowledge_graph_config = KnowledgeGraphConfig(
+            root_dir=config.root_dir,
+            embedding_dir=config.embedding_dir,
+            ppi_dir=config.ppi_dir,
+            data_dir=config.data_dir
+        )
+        
+        return knowledge_graph_config

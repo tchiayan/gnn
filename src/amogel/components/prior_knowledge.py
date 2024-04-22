@@ -1,1 +1,0 @@
-### Generate prior knowledge graph 
