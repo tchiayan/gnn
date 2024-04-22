@@ -13,3 +13,4 @@ model_training:
   learning_rate: 0.00001
   learning_epoch: 300
   drop_out: 0.1
+  batch_size: 20

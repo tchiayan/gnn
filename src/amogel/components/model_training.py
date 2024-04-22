@@ -42,8 +42,8 @@ class ModelTraining():
             mlflow.log_params(self.config.__dict__)
             mlflow.pytorch.log_model(self.model , "model")
             
-            train_loader = DataLoader(self.traing_graph , batch_size=32 , shuffle=True)
-            test_loader = DataLoader(self.testing_graph , batch_size=32 , shuffle=False)
+            train_loader = DataLoader(self.traing_graph , batch_size=self.config.batch_size , shuffle=True)
+            test_loader = DataLoader(self.testing_graph , batch_size=self.config.batch_size , shuffle=False)
             
             trainer = pl.Trainer(max_epochs=self.config.learning_epoch)
             trainer.fit(self.model , train_loader , test_loader)

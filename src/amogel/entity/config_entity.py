@@ -68,3 +68,4 @@ class ModelTrainingConfig:
     combined_score: int
     model: str
     dataset: str
+    batch_size: int

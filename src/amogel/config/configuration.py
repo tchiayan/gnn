@@ -99,6 +99,7 @@ class ConfigurationManager:
             combined_score=self.params.knowledge_graph.ppi_combined_score, 
             model=params.model , 
             dataset=params.dataset
+            batch_size=params.batch_size
         )
         
         return model_training_config
