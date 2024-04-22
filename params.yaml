@@ -3,6 +3,9 @@ embedding_training:
   output_channel: 128
   learning_epoch: 300
 
+knowledge_graph: 
+  ppi_combined_score: 300 
+  
 model_training: 
   hidden_units: 128
   learning_rate: 0.001
