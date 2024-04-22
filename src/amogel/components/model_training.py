@@ -25,7 +25,7 @@ class ModelTraining():
         train_loader = DataLoader(self.traing_graph , batch_size=32 , shuffle=True)
         test_loader = DataLoader(self.testing_graph , batch_size=32 , shuffle=False)
         
-        trainer = pl.Trainer(max_epochs=10)
+        trainer = pl.Trainer(max_epochs=self.config.learning_epoch)
         trainer.fit(self.model , train_loader , test_loader)
         
         logger.info("Model training completed")
