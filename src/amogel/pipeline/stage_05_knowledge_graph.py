@@ -36,3 +36,16 @@ class KnowledgeGraphPipeline():
         #     dataset="BRCA"
         # )
         knowledge_graph.generate_graph()
+        
+        
+if __name__ == "__main__":
+    
+    logger.info(f"-------- Running {STAGE_NAME} --------")
+    
+    try:
+        main = KnowledgeGraphPipeline()
+        main.run()
+    except Exception as e:
+        logger.error(f"Error in {STAGE_NAME} : {e}")
+        raise e
+    logger.info(f"-------- Completed {STAGE_NAME} --------")
