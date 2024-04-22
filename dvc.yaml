@@ -28,7 +28,7 @@ stages:
     - config/config.yaml
     - src/amogel/components/train_embedding.py
     - src/amogel/pipeline/stage_04_train_embedding.py
-    params: 
+    params:
     - embedding_training
     outs:
     - artifacts/train_embedding
@@ -40,3 +40,8 @@ stages:
     - src/amogel/pipeline/stage_05_knowledge_graph.py
     outs:
     - artifacts/knowledge_graph
+  model_training:
+    cmd: python src/amogel/pipeline/stage_06_model_training.py
+    deps:
+    - src/amogel/components/model_training.py
+    - src/amogel/pipeline/stage_06_model_training.py
