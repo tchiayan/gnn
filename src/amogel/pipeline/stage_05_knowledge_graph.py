@@ -19,7 +19,7 @@ class KnowledgeGraphPipeline():
             omic_type=1 , 
             dataset="BRCA"
         )
-        knowledge_graph.generate_graph()
+        knowledge_graph.generate_knowledge_graph()
         
         # generate knowledge graph for omic type 2
         # knowledge_graph = KnowledgeGraph(
@@ -35,7 +35,7 @@ class KnowledgeGraphPipeline():
         #     omic_type=3 , 
         #     dataset="BRCA"
         # )
-        knowledge_graph.generate_graph()
+        # knowledge_graph.generate_knowledge_graph()
         
         
 if __name__ == "__main__":
