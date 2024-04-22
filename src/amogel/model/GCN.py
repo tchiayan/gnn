@@ -9,7 +9,7 @@ from torch_geometric.nn import GCNConv , BatchNorm
 from torch_geometric.nn import global_mean_pool
 
 class GCN(pl.LightningModule):
-    def __init__(self, num_features ,  hidden_channels , output_class , lr=0.0001):
+    def __init__(self, num_features ,  hidden_channels , output_class , lr=0.0001 , drop_out=0.5):
         super(GCN, self).__init__()
         torch.manual_seed(12345)
         self.conv1 = GCNConv(num_features, hidden_channels)
@@ -17,6 +17,7 @@ class GCN(pl.LightningModule):
         self.conv2 = GCNConv(hidden_channels, hidden_channels)
         self.bn2 = BatchNorm(hidden_channels)
         self.conv3 = GCNConv(hidden_channels, hidden_channels)
+        self.lin_hidden = Linear(hidden_channels, hidden_channels)
         self.lin = Linear(hidden_channels, output_class)
         self.criterion = torch.nn.CrossEntropyLoss()
         self.accuracy = Accuracy(task="multiclass", num_classes=output_class)
@@ -26,6 +27,7 @@ class GCN(pl.LightningModule):
         self.cfm_training = ConfusionMatrix(task="multiclass", num_classes=output_class)
         self.cfm_testing = ConfusionMatrix(task="multiclass", num_classes=output_class)
         self.lr = lr
+        self.drop_out = drop_out
 
     def forward(self, x, edge_index, batch):
         # 1. Obtain node embeddings 
@@ -41,7 +43,8 @@ class GCN(pl.LightningModule):
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
         # 3. Apply a final classifier
-        x = F.dropout(x, p=0.5, training=self.training)
+        x = F.dropout(x, p=self.drop_out , training=self.training)
+        x = self.lin_hidden(x).relu()
         x = self.lin(x)
         
         return x

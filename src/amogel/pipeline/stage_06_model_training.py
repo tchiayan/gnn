@@ -1,4 +1,5 @@
 from amogel import logger
+from amogel.config.configuration import ConfigurationManager
 from amogel.components.model_training import ModelTraining
 
 STAGE_NAME = "Model Training"
@@ -9,7 +10,10 @@ class ModelTrainingPipeline():
         pass
     
     def run(self):
-        model_training = ModelTraining()
+        config = ConfigurationManager()
+        training_config = config.get_model_training_config()
+        
+        model_training = ModelTraining(training_config)
         model_training.training()
         
 if __name__ == "__main__":

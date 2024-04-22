@@ -52,3 +52,10 @@ class KnowledgeGraphConfig:
     embedding_dir: Path 
     ppi_dir: Path 
     data_dir: Path
+    
+@dataclass(frozen=True)
+class ModelTrainingConfig: 
+    hidden_units: int 
+    learning_rate: float
+    learning_epoch: int
+    drop_out: float

@@ -2,7 +2,7 @@ from amogel.constants import *
 import os
 from amogel import *
 from amogel.utils.common import read_yaml
-from amogel.entity.config_entity import DataPreparationConfig , PPIConfiguration , DataPreprocessingConfig , EmbeddingTrainerConfig , KnowledgeGraphConfig
+from amogel.entity.config_entity import DataPreparationConfig , PPIConfiguration , DataPreprocessingConfig , EmbeddingTrainerConfig , KnowledgeGraphConfig , ModelTrainingConfig
 
 class ConfigurationManager: 
     def __init__(
@@ -83,3 +83,16 @@ class ConfigurationManager:
         )
         
         return knowledge_graph_config
+    
+    def get_model_training_config(self) -> ModelTrainingConfig:
+        
+        params = self.params.model_training 
+        
+        model_training_config = ModelTrainingConfig(
+            hidden_units=params.hidden_units,
+            learning_rate=params.learning_rate,
+            learning_epoch=params.learning_epoch, 
+            drop_out=params.drop_out
+        )
+        
+        return model_training_config
