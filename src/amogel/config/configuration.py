@@ -73,7 +73,7 @@ class ConfigurationManager:
         return embedding_trainer_config
     
     def get_knowledge_graph_config(self) -> KnowledgeGraphConfig: 
-        config  = self.config 
+        config  = self.config.knowledge_graph
         
         knowledge_graph_config = KnowledgeGraphConfig(
             root_dir=config.root_dir,
