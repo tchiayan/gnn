@@ -138,9 +138,11 @@ class KnowledgeGraph():
 
         df_protein_merged.drop(columns=["gene_name_x", "gene_name_y"], inplace=True)
         
-        
         # filter rows with only gene1_idx and gene2_idx
         df_filter_protein = df_protein_merged[df_protein_merged['gene1_idx'].notnull()][df_protein_merged['gene2_idx'].notnull()]
+        
+        if self.config.combined_score > 0:
+            df_filter_protein = df_filter_protein[df_filter_protein['combined_score'] >= self.config.combined_score]
 
         return df_filter_protein
 

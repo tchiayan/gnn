@@ -73,13 +73,15 @@ class ConfigurationManager:
         return embedding_trainer_config
     
     def get_knowledge_graph_config(self) -> KnowledgeGraphConfig: 
-        config  = self.config.knowledge_graph
+        config = self.config.knowledge_graph
+        params = self.config.knowledge_graph
         
         knowledge_graph_config = KnowledgeGraphConfig(
             root_dir=config.root_dir,
             embedding_dir=config.embedding_dir,
             ppi_dir=config.ppi_dir,
-            data_dir=config.data_dir
+            data_dir=config.data_dir, 
+            combined_score=params.ppi_combined_score
         )
         
         return knowledge_graph_config
@@ -92,7 +94,8 @@ class ConfigurationManager:
             hidden_units=params.hidden_units,
             learning_rate=params.learning_rate,
             learning_epoch=params.learning_epoch, 
-            drop_out=params.drop_out
+            drop_out=params.drop_out, 
+            combined_score=self.params.knowledge_graph.ppi_combined_score
         )
         
         return model_training_config

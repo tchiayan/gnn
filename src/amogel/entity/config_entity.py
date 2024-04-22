@@ -52,6 +52,7 @@ class KnowledgeGraphConfig:
     embedding_dir: Path 
     ppi_dir: Path 
     data_dir: Path
+    combined_score: int
     
 @dataclass(frozen=True)
 class ModelTrainingConfig: 
@@ -59,3 +60,4 @@ class ModelTrainingConfig:
     learning_rate: float
     learning_epoch: int
     drop_out: float
+    combined_score: int
