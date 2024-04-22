@@ -145,6 +145,7 @@ class KnowledgeGraph():
         return df_filter_protein
 
     def generate_knowledge_graph(self):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0] 
@@ -164,7 +165,7 @@ class KnowledgeGraph():
         training_graphs = []
         with tqdm(total=self.train_data.shape[0]) as pbar:
             for idx , sample in self.train_data.iterrows():
-                torch_sample = torch.tensor(sample.values, dtype=torch.float32).unsqueeze(-1)
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1)
                 node_embedding = torch.concat([torch_sample , self.embedding] , dim=-1)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=node_embedding , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) )
                 training_graphs.append(graph)
@@ -175,7 +176,7 @@ class KnowledgeGraph():
         testing_graphs = []
         with tqdm(total=self.test_data.shape[0]) as pbar: 
             for idx , sample in self.test_data.iterrows():
-                torch_sample = torch.tensor(sample.values, dtype=torch.float32).unsqueeze(-1)
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1)
                 node_embedding = torch.concat([torch_sample , self.embedding] , dim=-1)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=node_embedding , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) )
                 testing_graphs.append(graph)
