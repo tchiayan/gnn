@@ -45,3 +45,5 @@ stages:
     deps:
     - src/amogel/components/model_training.py
     - src/amogel/pipeline/stage_06_model_training.py
+    params: 
+    - model_training
