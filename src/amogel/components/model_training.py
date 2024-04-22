@@ -26,7 +26,7 @@ class ModelTraining():
         mlflow.pytorch.autolog()
         
         with mlflow.start_run():
-            mlflow.log_params(self.config.dict())
+            mlflow.log_params(self.config.__dict__)
             mlflow.pytorch.log_model(self.model , "model")
             
             train_loader = DataLoader(self.traing_graph , batch_size=32 , shuffle=True)
