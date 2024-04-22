@@ -10,6 +10,8 @@ from torch_geometric.nn import global_mean_pool
 
 class GCN(pl.LightningModule):
     def __init__(self, num_features ,  hidden_channels , output_class , lr=0.0001 , drop_out=0.5):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
         super(GCN, self).__init__()
         torch.manual_seed(12345)
         self.conv1 = GCNConv(num_features, hidden_channels)
@@ -19,7 +21,14 @@ class GCN(pl.LightningModule):
         self.conv3 = GCNConv(hidden_channels, hidden_channels)
         self.lin_hidden = Linear(hidden_channels, hidden_channels)
         self.lin = Linear(hidden_channels, output_class)
-        self.criterion = torch.nn.CrossEntropyLoss()
+        self.criterion = torch.nn.CrossEntropyLoss(weight=torch.tensor( [ 2.98 , 7.51 , 0.91 , 2.87 , 10.93 ] , device=device))
+        
+        # [[ 79   0  14  10   0] =  79+0+14+10+0 = 103 , 614 / (103 * 2) = 2.98
+        # [ 14   0  18   9   0] = 14+0+18+9+0 = 41 , 614 / ( 41 * 2) = 7.51
+        # [  1   0 327   7   0] = 1+0+327+7+0 = 335 , 614 / (335 * 2) = 0.91
+        # [  5   0  83  19   0] = 5+0+83+19+0 = 107 , 614 / (107 * 2) = 2.87
+        # [  0   0  27   1   0]] = 0+0+27+1+0 = 28 , 614 / (28 * 2) = 10.93
+
         self.accuracy = Accuracy(task="multiclass", num_classes=output_class)
         self.precision = Precision(task="multiclass" , num_classes=output_class)
         self.specificity = Specificity(task="multiclass" , num_classes=output_class)
