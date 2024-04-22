@@ -5,6 +5,9 @@ data_preparation:
   datasets:
     BRCA: 1YHglvHVO6_1Q3d7kBqV-2ZuDflLidbFy
     KIPAN: 1rOZ8WHHDvGMyTUH1bc83cObscjPa47eD
+  kegg_go:
+    BRCA: 1nCL_yreRA3VR_h_v6z1VMuLB7lMP9bz1
+    KIPAN: 1h1fCGZWXP4YZjMLJLqdBgy-EzoH01-VL
   root_dir: artifacts/data_ingestion
   unzip_dir: artifacts/data_ingestion/unzip
 

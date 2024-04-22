@@ -6,11 +6,14 @@ import torch
 import pandas as pd
 from tqdm import tqdm
 from amogel.utils.common import symmetric_matrix_to_coo , coo_to_pyg_data
+import itertools
+import numpy as np
 
 class KnowledgeGraph():
     
     def __init__(self , config: KnowledgeGraphConfig , omic_type: int , dataset: str):
         self.config = config 
+        os.makedirs(os.path.join(self.config.root_dir , dataset) , exist_ok=True)
         self.omic_type = omic_type 
         self.dataset = dataset
         self.embedding = self.__load_embedding()
@@ -143,23 +146,177 @@ class KnowledgeGraph():
         
         if self.config.combined_score > 0:
             df_filter_protein = df_filter_protein[df_filter_protein['combined_score'] >= self.config.combined_score]
-
+            
         return df_filter_protein
 
-    def generate_knowledge_graph(self):
+    def __generate_ppi_graph(self):
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0] 
+        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        
+        logger.info("Generating PPI Knowledge Tensor")
+        with tqdm(total=self.related_protein.shape[0]) as pbar: 
+            for idx, row in self.related_protein.iterrows():
+                knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += 1
+                #knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += 1
+                pbar.update(1)
+        
+        # save the knowledge tensor
+        logger.info("Saving PPI Knowledge Tensor")
+        torch.save(knowledge_tensor , os.path.join(self.config.root_dir , self.dataset , f"knowledge_ppi_{self.omic_type}.pt"))
+        
+        return knowledge_tensor 
+    
+    def __generate_kegg_go_graph(self):
+        
+        annotation_filepath = os.path.join("artifacts/data_ingestion/unzip" , f"{self.dataset}_kegg_go" , "consol_anno_chart.tsv")
+        if not os.path.exists(annotation_filepath):
+            raise FileNotFoundError(f"Annotation file not found at {annotation_filepath}")
+        
+        annotation_df = pd.read_csv(annotation_filepath , sep="\t")[['Genes' , 'PValue']]
+        annotation_df['Genes'] = annotation_df['Genes'].apply(lambda x: [float(n) for n in x.split(",")])
+        
+        feature_conversion_filepath = os.path.join("artifacts/data_ingestion/unzip" , f"{self.dataset}_kegg_go" , f"{self.omic_type}_featname_conversion.csv")
+        if not os.path.exists(feature_conversion_filepath):
+            raise FileNotFoundError(f"Feature conversion file not found at {feature_conversion_filepath}")
+        
+        feature_df = pd.read_csv(feature_conversion_filepath)
+        
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0] 
+        knowledge_tensor = torch.zeros(no_of_genes , no_of_genes)
+        
+        logger.info("Generating KEGG Pathway and GO Knowledge Tensor")
+        with tqdm(total=annotation_df.shape[0]) as pbar:
+            for idx , row in annotation_df.iterrows():
+                gene_ids = row['Genes']
+                #print(feature_1['gene id'])
+                #print(gene_ids)
+                #print(feature_1['gene id'].isin(gene_ids))
+                gene_idx = feature_df[feature_df['gene id'].isin(gene_ids) ].index.to_list()
+                #print(gene_idx)
+                gene_numpy = np.array(list(itertools.product(gene_idx , gene_idx)))
+                #print(gene_numpy)
+                if gene_numpy.shape[0] > 0:
+                    knowledge_tensor[gene_numpy[:,0] , gene_numpy[:,1]] += 1
+                
+                pbar.update(1)
+        
+        # save the knowledge tensor
+        logger.info("Saving KEGG Pathway and GO Knowledge Tensor")
+        torch.save(knowledge_tensor , os.path.join(self.config.root_dir , self.dataset , f"knowledge_kegg_go_{self.omic_type}.pt"))
+        
+        return knowledge_tensor 
+    
+    def __generate_synthetic_graph(self , topk = 50):
+        
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0]
+        
+        
+        synthetic_rules_filepath = os.path.join("artifacts/data_preprocessing" , self.dataset , f"ac_rule_{self.omic_type}.tsv" )
+        
+        if not os.path.exists(synthetic_rules_filepath):
+            raise FileNotFoundError(f"Synthetic rules file not found at {synthetic_rules_filepath}")
+        
+        synthetic_df = pd.read_csv(synthetic_rules_filepath , sep='\t' , header=None)        
+        synthetic_df.columns = ['class' , 'support', 'confidence' , 'antecedents', 'interestingness']
+        
+        synthetic_df_filtered = synthetic_df.groupby(["class"]).apply(lambda x : x.nlargest(topk , 'interestingness')).reset_index(drop=True)
+        
+        # generate synthetic graph for each class 
+        unique_class = synthetic_df['class'].unique()
+        synthetic_tensor = {}
+        
+        logger.info(f"Generating Synthetic Knowledge Tensor for {len(unique_class)} classes")
+        for label in unique_class:
+            
+            knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+            
+            for idx , row in synthetic_df_filtered[synthetic_df_filtered['class'] == label].iterrows():
+                node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
+                vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
+                knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
+                knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+            
+            synthetic_tensor[int(label)] = knowledge_tensor
+        
+        
+        return synthetic_tensor
+    
+    def generate_unified_graph(self , ppi=True , kegg_go=False, synthetic=True):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0]
+        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        
+        if ppi:
+            partial_knowledge_tensor = self.__generate_ppi_graph()
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if kegg_go:
+            partial_knowledge_tensor = self.__generate_kegg_go_graph()
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if synthetic:
+            synthetic_tensor_dict = self.__generate_synthetic_graph()
+        
+        logger.info("Generate training unified graph")
+        training_graphs = []
+        with tqdm(total=self.train_data.shape[0]) as pbar:
+            for idx , sample in self.train_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                if synthetic: 
+                    label = int(self.train_label.iloc[idx].values.item())
+                    # print(synthetic_tensor_dict.keys())
+                    # print(label)
+                    # print(type(label))
+                    topology = synthetic_tensor_dict[label] + knowledge_tensor
+                else: 
+                    topology = knowledge_tensor
+                    
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , 1)
+                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
+                training_graphs.append(graph)
+                pbar.update(1)
+        
+        logger.info("Generate testing unified graph")
+        testing_graphs = []
+        with tqdm(total=self.test_data.shape[0]) as pbar:
+            for idx , sample in self.test_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                topology = knowledge_tensor
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , 1)
+                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
+                testing_graphs.append(graph)
+                pbar.update(1)
+        
+        # Save the graphs 
+        logger.info("Saving Training Graphs")
+        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_unified_graphs_omic_{self.omic_type}.pt"))
+        logger.info("Saving Testing Graphs")
+        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_unified_graphs_omic_{self.omic_type}.pt"))
+        
+    
+    def generate_knowledge_graph(self, ppi=True , kegg_go=False):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0] 
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
-        logger.info("Generating Knowledge Tensor")
-        with tqdm(total=self.related_protein.shape[0]) as pbar: 
-            for idx, row in self.related_protein.iterrows():
-                knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += 1
-                #knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += 1
-                pbar.update(1)
-            
+        if ppi:
+            partial_knowledge_tensor = self.__generate_ppi_graph()
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if kegg_go:
+            partial_knowledge_tensor = self.__generate_kegg_go_graph()
+            knowledge_tensor += partial_knowledge_tensor
+        
         coo_matrix = symmetric_matrix_to_coo(knowledge_tensor.numpy() , 1)
         graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=self.embedding)
         
@@ -187,7 +344,7 @@ class KnowledgeGraph():
         # Save the graphs 
         logger.info("Saving Training Graphs")
         os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
-        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_graphs_omic_{self.omic_type}.pt"))
+        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_embedding_graphs_omic_{self.omic_type}.pt"))
         logger.info("Saving Testing Graphs")
-        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_graphs_omic_{self.omic_type}.pt"))
+        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_embedding_graphs_omic_{self.omic_type}.pt"))
         

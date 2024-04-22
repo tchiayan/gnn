@@ -6,11 +6,16 @@ from pathlib import Path
 class Datasets:
     BRCA: str 
     KIPAN: str 
-    
+
+@dataclass(frozen=True)
+class KeggGo: 
+    BRCA: str 
+    KIPAN: str
     
 @dataclass(frozen=True)
 class DataPreparationConfig: 
     datasets: Datasets 
+    kegg_go: KeggGo
     root_dir: Path 
     unzip_dir: Path
     
@@ -61,3 +66,5 @@ class ModelTrainingConfig:
     learning_epoch: int
     drop_out: float
     combined_score: int
+    model: str
+    dataset: str

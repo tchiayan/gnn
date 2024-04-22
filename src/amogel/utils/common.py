@@ -31,7 +31,7 @@ def read_yaml(path_to_yaml: Path) -> ConfigBox:
         raise e
     
 
-def coo_to_pyg_data(coo_matrix , node_features , y=None):
+def coo_to_pyg_data(coo_matrix , node_features , y=None , extra_label=False):
     values = torch.FloatTensor(coo_matrix.data).unsqueeze(1)
     indices = torch.LongTensor(np.vstack((coo_matrix.row, coo_matrix.col)))
     size = torch.Size(coo_matrix.shape)
@@ -39,7 +39,10 @@ def coo_to_pyg_data(coo_matrix , node_features , y=None):
     indices , values = to_undirected(indices , values)
     
     if y is not None:
-        return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=y)
+        if not extra_label:
+            return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=y)
+        else:
+            return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0] , y=y , extra_label=torch.arange(node_features.size(0)))
     else:
         return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0])
 

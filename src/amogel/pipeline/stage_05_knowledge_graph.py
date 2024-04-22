@@ -19,7 +19,8 @@ class KnowledgeGraphPipeline():
             omic_type=1 , 
             dataset="BRCA"
         )
-        knowledge_graph.generate_knowledge_graph()
+        knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
+        knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
         
         # generate knowledge graph for omic type 2
         # knowledge_graph = KnowledgeGraph(

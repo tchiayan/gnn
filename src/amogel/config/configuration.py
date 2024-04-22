@@ -18,6 +18,7 @@ class ConfigurationManager:
         
         data_ingestion_config = DataPreparationConfig(
             datasets=config.datasets,
+            kegg_go=config.kegg_go,
             root_dir=config.root_dir,
             unzip_dir=config.unzip_dir
         )
@@ -95,7 +96,9 @@ class ConfigurationManager:
             learning_rate=params.learning_rate,
             learning_epoch=params.learning_epoch, 
             drop_out=params.drop_out, 
-            combined_score=self.params.knowledge_graph.ppi_combined_score
+            combined_score=self.params.knowledge_graph.ppi_combined_score, 
+            model=params.model , 
+            dataset=params.dataset
         )
         
         return model_training_config

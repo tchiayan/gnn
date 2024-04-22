@@ -5,8 +5,8 @@ stages:
     deps:
     - path: config/config.yaml
       hash: md5
-      md5: 4f549569bddb8c463cfe8486d1d51772
-      size: 1403
+      md5: 7ea32f52ad7aeb98519c7022f0552939
+      size: 1806
     - path: src/amogel/pipeline/stage_01_data_preparation.py
       hash: md5
       md5: 842e194cd17a5681ca912ff0b3aef267
@@ -14,9 +14,9 @@ stages:
     outs:
     - path: artifacts/data_ingestion
       hash: md5
-      md5: b52c05f3826113310cb2042f81cb5de0.dir
-      size: 10757518768
-      nfiles: 50
+      md5: 23b38032eda1dc959b2fe77e89941675.dir
+      size: 33030144
+      nfiles: 1
   ppi_data_prepration:
     cmd: python src/amogel/pipeline/stage_02_ppi_preparation.py
     deps:
@@ -55,3 +55,23 @@ stages:
       md5: 57d60e85e3d8a4d100bd2ee8b91ceda3.dir
       size: 187160106
       nfiles: 14
+  model_training:
+    cmd: python src/amogel/pipeline/stage_06_model_training.py
+    deps:
+    - path: src/amogel/components/model_training.py
+      hash: md5
+      md5: f7252ec51ef2bf122fb7d1bf7efb624d
+      size: 2039
+    - path: src/amogel/pipeline/stage_06_model_training.py
+      hash: md5
+      md5: 026abc1a0b4d3ec4a4adcb81566761e6
+      size: 849
+    params:
+      params.yaml:
+        model_training:
+          dataset: unified
+          model: GraphClassification
+          hidden_units: 32
+          learning_rate: 1e-05
+          learning_epoch: 300
+          drop_out: 0.1
