@@ -7,7 +7,9 @@ import pandas as pd
 from tqdm import tqdm
 from amogel.utils.common import symmetric_matrix_to_coo , coo_to_pyg_data
 import itertools
+from torch_geometric.data import Data
 import numpy as np
+from typing import List
 
 class KnowledgeGraph():
     
@@ -23,6 +25,41 @@ class KnowledgeGraph():
         self.train_label = self.__load_train_label()
         self.test_label = self.__load_test_label()
         self.related_protein = self.__load_ppi()
+        
+        self.ppi_graph_tensor = self.__generate_ppi_graph()
+        self.kegg_go_graph_tensor = self.__generate_kegg_go_graph()
+        self.synthetic_graph = self.__generate_synthetic_graph()
+        
+        self.graph_topology_summary = []
+        self.dataset_summary = []
+        
+    
+    def summary(self):
+        """Summary of the generated dataset"""
+        
+        avg_no_of_edges_ppi = self.__measure_graph(self.ppi_graph_tensor)
+        avg_no_of_edges_kegg_go = self.__measure_graph(self.kegg_go_graph_tensor)
+        avg_no_of_edges_synthetic = {k: self.__measure_graph(v) for k,v in self.synthetic_graph.items()}
+        
+        self.graph_topology_summary.extend([
+            {"name":"PPI Graph" , "avg_no_of_edges":avg_no_of_edges_ppi},
+            {"name":"KEGG_GO Graph" , "avg_no_of_edges":avg_no_of_edges_kegg_go},
+        ])
+        
+        for k,v in avg_no_of_edges_synthetic.items():
+            self.graph_topology_summary.append({"name":f"Synthetic Graph Class {k}" , "avg_no_of_edges":v})
+
+        df = pd.DataFrame(self.graph_topology_summary)
+        
+        output_filepath = os.path.join(self.config.root_dir , self.dataset , f"graph_summary_omic_{self.omic_type}.txt")
+        logger.info(f"Saving graph summary to {output_filepath}")
+        df.to_csv(output_filepath , index=False)
+        
+        df = pd.DataFrame(self.dataset_summary)
+        output_filepath = os.path.join(self.config.root_dir , self.dataset , f"dataset_summary_omic_{self.omic_type}.txt")
+        logger.info(f"Saving dataset summary to {output_filepath}")
+        df.to_csv(output_filepath , index=False)
+        
     
     def __load_train_data(self):
         
@@ -244,6 +281,45 @@ class KnowledgeGraph():
         
         return synthetic_tensor
     
+    def __measure_graph(self , graph_tensor: torch.Tensor):
+        """measure graph matrix 
+        
+        Calculate average no of edges in the graph
+
+        Args:
+            graph_tensor (torch.Tensor): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        
+        assert graph_tensor.dim() == 2 , "Graph tensor should be 2D"
+        
+        avg_no_of_edges = graph_tensor.count_nonzero(dim=1).float().mean().item()
+        
+        return avg_no_of_edges
+    
+    def __measure_graph_from_data(self , data_list:List[Data] , name:str):
+        """_summary_
+
+        Args:
+            data (Data): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        num_nodes = []
+        num_edges = []
+        for data in data_list:
+            num_nodes.append(data.num_nodes)
+            num_edges.append(data.edge_index.shape[1] / 2)
+        
+        self.dataset_summary.append({
+            "name":name,
+            "avg_no_of_nodes":np.mean(num_nodes),
+            "avg_no_of_edges":np.mean(num_edges)
+        })
+        
     def generate_unified_graph(self , ppi=True , kegg_go=False, synthetic=True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
@@ -252,15 +328,15 @@ class KnowledgeGraph():
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         if ppi:
-            partial_knowledge_tensor = self.__generate_ppi_graph()
+            partial_knowledge_tensor = self.ppi_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
         if kegg_go:
-            partial_knowledge_tensor = self.__generate_kegg_go_graph()
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
         if synthetic:
-            synthetic_tensor_dict = self.__generate_synthetic_graph()
+            synthetic_tensor_dict = self.synthetic_graph
         
         logger.info("Generate training unified graph")
         training_graphs = []
@@ -294,6 +370,10 @@ class KnowledgeGraph():
                 testing_graphs.append(graph)
                 pbar.update(1)
         
+        # Measure 
+        self.__measure_graph_from_data(training_graphs , f"Training Unified Graph")
+        self.__measure_graph_from_data(testing_graphs , f"Testing Unified Graph")
+        
         # Save the graphs 
         logger.info("Saving Training Graphs")
         os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
@@ -310,15 +390,15 @@ class KnowledgeGraph():
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         if ppi:
-            partial_knowledge_tensor = self.__generate_ppi_graph()
+            partial_knowledge_tensor = self.ppi_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
         if kegg_go:
-            partial_knowledge_tensor = self.__generate_kegg_go_graph()
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
         if synthetic:
-            synthetic_tensor_dict = self.__generate_synthetic_graph()
+            synthetic_tensor_dict = self.synthetic_graph
         
         logger.info("Generate training correlation graph")
         training_graphs = []
@@ -350,9 +430,14 @@ class KnowledgeGraph():
             for idx , sample in self.test_data.iterrows():
                 # TO-DO 
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1)
-                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_data.iloc[idx].values , dtype=torch.long) , extra_label=True )
+                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
                 testing_graphs.append(graph)
                 pbar.update(1)
+        
+        
+        # Measure 
+        self.__measure_graph_from_data(training_graphs , f"Training Correlation Graph")
+        self.__measure_graph_from_data(testing_graphs , f"Testing Correlation Graph")
         
         # Save the graphs 
         logger.info("Saving Training Graphs")
@@ -370,11 +455,11 @@ class KnowledgeGraph():
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         if ppi:
-            partial_knowledge_tensor = self.__generate_ppi_graph()
+            partial_knowledge_tensor = self.ppi_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
         if kegg_go:
-            partial_knowledge_tensor = self.__generate_kegg_go_graph()
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
         coo_matrix = symmetric_matrix_to_coo(knowledge_tensor.numpy() , 1)
@@ -400,7 +485,11 @@ class KnowledgeGraph():
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=node_embedding , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) )
                 testing_graphs.append(graph)
                 pbar.update(1)
-                
+        
+        # Measure 
+        self.__measure_graph_from_data(training_graphs , f"Training Embedding Graph")
+        self.__measure_graph_from_data(testing_graphs , f"Testing Embedding Graph")
+        
         # Save the graphs 
         logger.info("Saving Training Graphs")
         os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
