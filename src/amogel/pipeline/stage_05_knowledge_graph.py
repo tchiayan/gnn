@@ -21,6 +21,7 @@ class KnowledgeGraphPipeline():
         )
         knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
         knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
+        knowledge_graph.generate_correlation_graph(ppi=True , kegg_go=True , synthetic=True)
         
         # generate knowledge graph for omic type 2
         # knowledge_graph = KnowledgeGraph(

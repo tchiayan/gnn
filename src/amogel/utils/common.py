@@ -55,7 +55,7 @@ def symmetric_matrix_to_coo(matrix , threshold):
     data = matrix[rows, cols]
 
     # Filter entries based on the threshold
-    mask = data >= threshold
+    mask = abs(data) >= threshold
     rows = rows[mask]
     cols = cols[mask]
     data = data[mask]

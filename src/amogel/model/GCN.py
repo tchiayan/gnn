@@ -24,11 +24,11 @@ class GCN(pl.LightningModule):
         self.weight = weight if weight is None else torch.tensor(weight, device=device)
         self.criterion = torch.nn.CrossEntropyLoss(weight=torch.tensor(self.weight , device=device))
         
-        # [[ 79   0  14  10   0] =  79+0+14+10+0 = 103 , 614 / (103) = 5.96
-        # [ 14   0  18   9   0] = 14+0+18+9+0 = 41 , 614 /  41 = 14.97
-        # [  1   0 327   7   0] = 1+0+327+7+0 = 335 , 614 / 335 = 1.83
-        # [  5   0  83  19   0] = 5+0+83+19+0 = 107 , 614 / 107 = 5.73
-        # [  0   0  27   1   0]] = 0+0+27+1+0 = 28 , 614 / 28 = 21.93
+        # [[ 79   0  14  10   0] =  79+0+14+10+0 = 103 , 614 / (103) = 5.96 , 1 - 103 / 614 = 0.83
+        # [ 14   0  18   9   0] = 14+0+18+9+0 = 41 , 614 /  41 = 14.97 , 1 - 41 / 614 = 0.93
+        # [  1   0 327   7   0] = 1+0+327+7+0 = 335 , 614 / 335 = 1.83 , 1 - 335 / 614 = 0.45
+        # [  5   0  83  19   0] = 5+0+83+19+0 = 107 , 614 / 107 = 5.73 , 1 - 107 / 614 = 0.82
+        # [  0   0  27   1   0]] = 0+0+27+1+0 = 28 , 614 / 28 = 21.93 , 1 - 28 / 614 = 0.95
 
         self.accuracy = Accuracy(task="multiclass", num_classes=num_classes)
         self.precision = Precision(task="multiclass" , num_classes=num_classes)

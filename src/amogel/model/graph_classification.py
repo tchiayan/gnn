@@ -1,3 +1,4 @@
+import mlflow
 import torch
 import pytorch_lightning as pl 
 import torch_geometric.nn as geom_nn
@@ -115,37 +116,17 @@ class GraphPooling(torch.nn.Module):
         gc2_k3_edge_attr_dense = geom_utils.to_dense_adj(gc2_k3_edge_attr[0] , batch1 , edge_attr=gc2_k3_edge_attr[1])
         gc2_dense = torch.stack([gc2_k1_edge_attr_dense , gc2_k2_edge_attr_dense , gc2_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
         fea_attr_scr2 = gc2_dense.squeeze(dim=-1).mean(dim=0)
-            
-        # dense_edge2 = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
-        # print(dense_edge2.shape)
-        # print(perm_1) # index of the selected node 
-        # perm_1_batch = geom_utils.to_dense_batch(perm_1 , batch1)[0]
         
-        # k = torch.zeros(20 , dense_edge.shape[0] , dense_edge.shape[1])
-        # for i in range(20):
-        #     idx_tsr = perm_1_batch[i].cpu()
-        #     print(idx_tsr)
-        #     print(dense_edge2[i])
-        #     k[i][idx_tsr][idx_tsr] = dense_edge2[i]
-        # print(k)
-        
-        #print(gc1_k1_edge_attr[0]) # shape (2 , number of edges)
-        #print(gc1_k1_edge_attr[1]) # shape 
-        #print(batch)
-        # print(gc1_k1_edge_attr[0].shape)
-        # print(gc1_k1_edge_attr[1].shape)
-        # print(gc2_k1_edge_attr[0].shape)
-        # print(gc2_k1_edge_attr[1].shape)
         x = self.mlp(x)
         
         return x , perm_1 , perm_2 , score_1 , score_2 , batch1 , batch2 , fea_attr_scr1 , fea_attr_scr2
     
 class GraphClassification(pl.LightningModule):
-    def __init__(self, in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1) -> None:
+    def __init__(self, in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None) -> None:
         super().__init__()
         
         self.lr = lr
-        
+        self.mlflow = mlflow
         # Graph model 
         self.graph = GraphPooling(in_channels , hidden_channels)
         self.linear = torch.nn.Linear(hidden_channels*2 , num_classes)
@@ -174,7 +155,8 @@ class GraphClassification(pl.LightningModule):
         output = self.forward(x , edge_index , edge_attr , batch_idx)
         
         loss = self.loss(output , y)
-        acc = self.acc(torch.nn.functional.softmax(output) , y)        
+        acc = self.acc(torch.nn.functional.softmax(output) , y)   
+        self.confusion_matrix.update(output , y)     
         
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch_idx.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_idx.shape[0])        
@@ -191,6 +173,7 @@ class GraphClassification(pl.LightningModule):
         f1 = self.f1(torch.nn.functional.softmax(output) , y)
         specificity = self.specificity(torch.nn.functional.softmax(output) , y)
         sensivity = self.sensivity(torch.nn.functional.softmax(output) , y)
+        self.confusion_matrix.update(output , y)    
         
         self.log("val_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch_idx.shape[0])
         self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_idx.shape[0])   
@@ -198,7 +181,21 @@ class GraphClassification(pl.LightningModule):
         self.log("val_f1" , f1 , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_idx.shape[0])
         self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_idx.shape[0])
         self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_idx.shape[0])
-        
+    
+    def on_test_epoch_end(self) -> None:
+        if self.current_epoch+1 % 10 == 0:
+            if self.mlflow is not None:
+                # calculate confusion matrix
+                fig , ax = self.confusion_matrix.plot() 
+                self.mlflow.log_figure(fig , "training_confusion_matrix_epoch_{}".format(self.current_epoch))
+                
+    def on_train_epoch_end(self) -> None: 
+        if self.current_epoch+1 % 10 == 0:
+            if self.mlflow is not None:
+                # calculate confusion matrix
+                fig , ax = self.confusion_matrix.plot() 
+                self.mlflow.log_figure(fig , "training_confusion_matrix_epoch_{}".format(self.current_epoch))
+    
     def test_step(self , batch):
         x , edge_index , edge_attr , batch_idx ,  y = batch.x , batch.edge_index , batch.edge_attr , batch.batch ,  batch.y
         
