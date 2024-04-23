@@ -361,7 +361,7 @@ class MultiGraphClassification(pl.LightningModule):
                 # calculate confusion matrix
             
                 fig , ax = self.confusion_matrix.plot() 
-                self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}".format(self.current_epoch))
+                self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}.png".format(self.current_epoch))
             self.confusion_matrix.reset()
     
     def on_train_epoch_end(self) -> None:
@@ -371,7 +371,7 @@ class MultiGraphClassification(pl.LightningModule):
                 logger.info("Logging confusion matrix for training epoch {}".format(self.current_epoch))
                 # calculate confusion matrix
                 fig , ax = self.confusion_matrix.plot() 
-                self.mlflow.log_figure(fig , "train_confusion_matrix_epoch_{}".format(self.current_epoch))
+                self.mlflow.log_figure(fig , "train_confusion_matrix_epoch_{}.png".format(self.current_epoch))
             self.confusion_matrix.reset()
             
     def test_step(self , batch): 
