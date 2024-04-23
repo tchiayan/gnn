@@ -51,12 +51,12 @@ class KnowledgeGraph():
 
         df = pd.DataFrame(self.graph_topology_summary)
         
-        output_filepath = os.path.join(self.config.root_dir , self.dataset , f"graph_summary_omic_{self.omic_type}.txt")
+        output_filepath = os.path.join(self.config.root_dir , self.dataset , f"graph_summary_omic_{self.omic_type}.csv")
         logger.info(f"Saving graph summary to {output_filepath}")
         df.to_csv(output_filepath , index=False)
         
         df = pd.DataFrame(self.dataset_summary)
-        output_filepath = os.path.join(self.config.root_dir , self.dataset , f"dataset_summary_omic_{self.omic_type}.txt")
+        output_filepath = os.path.join(self.config.root_dir , self.dataset , f"dataset_summary_omic_{self.omic_type}.csv")
         logger.info(f"Saving dataset summary to {output_filepath}")
         df.to_csv(output_filepath , index=False)
         

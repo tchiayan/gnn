@@ -96,11 +96,11 @@ class EmbeddingTrainer():
     
     def run(self):
         logger.info(f"Learn embedding for {self.omic_type} omic type")
-        for epoch in range(self.epochs):
+        for epoch in range(self.epochs+1):
             loss = self.train()
             auc , ap = self.test()
             if epoch % 10 == 0:
-                logger.info(f"Epoch: {epoch+1} | Loss: {loss} | AUC: {auc} | AP: {ap}")
+                logger.info(f"Epoch: {epoch} | Loss: {loss} | AUC: {auc} | AP: {ap}")
                 
         self.loss = loss 
         self.auc = auc 
