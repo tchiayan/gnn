@@ -32,12 +32,24 @@ class OmicsRawDataPaths:
     mRNA: Path
     DNA: Path 
     label: Path
-    
+
+@dataclass(frozen=True)
+class OmicFilteringConfig: 
+    variance: float 
+    annova: int 
+
+@dataclass(frozen=True)
+class OmicTypeWithFilteringConfig: 
+    miRNA: OmicFilteringConfig
+    mRNA: OmicFilteringConfig
+    DNA: OmicFilteringConfig
+
 @dataclass(frozen=True)
 class DataPreprocessingConfig: 
     root_dir: Path 
     BRCA: OmicsRawDataPaths
     KIPAN: OmicsRawDataPaths
+    preprocessing: OmicTypeWithFilteringConfig
     
     def __getitem__(self, key):
         return getattr(self, key)

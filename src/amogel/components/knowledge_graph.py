@@ -210,6 +210,7 @@ class KnowledgeGraph():
         if not os.path.exists(annotation_filepath):
             raise FileNotFoundError(f"Annotation file not found at {annotation_filepath}")
         
+        logger.info(f"Loading annotation data (KEGG pathway and GO) : {annotation_filepath}")
         annotation_df = pd.read_csv(annotation_filepath , sep="\t")[['Genes' , 'PValue']]
         annotation_df['Genes'] = annotation_df['Genes'].apply(lambda x: [float(n) for n in x.split(",")])
         
@@ -217,12 +218,12 @@ class KnowledgeGraph():
         if not os.path.exists(feature_conversion_filepath):
             raise FileNotFoundError(f"Feature conversion file not found at {feature_conversion_filepath}")
         
+        logger.info(f"Loading feature conversion data : {feature_conversion_filepath}")
         feature_df = pd.read_csv(feature_conversion_filepath)
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0] 
         knowledge_tensor = torch.zeros(no_of_genes , no_of_genes)
-        
         logger.info("Generating KEGG Pathway and GO Knowledge Tensor")
         with tqdm(total=annotation_df.shape[0]) as pbar:
             for idx , row in annotation_df.iterrows():
@@ -232,7 +233,7 @@ class KnowledgeGraph():
                 #print(feature_1['gene id'].isin(gene_ids))
                 gene_idx = feature_df[feature_df['gene id'].isin(gene_ids) ].index.to_list()
                 #print(gene_idx)
-                gene_numpy = np.array(list(itertools.product(gene_idx , gene_idx)))
+                gene_numpy = np.array(list(itertools.product(gene_idx , gene_idx))) # number of edges , 2 (source and target)
                 #print(gene_numpy)
                 if gene_numpy.shape[0] > 0:
                     knowledge_tensor[gene_numpy[:,0] , gene_numpy[:,1]] += 1
@@ -463,7 +464,6 @@ class KnowledgeGraph():
             knowledge_tensor += partial_knowledge_tensor
         
         coo_matrix = symmetric_matrix_to_coo(knowledge_tensor.numpy() , 1)
-        graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=self.embedding)
         
         logger.info("Generating Assembled Knowledge Graph [Training Graph]")
         training_graphs = []
@@ -471,7 +471,7 @@ class KnowledgeGraph():
             for idx , sample in self.train_data.iterrows():
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1)
                 node_embedding = torch.concat([torch_sample , self.embedding] , dim=-1)
-                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=node_embedding , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) )
+                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=node_embedding , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
                 training_graphs.append(graph)
                 pbar.update(1)
                 

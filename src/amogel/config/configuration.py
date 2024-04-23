@@ -39,6 +39,7 @@ class ConfigurationManager:
     
     def get_data_preprocessing_config(self) -> DataPreprocessingConfig: 
         config = self.config.data_preprocessing 
+        params = self.params.data_preprocessing
         
         data_preprocessing_config = DataPreprocessingConfig(
             root_dir=config.root_dir,
@@ -53,7 +54,8 @@ class ConfigurationManager:
                     'mRNA': config.KIPAN.mRNA,
                     'DNA': config.KIPAN.DNA, 
                     'label': config.BRCA.label
-                }
+                }, 
+            preprocessing=params
         )   
         
         return data_preprocessing_config

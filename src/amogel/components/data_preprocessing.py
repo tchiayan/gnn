@@ -154,15 +154,15 @@ class DataPreprocessing:
         
         # Variance filtering 
         logger.info("Variance filtering")
-        df_common_miRNA = self.filtering_variance(df_common_miRNA , threshold=0.01)
-        df_common_mRNA = self.filtering_variance(df_common_mRNA , threshold=0.1)
-        df_common_DNA = self.filtering_variance(df_common_DNA , threshold=0.001)
+        df_common_miRNA = self.filtering_variance(df_common_miRNA , threshold=self.config.preprocessing.miRNA.variance)
+        df_common_mRNA = self.filtering_variance(df_common_mRNA , threshold=self.config.preprocessing.mRNA.variance)
+        df_common_DNA = self.filtering_variance(df_common_DNA , threshold=self.config.preprocessing.DNA.variance)
         
         # ANOVA-F filtering
         logger.info("ANOVA-F filtering")
-        df_common_miRNA = self.annovaf_filtering(df_common_miRNA , df_label , target=target , threshold=502)
-        df_common_mRNA = self.annovaf_filtering(df_common_mRNA , df_label , target=target , threshold=1000)
-        df_common_DNA = self.annovaf_filtering(df_common_DNA , df_label , target=target , threshold=1000)
+        df_common_miRNA = self.annovaf_filtering(df_common_miRNA , df_label , target=target , threshold=self.config.preprocessing.miRNA.annova)
+        df_common_mRNA = self.annovaf_filtering(df_common_mRNA , df_label , target=target , threshold=self.config.preprocessing.mRNA.annova)
+        df_common_DNA = self.annovaf_filtering(df_common_DNA , df_label , target=target , threshold=self.config.preprocessing.DNA.annova)
         
         # scale the data to 0-1
         logger.info("Scaling the data")

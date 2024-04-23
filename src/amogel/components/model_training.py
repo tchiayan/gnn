@@ -1,6 +1,7 @@
 from amogel import logger 
 from amogel.model.GCN import GCN
-from amogel.model.graph_classification import GraphClassification
+from amogel.model.graph_classification import GraphClassification , MultiGraphClassification
+from amogel.utils.pair_dataset import PairDataset
 from torch_geometric.data import DataLoader , Batch
 import torch 
 import pytorch_lightning as pl
@@ -8,8 +9,7 @@ from amogel.entity.config_entity import ModelTrainingConfig
 import mlflow
 
 MODEL = {
-    'GCN' : GCN , 
-    'GraphClassification' : GraphClassification
+    'MultiGraphClassification' : MultiGraphClassification
 }
 
 class ModelTraining():
@@ -20,14 +20,72 @@ class ModelTraining():
         self.config = config
         
         if self.config.dataset == "unified":
-            self.traing_graph = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_1.pt")
-            self.testing_graph = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_1.pt")
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_3.pt")
+            
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_3.pt")
+            
+            self.train_loader = DataLoader(
+                PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) , 
+                batch_size=self.config.batch_size , 
+                shuffle=True , 
+                collate_fn=self.collate
+            )
+            
+            self.test_loader = DataLoader(
+                PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) , 
+                batch_size=self.config.batch_size , 
+                shuffle=False , 
+                collate_fn=self.collate
+            )
+            
         elif self.config.dataset == "embedding": 
-            self.traing_graph = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_1.pt")
-            self.testing_graph = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_1.pt")
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_3.pt")
+            
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_3.pt")
+            
+            self.train_loader = DataLoader(
+                PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) , 
+                batch_size=self.config.batch_size , 
+                shuffle=True , 
+                collate_fn=self.collate
+            )
+            
+            self.test_loader = DataLoader(
+                PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) , 
+                batch_size=self.config.batch_size , 
+                shuffle=False , 
+                collate_fn=self.collate
+            )
         elif self.config.dataset == "correlation":
-            self.traing_graph = torch.load(r"artifacts/knowledge_graph/BRCA/training_corr_graphs_omic_1.pt")
-            self.testing_graph = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_1.pt")
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_corr_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_corr_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_corr_graphs_omic_3.pt")
+            
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_3.pt")
+            
+            self.train_loader = DataLoader(
+                PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) ,
+                batch_size=self.config.batch_size ,
+                shuffle=True ,
+                collate_fn=self.collate
+            )
+            
+            self.test_loader = DataLoader(
+                PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) ,
+                batch_size=self.config.batch_size ,
+                shuffle=False ,
+                collate_fn=self.collate
+            )
         else: 
             raise ValueError("Invalid parameters for dataset")
         
@@ -48,11 +106,8 @@ class ModelTraining():
             mlflow.log_params(self.config.__dict__)
             mlflow.pytorch.log_model(self.model , "model")
             
-            train_loader = DataLoader(self.traing_graph , batch_size=self.config.batch_size , shuffle=True)
-            test_loader = DataLoader(self.testing_graph , batch_size=self.config.batch_size , shuffle=False)
-            
             trainer = pl.Trainer(max_epochs=self.config.learning_epoch)
-            trainer.fit(self.model , train_loader , test_loader)
+            trainer.fit(self.model , self.train_loader , self.test_loader)
             
         logger.info("Model training completed")
         
