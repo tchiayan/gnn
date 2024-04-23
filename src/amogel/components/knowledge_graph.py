@@ -8,6 +8,7 @@ from tqdm import tqdm
 from amogel.utils.common import symmetric_matrix_to_coo , coo_to_pyg_data
 import itertools
 from torch_geometric.data import Data
+from torch_geometric.utils import is_undirected
 import numpy as np
 from typing import List
 
@@ -311,14 +312,23 @@ class KnowledgeGraph():
         """
         num_nodes = []
         num_edges = []
+        undirected_graph_count = 0
+        directed_graph_count = 0 
+        
         for data in data_list:
             num_nodes.append(data.num_nodes)
             num_edges.append(data.edge_index.shape[1] / 2)
+            if is_undirected(data.edge_index):
+                undirected_graph_count += 1
+            else:
+                directed_graph_count += 1
         
         self.dataset_summary.append({
             "name":name,
             "avg_no_of_nodes":np.mean(num_nodes),
-            "avg_no_of_edges":np.mean(num_edges)
+            "avg_no_of_edges":np.mean(num_edges), 
+            "no_of_undirected_graph":undirected_graph_count,
+            "no_of_directed_graph":directed_graph_count
         })
         
     def generate_unified_graph(self , ppi=True , kegg_go=False, synthetic=True):
