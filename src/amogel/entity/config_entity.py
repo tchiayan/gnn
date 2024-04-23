@@ -69,4 +69,4 @@ class ModelTrainingConfig:
     model: str
     dataset: str
     batch_size: int
-    weight: List[float , float , float , float , float]
+    weight: List[float]
