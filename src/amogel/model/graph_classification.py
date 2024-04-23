@@ -2,7 +2,7 @@ import torch
 import pytorch_lightning as pl 
 import torch_geometric.nn as geom_nn
 import torch_geometric.utils as geom_utils
-from torchmetrics import Accuracy , AUROC , F1Score , Specificity , Recall 
+from torchmetrics import Accuracy , AUROC , F1Score , Specificity , Recall , ConfusionMatrix
 from torchmetrics.classification import MulticlassConfusionMatrix
 from lightning.pytorch.utilities.types import  OptimizerLRScheduler
 from torch import optim

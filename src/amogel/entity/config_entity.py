@@ -1,6 +1,6 @@
 from dataclasses import dataclass 
 from pathlib import Path 
-
+from typing import List
 
 @dataclass(frozen=True)
 class Datasets:
@@ -69,3 +69,4 @@ class ModelTrainingConfig:
     model: str
     dataset: str
     batch_size: int
+    weight: List[float , float , float , float , float]
