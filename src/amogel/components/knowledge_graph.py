@@ -320,7 +320,7 @@ class KnowledgeGraph():
         if synthetic:
             synthetic_tensor_dict = self.__generate_synthetic_graph()
         
-        logger.info("Generate training unified graph")
+        logger.info("Generate training correlation graph")
         training_graphs = []
         with tqdm(total=self.train_data.shape[0]) as pbar:
             for idx , sample in self.train_data.iterrows():
@@ -340,10 +340,10 @@ class KnowledgeGraph():
                 training_graphs.append(graph)
                 pbar.update(1)
         
-        logger.info("Generate testing unified graph")
+        logger.info("Generate testing correlation graph")
         testing_graphs = []
         # Get correlation graph for test dataset 
-        corr_matrix = torch.tensor(self.test_data.corr().to_numpy() , device=device)
+        corr_matrix = self.test_data.corr().to_numpy()
         coo_matrix = symmetric_matrix_to_coo(corr_matrix , 0.5)
         
         with tqdm(total=self.test_data.shape[0]) as pbar:
