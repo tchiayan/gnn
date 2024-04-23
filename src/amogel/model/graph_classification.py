@@ -7,6 +7,7 @@ from torchmetrics import Accuracy , AUROC , F1Score , Specificity , Recall , Con
 from torchmetrics.classification import MulticlassConfusionMatrix
 from lightning.pytorch.utilities.types import  OptimizerLRScheduler
 from torch import optim
+from amogel import logger
 
 class GraphConvolution(torch.nn.Module):
     def __init__(self , in_channels , hidden_channels , out_channels , jump = True , **args):
@@ -281,6 +282,7 @@ class MultiGraphClassification(pl.LightningModule):
         
         loss = self.loss(output , y1)
         acc = self.acc(torch.nn.functional.softmax(output) , y1)
+        self.confusion_matrix.update(output , y1)  
         
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
@@ -327,6 +329,7 @@ class MultiGraphClassification(pl.LightningModule):
         auroc = self.auc(torch.nn.functional.softmax(output) , y1)
         specificity = self.specificity(torch.nn.functional.softmax(output) , y1)
         sensivity = self.sensivity(torch.nn.functional.softmax(output) , y1)
+        self.confusion_matrix.update(output , y1)  
         
         if self.current_epoch == self.trainer.max_epochs - 1:
             
@@ -348,6 +351,24 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
     
+    def on_test_epoch_end(self) -> None: 
+        
+        if self.current_epoch % 10 == 0:
+            logger.info("Logging confusion matrix for test epoch {}".format(self.current_epoch))
+            # calculate confusion matrix
+            fig , ax = self.confusion_matrix.plot() 
+            self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}".format(self.current_epoch))
+            self.confusion_matrix.reset()
+    
+    def on_train_epoch_end(self) -> None:
+        
+        if self.current_epoch % 10 == 0:
+            logger.info("Logging confusion matrix for training epoch {}".format(self.current_epoch))
+            # calculate confusion matrix
+            fig , ax = self.confusion_matrix.plot() 
+            self.mlflow.log_figure(fig , "train_confusion_matrix_epoch_{}".format(self.current_epoch))
+            self.confusion_matrix.reset()
+            
     def test_step(self , batch): 
         batch1 , batch2 , batch3 = batch 
         x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y

@@ -19,6 +19,7 @@ class ModelTraining():
         
         self.config = config
         
+        logger.info(f"Loading dataset [{self.config.dataset}] for model [{self.config.model}] ")
         if self.config.dataset == "unified":
             train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_1.pt")
             train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_2.pt")
@@ -27,6 +28,8 @@ class ModelTraining():
             test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_1.pt")
             test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_2.pt")
             test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_3.pt")
+            
+            self.in_channels = train_omic_1_graphs[0].x.size(1)
             
             self.train_loader = DataLoader(
                 PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) , 
@@ -41,7 +44,6 @@ class ModelTraining():
                 shuffle=False , 
                 collate_fn=self.collate
             )
-            
         elif self.config.dataset == "embedding": 
             train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_1.pt")
             train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_2.pt")
@@ -50,6 +52,8 @@ class ModelTraining():
             test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_1.pt")
             test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_2.pt")
             test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_3.pt")
+            
+            self.in_channels = train_omic_1_graphs[0].x.size(1)
             
             self.train_loader = DataLoader(
                 PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) , 
@@ -73,6 +77,8 @@ class ModelTraining():
             test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_2.pt")
             test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_3.pt")
             
+            self.in_channels = train_omic_1_graphs[0].x.size(1)
+            
             self.train_loader = DataLoader(
                 PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) ,
                 batch_size=self.config.batch_size ,
@@ -90,15 +96,17 @@ class ModelTraining():
             raise ValueError("Invalid parameters for dataset")
         
         self.model = MODEL[self.config.model](
-            in_channels=self.traing_graph[0].x.size(1),
+            in_channels=self.in_channels,
             hidden_channels=self.config.hidden_units,
             num_classes=5,
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
-            mlflow=mlflow
         )
         
-    def training(self):
+    def training(self) -> None:
+        """Train model using Pytorch Lightning Trainer.
+        """
+        
         logger.info("Model training started")
         mlflow.pytorch.autolog()
         
