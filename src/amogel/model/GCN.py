@@ -7,9 +7,10 @@ from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv , BatchNorm 
 from torch_geometric.nn import global_mean_pool
+import mlflow
 
 class GCN(pl.LightningModule):
-    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.5, weight=None):
+    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.5, weight=None, mlflow:mlflow = None):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         super(GCN, self).__init__()

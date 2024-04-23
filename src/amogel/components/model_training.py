@@ -36,7 +36,8 @@ class ModelTraining():
             hidden_channels=self.config.hidden_units,
             num_classes=5,
             lr=self.config.learning_rate,
-            drop_out=self.config.drop_out
+            drop_out=self.config.drop_out, 
+            mlflow=mlflow
         )
         
     def training(self):
