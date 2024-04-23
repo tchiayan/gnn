@@ -101,6 +101,7 @@ class ModelTraining():
             num_classes=5,
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
+            mlflow=mlflow
         )
         
     def training(self) -> None:
