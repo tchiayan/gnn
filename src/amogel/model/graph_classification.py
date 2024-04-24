@@ -248,7 +248,8 @@ class MultiGraphClassification(pl.LightningModule):
         self.loss = torch.nn.CrossEntropyLoss()
         self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
-        self.confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
+        self.train_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
+        self.test_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
         # Sensitivity and specificity 
         self.specificity = Specificity(task="multiclass" , num_classes=num_classes)
         self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
@@ -283,7 +284,7 @@ class MultiGraphClassification(pl.LightningModule):
         
         loss = self.loss(output , y1)
         acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , y1)
-        self.confusion_matrix.update(output , y1)  
+        self.train_confusion_matrix.update(output , y1)  
         
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
@@ -330,7 +331,7 @@ class MultiGraphClassification(pl.LightningModule):
         auroc = self.auc(torch.nn.functional.softmax(output , dim=-1) , y1)
         specificity = self.specificity(torch.nn.functional.softmax(output , dim=-1) , y1)
         sensivity = self.sensivity(torch.nn.functional.softmax(output , dim=-1) , y1)
-        self.confusion_matrix.update(output , y1)  
+        self.test_confusion_matrix.update(output , y1)  
         
         if self.current_epoch == self.trainer.max_epochs - 1:
             
@@ -360,11 +361,11 @@ class MultiGraphClassification(pl.LightningModule):
                 logger.info("Logging confusion matrix for test epoch {}".format(self.current_epoch))
                 # calculate confusion matrix
 
-                self.confusion_matrix.compute()
-                fig , ax = self.confusion_matrix.plot() 
+                self.test_confusion_matrix.compute()
+                fig , ax = self.test_confusion_matrix.plot() 
                 self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}.png".format(self.current_epoch))
         
-        self.confusion_matrix.reset()
+        self.test_confusion_matrix.reset()
     
     def on_train_epoch_end(self) -> None:
         
@@ -372,11 +373,11 @@ class MultiGraphClassification(pl.LightningModule):
             if self.mlflow is not None:
                 logger.info("Logging confusion matrix for training epoch {}".format(self.current_epoch))
                 # calculate confusion matrix
-                self.confusion_matrix.compute()
-                fig , ax = self.confusion_matrix.plot() 
+                self.train_confusion_matrix.compute()
+                fig , ax = self.train_confusion_matrix.plot() 
                 self.mlflow.log_figure(fig , "train_confusion_matrix_epoch_{}.png".format(self.current_epoch))
         
-        self.confusion_matrix.reset()
+        self.train_confusion_matrix.reset()
             
     def test_step(self , batch): 
         batch1 , batch2 , batch3 = batch 
