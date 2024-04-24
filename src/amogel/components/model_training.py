@@ -2,7 +2,8 @@ from amogel import logger
 from amogel.model.GCN import GCN
 from amogel.model.graph_classification import GraphClassification , MultiGraphClassification
 from amogel.utils.pair_dataset import PairDataset
-from torch_geometric.data import DataLoader , Batch
+from torch_geometric.data import Batch
+from torch_geometric.loader  import DataLoader
 import torch 
 import pytorch_lightning as pl
 from amogel.entity.config_entity import ModelTrainingConfig
