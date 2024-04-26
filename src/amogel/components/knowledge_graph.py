@@ -539,7 +539,9 @@ class KnowledgeGraph():
             partial_knowledge_tensor = self.kegg_go_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
-        coo_matrix = symmetric_matrix_to_coo(knowledge_tensor.numpy() , 1)
+        # normalize the knowledge tensor
+        knowledge_tensor = knowledge_tensor / knowledge_tensor.sum(dim=1 , keepdim=True)
+        coo_matrix = symmetric_matrix_to_coo(knowledge_tensor.numpy() , 0.1)
         
         logger.info("Generating Assembled Knowledge Graph [Training Graph]")
         training_graphs = []
