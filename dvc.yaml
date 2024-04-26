@@ -32,7 +32,7 @@ stages:
     - embedding_training
     outs:
     - artifacts/train_embedding
-  knowlege_graph:
+  knowledge_graph:
     cmd: python src/amogel/pipeline/stage_05_knowledge_graph.py
     deps:
     - config/config.yaml

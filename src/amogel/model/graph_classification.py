@@ -25,28 +25,34 @@ class GraphConvolution(torch.nn.Module):
         
         self.jump = jump
         
-    def forward(self , x , edge_index , edge_attr = None): 
+    def forward(self , x , edge_index , edge_attr = None , batch_norm = True ): 
         
         if edge_attr is not None:
             x1 , x1_edge_attr = self.graph_conv1(x , edge_index , edge_attr , return_attention_weights=True)
             x1 = x1.relu() # batch
-            x1 = self.batch_norm1(x1)
+            if batch_norm:
+                x1 = self.batch_norm1(x1)
             x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , edge_attr , return_attention_weights=True)
             x2 - x2.relu()
-            x2 = self.batch_norm2(x2)
+            if batch_norm:
+                x2 = self.batch_norm2(x2)
             x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , edge_attr , return_attention_weights=True)
             x3 = x3.relu()
-            x3 = self.batch_norm3(x3)
+            if batch_norm:
+                x3 = self.batch_norm3(x3)
         else: 
             x1 , x1_edge_attr = self.graph_conv1(x , edge_index , return_attention_weights=True)
             x1 = x1.relu() # batch
-            x1 = self.batch_norm1(x1)
+            if batch_norm:
+                x1 = self.batch_norm1(x1)
             x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , return_attention_weights=True)
             x2 = x2.relu()
-            x2 = self.batch_norm2(x2)
+            if batch_norm:
+                x2 = self.batch_norm2(x2)
             x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , return_attention_weights=True)
             x3 = x3.relu()
-            x3 = self.batch_norm3(x3)
+            if batch_norm:
+                x3 = self.batch_norm3(x3)
             
         # Jumping knowledge 
         # x = torch.stack([x1 , x2 , x3], dim=-1).mean(dim=-1)
@@ -425,3 +431,44 @@ class MultiGraphClassification(pl.LightningModule):
         output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
         
         return output , y1
+    
+class MultiGraphTestingClassification(MultiGraphClassification):
+    
+    def __init__(self, in_channels, hidden_channels, num_classes, lr=0.0001, drop_out=0.1, mlflow:mlflow = None) -> None:
+        super().__init__(in_channels, hidden_channels, num_classes, lr, drop_out, mlflow)
+        
+        self.num_classes = num_classes
+    
+    def forward(self, x1, edge_index1, edge_attr1, x2, edge_index2, edge_attr2, x3, edge_index3, edge_attr3, batch1_idx, batch2_idx, batch3_idx):
+        return super().forward(x1, edge_index1, edge_attr1, x2, edge_index2, edge_attr2, x3, edge_index3, edge_attr3, batch1_idx, batch2_idx, batch3_idx)
+    
+    def configure_optimizers(self):
+        return super().configure_optimizers()
+    
+    def training_step(self, batch):
+        return super().training_step(batch)
+    
+    # override the validation step
+    def validation_step(self, batch):
+        
+        batch1 , batch2 , batch3 = batch # batch1 , batch2 , batch3 contains multiple topology of the same omic type
+        
+        results = []
+        for i in range(self.num_classes):
+            x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1[i].x , batch1[i].edge_index , batch1[i].edge_attr , batch1[i].batch ,  batch1[i].y
+            x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2[i].x , batch2[i].edge_index , batch2[i].edge_attr , batch2[i].batch ,  batch2[i].y
+            x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3[i].x , batch3[i].edge_index , batch3[i].edge_attr , batch3[i].batch ,  batch3[i].y
+            
+            output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+        
+            # loss = self.loss(output , y1)
+            output_softmax = torch.nn.functional.softmax(output , dim=-1)
+            predicted_class = output_softmax.argmax(dim=-1)
+            predicted_prob = output_softmax.max(dim=-1)
+            
+            results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob })
+        
+        print(results)
+        # get the top predicted probability
+        final_prediction = max(results, key=lambda x: x['predicted_prob'])
+        print(f"Final prediction: {final_prediction} | Actual class: {y1}")

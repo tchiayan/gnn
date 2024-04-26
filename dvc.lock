@@ -75,3 +75,24 @@ stages:
           learning_rate: 1e-05
           learning_epoch: 300
           drop_out: 0.1
+  knowledge_graph:
+    cmd: python src/amogel/pipeline/stage_05_knowledge_graph.py
+    deps:
+    - path: config/config.yaml
+      hash: md5
+      md5: ca58382f51a64a2f78b3f8c157550b07
+      size: 1842
+    - path: src/amogel/components/knowledge_graph.py
+      hash: md5
+      md5: ef8d13be34776da4abe43036b1ee679c
+      size: 28239
+    - path: src/amogel/pipeline/stage_05_knowledge_graph.py
+      hash: md5
+      md5: 87f27cda6128d6b1c37184668b443292
+      size: 2646
+    outs:
+    - path: artifacts/knowledge_graph
+      hash: md5
+      md5: 91451948a0cfbedb577978ab94c9f0f0.dir
+      size: 60445458136
+      nfiles: 39

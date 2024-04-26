@@ -1,6 +1,6 @@
 from amogel import logger 
 from amogel.model.GCN import GCN
-from amogel.model.graph_classification import GraphClassification , MultiGraphClassification
+from amogel.model.graph_classification import GraphClassification , MultiGraphClassification , MultiGraphTestingClassification
 from amogel.utils.pair_dataset import PairDataset
 from torch_geometric.data import Batch
 from torch_geometric.loader  import DataLoader
@@ -10,7 +10,8 @@ from amogel.entity.config_entity import ModelTrainingConfig
 import mlflow
 
 MODEL = {
-    'MultiGraphClassification' : MultiGraphClassification
+    'MultiGraphClassification' : MultiGraphClassification, 
+    'MultiGraphTestingClassification': MultiGraphTestingClassification
 }
 
 class ModelTraining():
@@ -93,6 +94,30 @@ class ModelTraining():
                 shuffle=False ,
                 collate_fn=self.collate
             )
+        elif self.config.dataset == "unified_multigraph":
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_multigraphs_omic_3.pt")
+            
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_multigraphs_omic_3.pt")
+            
+            self.in_channels = train_omic_1_graphs[0].x.size(1)
+            
+            self.train_loader = DataLoader(
+                PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) ,
+                batch_size=self.config.batch_size ,
+                shuffle=True ,
+                collate_fn=self.collate
+            )
+            
+            self.test_loader = DataLoader(
+                PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) ,
+                batch_size=self.config.batch_size ,
+                shuffle=False ,
+                collate_fn=self.collate_multigraph
+            )
         else: 
             raise ValueError("Invalid parameters for dataset")
         
@@ -129,4 +154,20 @@ class ModelTraining():
         batchB = Batch.from_data_list([data[1] for data in data_list])
         batchC = Batch.from_data_list([data[2] for data in data_list])
         return batchA, batchB , batchC
+    
+    
+    @staticmethod
+    def collate_multigraph(data_list , class_num:int):
+        batchAs = []
+        batchBs = []
+        batchCs = []
+        for i in range(class_num):
+            batchA = Batch.from_data_list([data[0][i] for data in data_list])
+            batchB = Batch.from_data_list([data[1][i] for data in data_list])
+            batchC = Batch.from_data_list([data[2][i] for data in data_list])
             
+            batchAs.append(batchA)
+            batchBs.append(batchB)
+            batchCs.append(batchC)
+        
+        return batchAs, batchBs , batchCs

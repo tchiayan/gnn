@@ -21,6 +21,7 @@ class KnowledgeGraphPipeline():
         )
         knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
         knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
+        knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
         knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
         knowledge_graph.summary()
         
@@ -33,6 +34,7 @@ class KnowledgeGraphPipeline():
         )
         knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
         knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
+        knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
         knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
         knowledge_graph.summary()
         
@@ -45,6 +47,7 @@ class KnowledgeGraphPipeline():
         )
         knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
         knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
+        knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
         knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
         knowledge_graph.summary()
         
