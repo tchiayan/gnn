@@ -8,6 +8,7 @@ from torchmetrics.classification import MulticlassConfusionMatrix
 from lightning.pytorch.utilities.types import  OptimizerLRScheduler
 from torch import optim
 from amogel import logger
+import matplotlib.pyplot as plt
 
 class GraphConvolution(torch.nn.Module):
     def __init__(self , in_channels , hidden_channels , out_channels , jump = True , **args):
@@ -373,7 +374,8 @@ class MultiGraphClassification(pl.LightningModule):
                 self.test_confusion_matrix.compute()
                 fig , ax = self.test_confusion_matrix.plot() 
                 self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}.png".format(self.current_epoch))
-        
+                plt.close(fig)
+                
         self.test_confusion_matrix.reset()
     
     def on_train_epoch_end(self) -> None:
@@ -385,6 +387,7 @@ class MultiGraphClassification(pl.LightningModule):
                 self.train_confusion_matrix.compute()
                 fig , ax = self.train_confusion_matrix.plot() 
                 self.mlflow.log_figure(fig , "train_confusion_matrix_epoch_{}.png".format(self.current_epoch))
+                plt.close(fig)
         
         self.train_confusion_matrix.reset()
     

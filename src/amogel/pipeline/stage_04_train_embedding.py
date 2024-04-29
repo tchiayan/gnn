@@ -1,5 +1,6 @@
 from amogel import logger
 from amogel.components.train_embedding import EmbeddingTrainer
+from amogel.components.train_multi_embedding import MultiEmbeddingTrainer
 from amogel.config.configuration import ConfigurationManager
 import os 
 from pathlib import Path
@@ -13,6 +14,42 @@ class TrainEmbeddingPipeline():
     def run(self):
         config = ConfigurationManager()
         embedding_trainer_config = config.get_embedding_trainer_config()
+        
+        # train omic embedding 2 
+        embeddingTrainer = MultiEmbeddingTrainer(
+            out_channels=embedding_trainer_config.output_channel , 
+            epochs=embedding_trainer_config.learning_epoch , 
+            lr=embedding_trainer_config.learning_rate , 
+            omic_type=2 , 
+            dataset="BRCA" , 
+            config=embedding_trainer_config
+        )
+        embeddingTrainer.run()
+        embeddingTrainer.save_model()
+        
+        # train omic embedding 3 
+        embeddingTrainer = MultiEmbeddingTrainer(
+            out_channels=embedding_trainer_config.output_channel , 
+            epochs=embedding_trainer_config.learning_epoch , 
+            lr=embedding_trainer_config.learning_rate , 
+            omic_type=3 , 
+            dataset="BRCA" , 
+            config=embedding_trainer_config
+        )
+        embeddingTrainer.run()
+        embeddingTrainer.save_model()
+        
+        # train omic embedding 1 
+        embeddingTrainer = MultiEmbeddingTrainer(
+            out_channels=embedding_trainer_config.output_channel , 
+            epochs=embedding_trainer_config.learning_epoch , 
+            lr=embedding_trainer_config.learning_rate , 
+            omic_type=1 , 
+            dataset="BRCA" , 
+            config=embedding_trainer_config
+        )
+        embeddingTrainer.run()
+        embeddingTrainer.save_model()
         
         # train omic embedding 2 
         embeddingTrainer = EmbeddingTrainer(
