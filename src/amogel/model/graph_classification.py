@@ -439,7 +439,7 @@ class MultiGraphClassification(pl.LightningModule):
             # loss = self.loss(output , y1)
             output_softmax = torch.nn.functional.softmax(output , dim=-1)
             predicted_class = output_softmax.argmax(dim=-1)
-            predicted_prob = output_softmax.max(dim=-1)
+            predicted_prob = output_softmax.max(dim=-1).item()
             
             with open("multigraph_testing_logs.txt" , "a") as log_file: 
                 log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Predicted class: {predicted_class}\t| Predicted probability: {predicted_prob}\t| Actual class: {y1}\n")

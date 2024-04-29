@@ -158,6 +158,10 @@ class ModelTraining():
         
         logger.info("Model testing started")
         
+        # clean multigraph_testing_logs.txt
+        with open("multigraph_testing_logs.txt", "w") as f:
+            f.write("")
+        
         self.trainer.test(self.model , self.test_loader)
             
         logger.info("Model testing completed")
