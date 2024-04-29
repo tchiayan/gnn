@@ -83,4 +83,5 @@ class ModelTrainingConfig:
     batch_size: int
     enable_validation: bool 
     enable_testing: bool
+    enable_training: bool
     weight: Optional[List[float]] = None

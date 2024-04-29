@@ -14,7 +14,10 @@ class ModelTrainingPipeline():
         training_config = config.get_model_training_config()
         
         model_training = ModelTraining(training_config)
-        model_training.training()
+        
+        if training_config.enable_training:
+            model_training.training()
+        
         if training_config.enable_testing:
             model_training.testing()
         

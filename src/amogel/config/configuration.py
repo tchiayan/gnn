@@ -104,7 +104,8 @@ class ConfigurationManager:
             batch_size=params.batch_size, 
             weight=params.weight,
             enable_validation=params.enable_validation,
-            enable_testing=params.enable_testing
+            enable_testing=params.enable_testing, 
+            enable_training=params.enable_training
         )
         
         return model_training_config
