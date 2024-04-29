@@ -1,63 +1,63 @@
 stages:
   data_preparation:
-    cmd: python src/amogel/pipeline/stage_01_data_preparation.py
+    cmd: python src/amogel/pipeline/stage_data_preparation.py
     deps:
-    - src/amogel/pipeline/stage_01_data_preparation.py
+    - src/amogel/pipeline/stage_data_preparation.py
     - config/config.yaml
     outs:
     - artifacts/data_ingestion
 
   ppi_data_prepration:
-    cmd: python src/amogel/pipeline/stage_02_ppi_preparation.py
+    cmd: python src/amogel/pipeline/stage_ppi_preparation.py
     deps:
-    - src/amogel/pipeline/stage_02_ppi_preparation.py
+    - src/amogel/pipeline/stage_ppi_preparation.py
     - config/config.yaml
     outs:
     - artifacts/ppi_data
 
   data_preprocessing:
-    cmd: python src/amogel/pipeline/stage_03_data_preprocessing.py
+    cmd: python src/amogel/pipeline/stage_data_preprocessing.py
     deps:
     - config/config.yaml
-    - src/amogel/pipeline/stage_03_data_preprocessing.py
+    - src/amogel/pipeline/stage_data_preprocessing.py
     - src/amogel/components/data_preprocessing.py
     outs:
     - artifacts/data_preprocessing
 
   train_embedding:
-    cmd: python src/amogel/pipeline/stage_04_train_embedding.py
+    cmd: python src/amogel/pipeline/stage_train_embedding.py
     deps:
     - config/config.yaml
     - src/amogel/components/train_embedding.py
-    - src/amogel/pipeline/stage_04_train_embedding.py
+    - src/amogel/pipeline/stage_train_embedding.py
     params:
     - embedding_training
     outs:
     - artifacts/train_embedding
 
   knowledge_graph:
-    cmd: python src/amogel/pipeline/stage_05_knowledge_graph.py
+    cmd: python src/amogel/pipeline/stage_knowledge_graph.py
     deps:
     - config/config.yaml
     - src/amogel/components/knowledge_graph.py
-    - src/amogel/pipeline/stage_05_knowledge_graph.py
+    - src/amogel/pipeline/stage_knowledge_graph.py
     outs:
     - artifacts/knowledge_graph
 
   train_encoder:
-    cmd: python src/amogel/pipeline/stage_06_train_encoder.py
+    cmd: python src/amogel/pipeline/stage_train_encoder.py
     deps:
     - src/amogel/components/train_multi_embedding.py
-    - src/amogel/pipeline/stage_06_train_encoder.py
+    - src/amogel/pipeline/stage_train_encoder.py
     params:
     - train_encoder
     outs:
     - artifacts/train_encoder
   
   model_training:
-    cmd: python src/amogel/pipeline/stage_07_model_training.py
+    cmd: python src/amogel/pipeline/stage_model_training.py
     deps:
     - src/amogel/components/model_training.py
-    - src/amogel/pipeline/stage_07_model_training.py
+    - src/amogel/pipeline/stage_model_training.py
     params: 
     - model_training
