@@ -102,7 +102,9 @@ class ConfigurationManager:
             model=params.model , 
             dataset=params.dataset , 
             batch_size=params.batch_size, 
-            weight=params.weight
+            weight=params.weight,
+            enable_validation=params.enable_validation,
+            enable_testing=params.enable_testing
         )
         
         return model_training_config

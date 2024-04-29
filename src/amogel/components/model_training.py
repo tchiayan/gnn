@@ -114,7 +114,7 @@ class ModelTraining():
             
             self.test_loader = DataLoader(
                 PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) ,
-                batch_size=self.config.batch_size ,
+                batch_size=1 ,
                 shuffle=False ,
                 collate_fn=self.collate_multigraph
             )
@@ -127,7 +127,8 @@ class ModelTraining():
             num_classes=5,
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
-            mlflow=mlflow
+            mlflow=mlflow, 
+            multi_graph_testing = self.config.dataset == "unified_multigraph"
         )
         
     def training(self) -> None:
@@ -141,11 +142,26 @@ class ModelTraining():
             mlflow.log_params(self.config.__dict__)
             mlflow.pytorch.log_model(self.model , "model")
             
-            trainer = pl.Trainer(max_epochs=self.config.learning_epoch)
-            trainer.fit(self.model , self.train_loader , self.test_loader)
+            self.trainer = pl.Trainer(max_epochs=self.config.learning_epoch)
+            if self.config.enable_validation:
+                self.trainer.fit(self.model , self.train_loader , self.test_loader)
+            else: 
+                self.trainer.fit(self.model , self.train_loader)
             
         logger.info("Model training completed")
         
+        logger.info(f"Save model checkpoing : artifacts/model/{self.config.model}.ckpt")
+        self.trainer.save_checkpoint(f"artifacts/model/{self.config.model}.ckpt")
+    
+    def testing(self) -> None: 
+        """Test model using Pytorch Lightning Trainer.
+        """
+        
+        logger.info("Model testing started")
+        
+        self.trainer.test(self.model , self.test_loader)
+            
+        logger.info("Model testing completed")
     @staticmethod
     def collate(data_list):
         """Collate multiple data objects into a single data object."""

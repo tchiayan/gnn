@@ -81,4 +81,6 @@ class ModelTrainingConfig:
     model: str
     dataset: str
     batch_size: int
+    enable_validation: bool 
+    enable_testing: bool
     weight: Optional[List[float]] = None

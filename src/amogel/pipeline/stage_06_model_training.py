@@ -15,6 +15,8 @@ class ModelTrainingPipeline():
         
         model_training = ModelTraining(training_config)
         model_training.training()
+        if training_config.enable_testing:
+            model_training.testing()
         
 if __name__ == "__main__":
     

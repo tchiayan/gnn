@@ -219,11 +219,13 @@ class GraphClassification(pl.LightningModule):
     
 class MultiGraphClassification(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None) -> None:
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False) -> None:
         super().__init__() 
         
         self.lr = lr 
         self.mlflow = mlflow
+        self.multi_graph_testing = multi_graph_testing
+        
         self.graph1 = GraphPooling(in_channels , hidden_channels)
         self.graph2 = GraphPooling(in_channels , hidden_channels)
         self.graph3 = GraphPooling(in_channels , hidden_channels)
@@ -339,18 +341,18 @@ class MultiGraphClassification(pl.LightningModule):
         sensivity = self.sensivity(torch.nn.functional.softmax(output , dim=-1) , y1)
         self.test_confusion_matrix.update(output , y1)  
         
-        if self.current_epoch == self.trainer.max_epochs - 1:
+        # if self.current_epoch == self.trainer.max_epochs - 1:
             
-            omic1_pool1 , omic1_pool2 = self.get_rank_genes(self.rank['omic1'] , batch1.extra_label , batch1.num_graphs , 1000)
-            omic2_pool1 , omic2_pool2 = self.get_rank_genes(self.rank['omic2'] , batch2.extra_label , batch2.num_graphs , 1000)
-            omic3_pool1 , omic3_pool2 = self.get_rank_genes(self.rank['omic3'] , batch3.extra_label , batch3.num_graphs , 503)
+        #     omic1_pool1 , omic1_pool2 = self.get_rank_genes(self.rank['omic1'] , batch1.extra_label , batch1.num_graphs , 1000)
+        #     omic2_pool1 , omic2_pool2 = self.get_rank_genes(self.rank['omic2'] , batch2.extra_label , batch2.num_graphs , 1000)
+        #     omic3_pool1 , omic3_pool2 = self.get_rank_genes(self.rank['omic3'] , batch3.extra_label , batch3.num_graphs , 503)
             
-            self.genes['omic1_pool1'].extend(omic1_pool1)
-            self.genes['omic1_pool2'].extend(omic1_pool2)
-            self.genes['omic2_pool1'].extend(omic2_pool1)
-            self.genes['omic2_pool2'].extend(omic2_pool2)
-            self.genes['omic3_pool1'].extend(omic3_pool1)
-            self.genes['omic3_pool2'].extend(omic3_pool2)
+        #     self.genes['omic1_pool1'].extend(omic1_pool1)
+        #     self.genes['omic1_pool2'].extend(omic1_pool2)
+        #     self.genes['omic2_pool1'].extend(omic2_pool1)
+        #     self.genes['omic2_pool2'].extend(omic2_pool2)
+        #     self.genes['omic3_pool1'].extend(omic3_pool1)
+        #     self.genes['omic3_pool2'].extend(omic3_pool2)
             
         self.log("val_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
         self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
@@ -384,8 +386,8 @@ class MultiGraphClassification(pl.LightningModule):
                 self.mlflow.log_figure(fig , "train_confusion_matrix_epoch_{}.png".format(self.current_epoch))
         
         self.train_confusion_matrix.reset()
-            
-    def test_step(self , batch): 
+    
+    def single_graph_test(self, batch):
         batch1 , batch2 , batch3 = batch 
         x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
         x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
@@ -422,35 +424,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("test_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         self.log("test_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         
-    def predict_step(self , batch):
-        batch1 , batch2 , batch3 = batch 
-        x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
-        x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
-        x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
-        
-        output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
-        
-        return output , y1
-    
-class MultiGraphTestingClassification(MultiGraphClassification):
-    
-    def __init__(self, in_channels, hidden_channels, num_classes, lr=0.0001, drop_out=0.1, mlflow:mlflow = None) -> None:
-        super().__init__(in_channels, hidden_channels, num_classes, lr, drop_out, mlflow)
-        
-        self.num_classes = num_classes
-    
-    def forward(self, x1, edge_index1, edge_attr1, x2, edge_index2, edge_attr2, x3, edge_index3, edge_attr3, batch1_idx, batch2_idx, batch3_idx):
-        return super().forward(x1, edge_index1, edge_attr1, x2, edge_index2, edge_attr2, x3, edge_index3, edge_attr3, batch1_idx, batch2_idx, batch3_idx)
-    
-    def configure_optimizers(self):
-        return super().configure_optimizers()
-    
-    def training_step(self, batch):
-        return super().training_step(batch)
-    
-    # override the validation step
-    def validation_step(self, batch):
-        
+    def multi_graph_test(self , batch):
         batch1 , batch2 , batch3 = batch # batch1 , batch2 , batch3 contains multiple topology of the same omic type
         
         results = []
@@ -466,9 +440,34 @@ class MultiGraphTestingClassification(MultiGraphClassification):
             predicted_class = output_softmax.argmax(dim=-1)
             predicted_prob = output_softmax.max(dim=-1)
             
-            results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob })
+            with open("multigraph_testing_logs.txt" , "a") as log_file: 
+                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Predicted class: {predicted_class}\t| Predicted probability: {predicted_prob}\t| Actual class: {y1}\n")
+            results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
         
-        print(results)
+        
         # get the top predicted probability
         final_prediction = max(results, key=lambda x: x['predicted_prob'])
-        print(f"Final prediction: {final_prediction} | Actual class: {y1}")
+        print(f"Final prediction: {final_prediction['predicted_class']} | Actual class: {y1}") 
+        with open("multigraph_testing_logs.txt" , "a") as log_file: 
+            log_file.write(f"Epoch: {self.current_epoch}\t| Final prediction: {final_prediction} | Actual class: {y1}\n")
+            log_file.write("\n")
+            
+        acc = self.acc(torch.nn.functional.softmax(final_prediction['output'] , dim=-1)  , y1)
+        self.log('test_acc' , acc , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
+    
+    def test_step(self , batch): 
+        if not self.multi_graph_testing:
+            self.single_graph_test(batch)
+        else:
+            self.multi_graph_test(batch)
+        
+    def predict_step(self , batch):
+        batch1 , batch2 , batch3 = batch 
+        x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
+        x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
+        x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
+        
+        output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+        
+        return output , y1
+    
