@@ -28,3 +28,4 @@ model_training:
   weight: null # [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ] 
   enable_validation: false
   enable_testing: true
+  enable_training: true
