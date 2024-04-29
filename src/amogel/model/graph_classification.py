@@ -448,7 +448,7 @@ class MultiGraphClassification(pl.LightningModule):
         
         # get the top predicted probability
         final_prediction = max(results, key=lambda x: x['predicted_prob'])
-        print(f"Final prediction: {final_prediction['predicted_class']} | Actual class: {y1}") 
+        # print(f"Final prediction: {final_prediction['predicted_class']} | Actual class: {y1}") 
         with open("multigraph_testing_logs.txt" , "a") as log_file: 
             log_file.write(f"Epoch: {self.current_epoch}\t| Final prediction: {final_prediction} | Actual class: {y1}\n")
             log_file.write("\n")
