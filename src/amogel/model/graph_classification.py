@@ -225,6 +225,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.lr = lr 
         self.mlflow = mlflow
         self.multi_graph_testing = multi_graph_testing
+        self.num_classes = num_classes
         
         self.graph1 = GraphPooling(in_channels , hidden_channels)
         self.graph2 = GraphPooling(in_channels , hidden_channels)
