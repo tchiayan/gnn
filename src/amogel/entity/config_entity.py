@@ -85,3 +85,14 @@ class ModelTrainingConfig:
     enable_testing: bool
     enable_training: bool
     weight: Optional[List[float]] = None
+    
+
+@dataclass(frozen=True)
+class EncoderTrainingConfig: 
+    root_dir: Path 
+    learning_rate: float
+    data_preprocessing_dir: Path
+    output_channel: int
+    learning_epoch: int
+    print_interval: int
+    model: str

@@ -1,7 +1,7 @@
-from torch_geometric.nn import GAE
+from torch_geometric.nn import GAE , VGAE
 import torch
 from amogel import logger
-from amogel.model.graph_autoencoder import GCNEncoder
+from amogel.model.graph_autoencoder import GCNEncoder , VariationalGCNEncoder
 from torch_geometric.utils import train_test_split_edges , to_undirected
 import pandas as pd
 from tqdm import tqdm
@@ -9,14 +9,24 @@ import itertools
 import numpy as np
 from scipy.sparse import coo_matrix
 from torch_geometric.data import Data
-from amogel.entity.config_entity import EmbeddingTrainerConfig
+from amogel.entity.config_entity import EncoderTrainingConfig
 import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+MODEL = {
+    'GAE': GAE,
+    'VGAE': VGAE
+}
+
+ENCODER = {
+    'GAE': GCNEncoder,
+    'VGAE': VariationalGCNEncoder
+}
+
 class MultiEmbeddingTrainer():
     
-    def __init__(self , config:EmbeddingTrainerConfig ,  out_channels , epochs , lr , omic_type:int , dataset:str):
+    def __init__(self , config:EncoderTrainingConfig ,  out_channels , epochs , lr , omic_type:int , dataset:str):
         
         self.epochs = epochs
         self.config = config
@@ -30,7 +40,7 @@ class MultiEmbeddingTrainer():
         self.num_sample = df_data.shape[0]
         
         # create model & optimizer
-        self.model = GAE(GCNEncoder(1 , out_channels))
+        self.model = MODEL[config.model](ENCODER[config.model](1 , out_channels)) # GAE(GCNEncoder(1 , out_channels))
         self.optimizer = torch.optim.Adam(self.model.parameters() , lr = lr)
         
         # load ac filepath 
@@ -59,10 +69,10 @@ class MultiEmbeddingTrainer():
         
         # Duplicated from training_embedding
         # plot adjacency matrix and save to root_dir
-        # os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
-        # plt.figure(figsize=(10,10))
-        # sns.heatmap(normalized_adjacancy_matrix)
-        # plt.savefig(os.path.join(self.config.root_dir , self.dataset , f"{omic_type}_adjacency_matrix.png"))
+        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        plt.figure(figsize=(10,10))
+        sns.heatmap(normalized_adjacancy_matrix)
+        plt.savefig(os.path.join(self.config.root_dir , self.dataset , f"{omic_type}_adjacency_matrix.png"))
         
         # build pytorch geometric data
         edge_coo = self.symmetric_matrix_to_coo(normalized_adjacancy_matrix , 0.5)
@@ -131,8 +141,8 @@ class MultiEmbeddingTrainer():
         for epoch in range(self.epochs+1):
             loss = self.train()
             auc , ap = self.test()
-            if epoch % 10 == 0:
-                logger.info(f"Epoch: {epoch} | Loss: {loss} | AUC: {auc} | AP: {ap}")
+            if epoch % self.config.print_interval == 0:
+                logger.info(f"Epoch: {epoch}\t| Loss: {loss}\t| AUC: {auc}\t| AP: {ap}")
                 
         self.loss = loss 
         self.auc = auc 

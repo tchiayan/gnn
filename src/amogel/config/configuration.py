@@ -2,7 +2,15 @@ from amogel.constants import *
 import os
 from amogel import *
 from amogel.utils.common import read_yaml
-from amogel.entity.config_entity import DataPreparationConfig , PPIConfiguration , DataPreprocessingConfig , EmbeddingTrainerConfig , KnowledgeGraphConfig , ModelTrainingConfig
+from amogel.entity.config_entity import (
+    DataPreparationConfig , 
+    PPIConfiguration , 
+    DataPreprocessingConfig , 
+    EmbeddingTrainerConfig , 
+    KnowledgeGraphConfig , 
+    ModelTrainingConfig , 
+    EncoderTrainingConfig
+)
 
 class ConfigurationManager: 
     def __init__(
@@ -74,6 +82,22 @@ class ConfigurationManager:
         )
         
         return embedding_trainer_config
+    
+    def get_encoder_training_config(self) -> EncoderTrainingConfig: 
+        config = self.config.train_encoder 
+        params = self.params.train_encoder 
+        
+        encoder_training_config = EncoderTrainingConfig(
+            root_dir=config.root_dir, 
+            learning_epoch=params.learning_epoch,
+            learning_rate=params.learning_rate,
+            output_channel=params.output_channel,
+            print_interval=params.print_interval, 
+            model=params.model,
+            data_preprocessing_dir=config.data_preprocessing_dir, 
+        )
+        
+        return encoder_training_config
     
     def get_knowledge_graph_config(self) -> KnowledgeGraphConfig: 
         config = self.config.knowledge_graph

@@ -42,5 +42,9 @@ knowledge_graph:
   ppi_dir: artifacts/ppi_data/unzip
   data_dir: artifacts/data_preprocessing
 
+train_encoder: 
+  root_dir: artifacts/train_encoder
+  data_preprocessing_dir: artifacts/data_preprocessing
+
 model: 
   root_dir: model

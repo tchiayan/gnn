@@ -14,6 +14,7 @@ stages:
     - config/config.yaml
     outs:
     - artifacts/ppi_data
+
   data_preprocessing:
     cmd: python src/amogel/pipeline/stage_03_data_preprocessing.py
     deps:
@@ -22,6 +23,7 @@ stages:
     - src/amogel/components/data_preprocessing.py
     outs:
     - artifacts/data_preprocessing
+
   train_embedding:
     cmd: python src/amogel/pipeline/stage_04_train_embedding.py
     deps:
@@ -32,6 +34,7 @@ stages:
     - embedding_training
     outs:
     - artifacts/train_embedding
+
   knowledge_graph:
     cmd: python src/amogel/pipeline/stage_05_knowledge_graph.py
     deps:
@@ -40,10 +43,21 @@ stages:
     - src/amogel/pipeline/stage_05_knowledge_graph.py
     outs:
     - artifacts/knowledge_graph
+
+  train_encoder:
+    cmd: python src/amogel/pipeline/stage_06_train_encoder.py
+    deps:
+    - src/amogel/components/train_multi_embedding.py
+    - src/amogel/pipeline/stage_06_train_encoder.py
+    params:
+    - train_encoder
+    outs:
+    - artifacts/train_encoder
+  
   model_training:
-    cmd: python src/amogel/pipeline/stage_06_model_training.py
+    cmd: python src/amogel/pipeline/stage_07_model_training.py
     deps:
     - src/amogel/components/model_training.py
-    - src/amogel/pipeline/stage_06_model_training.py
+    - src/amogel/pipeline/stage_07_model_training.py
     params: 
     - model_training

@@ -96,3 +96,28 @@ stages:
       md5: 91451948a0cfbedb577978ab94c9f0f0.dir
       size: 60445458136
       nfiles: 39
+  train_encoder:
+    cmd: python src/amogel/pipeline/stage_06_train_encoder.py
+    deps:
+    - path: src/amogel/components/train_multi_embedding.py
+      hash: md5
+      md5: 0b3d05ee229feecc1fff9d7a7b643ee9
+      size: 7936
+    - path: src/amogel/pipeline/stage_06_train_encoder.py
+      hash: md5
+      md5: 038161585daede1100ce75a2e2dfeaf2
+      size: 1335
+    params:
+      params.yaml:
+        train_encoder:
+          learning_rate: 0.001
+          output_channel: 16
+          learning_epoch: 300
+          print_interval: 1
+          model: GAE
+    outs:
+    - path: artifacts/train_encoder
+      hash: md5
+      md5: a033188ab02cbacdfd5abfe29306d7ea.dir
+      size: 167882
+      nfiles: 1
