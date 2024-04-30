@@ -451,7 +451,7 @@ class MultiGraphClassification(pl.LightningModule):
             results_1.append(output_softmax[0][i].item())
         
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        final_prediction = torch.tensor([results_1], type=torch.float32 , device=device)
+        final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
         # get the top predicted probability
         # final_prediction = max(results, key=lambda x: x['predicted_prob'])
         with open("multigraph_testing_logs.txt" , "a") as log_file: 
