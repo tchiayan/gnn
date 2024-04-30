@@ -432,6 +432,7 @@ class MultiGraphClassification(pl.LightningModule):
         batch1 , batch2 , batch3 = batch # batch1 , batch2 , batch3 contains multiple topology of the same omic type
         
         results = []
+        results_1 = []
         for i in range(self.num_classes):
             x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1[i].x , batch1[i].edge_index , batch1[i].edge_attr , batch1[i].batch ,  batch1[i].y
             x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2[i].x , batch2[i].edge_index , batch2[i].edge_attr , batch2[i].batch ,  batch2[i].y
@@ -445,19 +446,20 @@ class MultiGraphClassification(pl.LightningModule):
             predicted_prob , _ = output_softmax.max(dim=-1)
             
             with open("multigraph_testing_logs.txt" , "a") as log_file: 
-                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Predicted class: {predicted_class}\t| Predicted probability: {predicted_prob}\t| Actual class: {y1}\n")
+                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Predicted class: {predicted_class}\t| Predicted probability: {predicted_prob}\t | Output: {output_softmax}\t| Class confidence score: {output_softmax[0][i]}\t| Actual class: {y1}\n")
             results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
+            results_1.append(output_softmax[0][i].item())
         
-        
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        final_prediction = torch.tensor([results_1], type=torch.float32 , device=device)
         # get the top predicted probability
-        final_prediction = max(results, key=lambda x: x['predicted_prob'])
-        # print(f"Final prediction: {final_prediction['predicted_class']} | Actual class: {y1}") 
+        # final_prediction = max(results, key=lambda x: x['predicted_prob'])
         with open("multigraph_testing_logs.txt" , "a") as log_file: 
-            log_file.write(f"Epoch: {self.current_epoch}\t| Final prediction: {final_prediction} | Actual class: {y1}\n")
+            log_file.write(f"Epoch: {self.current_epoch}\t| Final prediction: {final_prediction.argmax(dim=-1)} | Actual class: {y1}\n")
             log_file.write("\n")
             
-        acc = self.acc(torch.nn.functional.softmax(final_prediction['output'] , dim=-1)  , y1)
-        self.log('test_acc' , acc , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
+        acc = self.acc(final_prediction  , y1)
+        self.log('test_acc_top_predicted_class' , acc , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
     
     def test_step(self , batch): 
         if not self.multi_graph_testing:
