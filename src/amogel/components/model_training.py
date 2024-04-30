@@ -127,8 +127,13 @@ class ModelTraining():
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
             mlflow=mlflow, 
-            multi_graph_testing = self.config.dataset == "unified_multigraph"
+            multi_graph_testing = self.config.dataset == "unified_multigraph", 
+            weight=self.config.weight
         )
+        
+        # clean multigraph_testing_logs.txt
+        with open("multigraph_testing_logs.txt", "w") as f:
+            f.write("")
         
     def training(self) -> None:
         """Train model using Pytorch Lightning Trainer.
@@ -157,10 +162,6 @@ class ModelTraining():
         """
         
         logger.info("Model testing started")
-        
-        # clean multigraph_testing_logs.txt
-        with open("multigraph_testing_logs.txt", "w") as f:
-            f.write("")
         
         self.trainer.test(self.model , self.test_loader)
             

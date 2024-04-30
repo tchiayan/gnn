@@ -220,7 +220,7 @@ class GraphClassification(pl.LightningModule):
     
 class MultiGraphClassification(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False) -> None:
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None) -> None:
         super().__init__() 
         
         self.lr = lr 
@@ -255,7 +255,10 @@ class MultiGraphClassification(pl.LightningModule):
         )
         
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
-        self.loss = torch.nn.CrossEntropyLoss()
+        if weight is not None:
+            self.loss = torch.nn.CrossEntropyLoss()
+        else: 
+            self.loss = torch.nn.CrossEntropyLoss(weight=weight)
         self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
         self.train_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
