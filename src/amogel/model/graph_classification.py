@@ -328,20 +328,17 @@ class MultiGraphClassification(pl.LightningModule):
         return pool1 , pool2 
         
     def validation_step(self , batch):
-        batch1 , batch2 , batch3 = batch 
-        x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
-        x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
-        x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
         
-        output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
         
-        loss = self.loss(output , y1)
-        acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , y1)
-        f1 = self.f1(torch.nn.functional.softmax(output , dim=-1) , y1)
-        auroc = self.auc(torch.nn.functional.softmax(output , dim=-1) , y1)
-        specificity = self.specificity(torch.nn.functional.softmax(output , dim=-1) , y1)
-        sensivity = self.sensivity(torch.nn.functional.softmax(output , dim=-1) , y1)
-        self.test_confusion_matrix.update(output , y1)  
+        output , actual_class , batch_shape = self.get_output(batch)
+        
+        loss = self.loss(output , actual_class)
+        acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        f1 = self.f1(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        auroc = self.auc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        specificity = self.specificity(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        sensivity = self.sensivity(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        self.test_confusion_matrix.update(output , actual_class)  
         
         # if self.current_epoch == self.trainer.max_epochs - 1:
             
@@ -356,12 +353,12 @@ class MultiGraphClassification(pl.LightningModule):
         #     self.genes['omic3_pool1'].extend(omic3_pool1)
         #     self.genes['omic3_pool2'].extend(omic3_pool2)
             
-        self.log("val_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
-        self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
-        self.log("val_f1" , f1 , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
-        self.log("val_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
-        self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
-        self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
+        self.log("val_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch_shape)
+        self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        self.log("val_f1" , f1 , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        self.log("val_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
     
     def on_validation_epoch_end(self) -> None: 
         
@@ -461,6 +458,43 @@ class MultiGraphClassification(pl.LightningModule):
         acc = self.acc(final_prediction  , y1)
         self.log('test_acc_top_predicted_class' , acc , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
     
+    def get_output(self , batch):
+        if not self.multi_graph_testing:
+            batch1 , batch2 , batch3 = batch 
+            x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
+            x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
+            x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
+            
+            output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+            
+            return output , y1 , batch1_idx.shape[0]
+        else: 
+            batch1 , batch2 , batch3 = batch # batch1 , batch2 , batch3 contains multiple topology of the same omic type
+        
+            results = []
+            results_1 = []
+            for i in range(self.num_classes):
+                x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1[i].x , batch1[i].edge_index , batch1[i].edge_attr , batch1[i].batch ,  batch1[i].y
+                x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2[i].x , batch2[i].edge_index , batch2[i].edge_attr , batch2[i].batch ,  batch2[i].y
+                x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3[i].x , batch3[i].edge_index , batch3[i].edge_attr , batch3[i].batch ,  batch3[i].y
+                
+                output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+                acutal_class = y1
+                batch_shape = batch1_idx.shape[0]
+                # loss = self.loss(output , y1)
+                output_softmax = torch.nn.functional.softmax(output , dim=-1)
+                predicted_class = output_softmax.argmax(dim=-1)
+                predicted_prob , _ = output_softmax.max(dim=-1)
+                
+                with open("multigraph_testing_logs.txt" , "a") as log_file: 
+                    log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Predicted class: {predicted_class}\t| Predicted probability: {predicted_prob}\t | Output: {output_softmax}\t| Class confidence score: {output_softmax[0][i]}\t| Actual class: {y1}\n")
+                results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
+                results_1.append(output_softmax[0][i].item())
+            
+            device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+            final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
+            return final_prediction , acutal_class , batch_shape
+        
     def test_step(self , batch): 
         if not self.multi_graph_testing:
             self.single_graph_test(batch)
