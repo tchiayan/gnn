@@ -248,7 +248,7 @@ class MultiGraphConvolution(torch.nn.Module):
 class BinaryLearning(pl.LightningModule):
     
     def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None) -> None: 
-        
+        super().__init__()
         self.lr = lr 
         self.mlflow = mlflow
         self.multi_graph_testing = multi_graph_testing
