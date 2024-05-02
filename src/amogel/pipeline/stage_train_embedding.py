@@ -20,7 +20,7 @@ class TrainEmbeddingPipeline():
                 out_channels=embedding_trainer_config.output_channel , 
                 epochs=embedding_trainer_config.learning_epoch , 
                 lr=embedding_trainer_config.learning_rate , 
-                omic_type=2 , 
+                omic_type=i , 
                 dataset="BRCA" , 
                 config=embedding_trainer_config
             )
