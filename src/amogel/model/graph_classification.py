@@ -281,8 +281,8 @@ class BinaryLearning(pl.LightningModule):
         
         output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
         
-        loss = self.loss(output , y1)
-        acc = self.acc(torch.nn.functional.sigmoid(output) , y1)
+        loss = self.loss(output , y1.squeeze(dim = -1))
+        acc = self.acc(torch.nn.functional.sigmoid(output) , y1.squeeze(dim=-1))
 
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
