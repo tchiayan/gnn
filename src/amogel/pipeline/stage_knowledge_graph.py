@@ -13,45 +13,19 @@ class KnowledgeGraphPipeline():
         config = ConfigurationManager()
         knowledge_graph_config = config.get_knowledge_graph_config()
         
-        # generate knowledge graph for omic type 1
-        knowledge_graph = KnowledgeGraph(
-            config=knowledge_graph_config , 
-            omic_type=1 , 
-            dataset="BRCA"
-        )
-        knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
-        knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.summary()
-        
-        
-        # generate knowledge graph for omic type 1
-        knowledge_graph = KnowledgeGraph(
-            config=knowledge_graph_config , 
-            omic_type=2 , 
-            dataset="BRCA"
-        )
-        knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
-        knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.summary()
-        
-        
-        # generate knowledge graph for omic type 1
-        knowledge_graph = KnowledgeGraph(
-            config=knowledge_graph_config , 
-            omic_type=3 , 
-            dataset="BRCA"
-        )
-        knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
-        knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
-        knowledge_graph.summary()
-        
-        
+        for i in [1,2,3]:
+            # generate knowledge graph for omic type 
+            knowledge_graph = KnowledgeGraph(
+                config=knowledge_graph_config , 
+                omic_type=i , 
+                dataset="BRCA"
+            )
+            knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
+            knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
+            knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
+            knowledge_graph.generate_contrastive_multigraph( ppi=True , kegg_go=True , synthetic=True)
+            knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
+            knowledge_graph.summary()
         
 if __name__ == "__main__":
     

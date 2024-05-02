@@ -11,6 +11,7 @@ from torch_geometric.data import Data
 from torch_geometric.utils import is_undirected
 import numpy as np
 from typing import List
+import random
 
 class KnowledgeGraph():
     
@@ -333,6 +334,136 @@ class KnowledgeGraph():
             "no_of_directed_graph":directed_graph_count
         })
     
+    def generate_contrastive_multigraph(self , ppi=True , kegg_go=False, synthetic=True):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0]
+        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        
+        if ppi:
+            partial_knowledge_tensor = self.ppi_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if kegg_go:
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if synthetic:
+            synthetic_tensor_dict = self.synthetic_graph
+        
+        logger.info("Generate training contrastive multigraph")
+        training_graphs = []
+        labels = synthetic_tensor_dict.keys()
+        with tqdm(total=self.train_data.shape[0]) as pbar:
+            for idx , sample in self.train_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                label = int(self.train_label.iloc[idx].values.item())
+                non_label = [x for x in labels if x != label]
+                positive_topology = synthetic_tensor_dict[label] + knowledge_tensor
+                negative_topology = synthetic_tensor_dict[np.random.choice(non_label)] + knowledge_tensor
+            
+                # positive graph
+                positive_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , 1)
+                positive_graph = coo_to_pyg_data(coo_matrix=positive_coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
+                
+                # negative graph
+                negative_coo_matrix = symmetric_matrix_to_coo(negative_topology.numpy() , 1)
+                negative_graph = coo_to_pyg_data(coo_matrix=negative_coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
+                
+                training_graphs.append([positive_graph , negative_graph])
+                pbar.update(1)
+        
+        logger.info("Generate testing contrastive multigraph")
+        testing_graphs = []
+        with tqdm(total=self.test_data.shape[0]) as pbar:
+            for idx , sample in self.test_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                topology = knowledge_tensor
+                graphs = []
+                for synthetic_graph in synthetic_tensor_dict.values():
+                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , 1)
+                    graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
+                    graphs.append(graph)
+                testing_graphs.append(graphs)
+                pbar.update(1)
+        
+        # Measure 
+        # self.__measure_graph_from_data(training_graphs , f"Training Unified Graph")
+        # self.__measure_graph_from_data(testing_graphs , f"Testing Unified Graph")
+        
+        # Save the graphs 
+        logger.info("Saving Training Graphs")
+        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_contrastive_multigraphs_omic_{self.omic_type}.pt"))
+        logger.info("Saving Testing Graphs")
+        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_constrastive_multigraphs_omic_{self.omic_type}.pt"))
+        
+    def generate_binaryclassifier_multigraph(self , ppi=True , kegg_go=False, synthetic=True):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0]
+        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        
+        if ppi:
+            partial_knowledge_tensor = self.ppi_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if kegg_go:
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if synthetic:
+            synthetic_tensor_dict = self.synthetic_graph
+        
+        logger.info("Generate training binary classifier multigraph")
+        training_graphs = []
+        labels = synthetic_tensor_dict.keys()
+        with tqdm(total=self.train_data.shape[0]) as pbar:
+            for idx , sample in self.train_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                label = int(self.train_label.iloc[idx].values.item())
+                non_label = np.random.choice([x for x in labels if x != label])
+                random_label = random.choice([label , non_label])
+                topology = synthetic_tensor_dict[random_label] + knowledge_tensor
+            
+                # random graph
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , 1)
+                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor([random_label == label], dtype=torch.long) , extra_label=True )
+                
+                training_graphs.append(graph)
+                pbar.update(1)
+        
+        logger.info("Generate testing  binary classifier multigraph")
+        testing_graphs = []
+        with tqdm(total=self.test_data.shape[0]) as pbar:
+            for idx , sample in self.test_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                topology = knowledge_tensor
+                graphs = []
+                for synthetic_graph in synthetic_tensor_dict.values():
+                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , 1)
+                    graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
+                    graphs.append(graph)
+                testing_graphs.append(graphs)
+                pbar.update(1)
+        
+        # Measure 
+        # self.__measure_graph_from_data(training_graphs , f"Training Unified Graph")
+        # self.__measure_graph_from_data(testing_graphs , f"Testing Unified Graph")
+        
+        # Save the graphs 
+        logger.info("Saving Training Graphs")
+        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_binaryclassifier_multigraphs_omic_{self.omic_type}.pt"))
+        logger.info("Saving Testing Graphs")
+        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_binaryclassifier_multigraphs_omic_{self.omic_type}.pt"))
+        
     def generate_unified_multigraph(self , ppi=True , kegg_go=False, synthetic=True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         

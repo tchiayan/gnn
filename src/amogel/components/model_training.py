@@ -1,6 +1,6 @@
 from amogel import logger 
 from amogel.model.GCN import GCN
-from amogel.model.graph_classification import GraphClassification , MultiGraphClassification 
+from amogel.model.graph_classification import GraphClassification , MultiGraphClassification , BinaryLearning
 from amogel.utils.pair_dataset import PairDataset
 from torch_geometric.data import Batch
 from torch_geometric.loader  import DataLoader
@@ -11,6 +11,7 @@ import mlflow
 
 MODEL = {
     'MultiGraphClassification' : MultiGraphClassification, 
+    'BinaryLearning' : BinaryLearning
 }
 
 class ModelTraining():
@@ -117,6 +118,54 @@ class ModelTraining():
                 shuffle=False ,
                 collate_fn=self.collate_multigraph
             )
+        elif self.config.dataset == "binarylearning_multigraph":
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_binarylearning_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_binarylearning_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_binarylearning_multigraphs_omic_3.pt")
+            
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_binarylearning_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_binarylearning_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_binarylearning_multigraphs_omic_3.pt")
+            
+            self.in_channels = train_omic_1_graphs[0].x.size(1)
+            
+            self.train_loader = DataLoader(
+                PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) ,
+                batch_size=self.config.batch_size ,
+                shuffle=True ,
+                collate_fn=self.collate
+            )
+            
+            self.test_loader = DataLoader(
+                PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) ,
+                batch_size=1 ,
+                shuffle=False ,
+                collate_fn=self.collate_multigraph
+            )
+        elif self.config.dataset == "contrastive_multigraph":
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_contrastive_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_contrastive_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_contrastive_multigraphs_omic_3.pt")
+            
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_contrastive_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_contrastive_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_contrastive_multigraphs_omic_3.pt")
+            
+            self.in_channels = train_omic_1_graphs[0].x.size(1)
+            
+            self.train_loader = DataLoader(
+                PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) ,
+                batch_size=self.config.batch_size ,
+                shuffle=True ,
+                collate_fn=self.collate
+            )
+            
+            self.test_loader = DataLoader(
+                PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) ,
+                batch_size=1 ,
+                shuffle=False ,
+                collate_fn=self.collate_multigraph
+            )
         else: 
             raise ValueError("Invalid parameters for dataset")
         
@@ -127,7 +176,7 @@ class ModelTraining():
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
             mlflow=mlflow, 
-            multi_graph_testing = self.config.dataset == "unified_multigraph", 
+            multi_graph_testing = (self.config.dataset == "unified_multigraph" or self.config.dataset == "contrastive_multigraph"), 
             weight=self.config.weight
         )
         
