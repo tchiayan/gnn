@@ -20,13 +20,13 @@ class KnowledgeGraphPipeline():
                 omic_type=i , 
                 dataset="BRCA"
             )
-            knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
-            knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
-            knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
+            # knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
+            # knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
+            # knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)
             knowledge_graph.generate_contrastive_multigraph( ppi=True , kegg_go=True , synthetic=True)
-            knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
-            knowledge_graph.generate_binaryclassifier_multigraph( ppi=True , kegg_go=True , synthetic=True)
-            knowledge_graph.summary()
+            # knowledge_graph.generate_correlation_graph( ppi=True , kegg_go=True , synthetic=True)
+            # knowledge_graph.generate_binaryclassifier_multigraph( ppi=True , kegg_go=True , synthetic=True)
+            # knowledge_graph.summary()
         
 if __name__ == "__main__":
     

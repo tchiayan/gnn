@@ -1,6 +1,6 @@
 from amogel import logger 
 from amogel.model.GCN import GCN
-from amogel.model.graph_classification import GraphClassification , MultiGraphClassification , BinaryLearning
+from amogel.model.graph_classification import GraphClassification , MultiGraphClassification , BinaryLearning , ContrastiveLearning
 from amogel.utils.pair_dataset import PairDataset
 from torch_geometric.data import Batch
 from torch_geometric.loader  import DataLoader
@@ -11,7 +11,8 @@ import mlflow
 
 MODEL = {
     'MultiGraphClassification' : MultiGraphClassification, 
-    'BinaryLearning' : BinaryLearning
+    'BinaryLearning' : BinaryLearning, 
+    "ContrastiveLearning": ContrastiveLearning
 }
 
 class ModelTraining():
@@ -157,7 +158,7 @@ class ModelTraining():
                 PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) ,
                 batch_size=self.config.batch_size ,
                 shuffle=True ,
-                collate_fn=self.collate
+                collate_fn=self.collate_contrastive_multigraph
             )
             
             self.test_loader = DataLoader(
@@ -224,6 +225,24 @@ class ModelTraining():
         batchC = Batch.from_data_list([data[2] for data in data_list])
         return batchA, batchB , batchC
     
+    @staticmethod 
+    def collate_contrastive_multigraph(data_list):
+        batchA = [
+            Batch.from_data_list([data[0][0] for data in data_list]), # posiive
+            Batch.from_data_list([data[0][1] for data in data_list]) # negative
+        ]
+        
+        batchB = [
+            Batch.from_data_list([data[1][0] for data in data_list]), # posiive
+            Batch.from_data_list([data[1][1] for data in data_list]) # negative
+        ]
+        
+        batchC = [
+            Batch.from_data_list([data[2][0] for data in data_list]), # posiive
+            Batch.from_data_list([data[2][1] for data in data_list]) # negative
+        ]
+    
+        return batchA, batchB , batchC
     
     @staticmethod
     def collate_multigraph(data_list , class_num:int):

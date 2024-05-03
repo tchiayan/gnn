@@ -366,11 +366,11 @@ class KnowledgeGraph():
             
                 # positive graph
                 positive_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , 1)
-                positive_graph = coo_to_pyg_data(coo_matrix=positive_coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
+                positive_graph = coo_to_pyg_data(coo_matrix=positive_coo_matrix , node_features=torch_sample , y = torch.tensor([1] , dtype=torch.long) , extra_label=True )
                 
                 # negative graph
                 negative_coo_matrix = symmetric_matrix_to_coo(negative_topology.numpy() , 1)
-                negative_graph = coo_to_pyg_data(coo_matrix=negative_coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
+                negative_graph = coo_to_pyg_data(coo_matrix=negative_coo_matrix , node_features=torch_sample , y = torch.tensor([0] , dtype=torch.long) , extra_label=True )
                 
                 training_graphs.append([positive_graph , negative_graph])
                 pbar.update(1)
