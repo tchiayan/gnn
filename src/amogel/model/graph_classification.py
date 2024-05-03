@@ -416,7 +416,7 @@ class ContrastiveLearning(pl.LightningModule):
             x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2[i].x , batch2[i].edge_index , batch2[i].edge_attr , batch2[i].batch ,  batch2[i].y
             x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3[i].x , batch3[i].edge_index , batch3[i].edge_attr , batch3[i].batch ,  batch3[i].y
             
-            output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+            output , embedding = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
             acutal_class = y1
             batch_shape = batch1_idx.shape[0]
             # loss = self.loss(output , y1)
