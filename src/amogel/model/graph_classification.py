@@ -254,9 +254,9 @@ class BinaryLearning(pl.LightningModule):
         self.multi_graph_testing = multi_graph_testing
         self.num_classes = num_classes
         
-        self.multi_graph_conv = MultiGraphConvolution(in_channels , hidden_channels , 16)
+        self.multi_graph_conv = MultiGraphConvolution(in_channels , hidden_channels , 32)
         
-        self.classifier = torch.nn.Linear(16 , 1) # binary classification
+        self.classifier = torch.nn.Linear(32 , 1) # binary classification
         self.loss = torch.nn.BCEWithLogitsLoss()
         self.acc = Accuracy(task='binary' , num_classes=2)
         self.multi_acc = Accuracy(task='multiclass' , num_classes=num_classes)
