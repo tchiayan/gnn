@@ -380,7 +380,7 @@ class ContrastiveLearning(pl.LightningModule):
         output_positive , embedding_positive = self.get_train_output(batch , 0)
         output_negative , embedding_negative = self.get_train_output(batch , 1)
         
-        loss = self.binary_loss_positive(output_positive.squeeze(dim=-1) , torch.ones_like(output_positive.squeeze(dim=-1))) + self.binary_loss_negative(output_negative.squeeze(dim=-1) , torch.zeros_like(output_negative.squeeze(dim=-1))) + self.pairwise_distance(embedding_positive , embedding_negative)
+        loss = self.binary_loss_positive(output_positive.squeeze(dim=-1) , torch.ones_like(output_positive.squeeze(dim=-1))) + self.binary_loss_negative(output_negative.squeeze(dim=-1) , torch.zeros_like(output_negative.squeeze(dim=-1))) + self.pairwise_distance(embedding_positive , embedding_negative).mean()
         acc = self.acc(torch.nn.functional.sigmoid(output_positive).squeeze(dim=-1) , torch.ones_like(output_positive).squeeze(dim=-1))
 
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch[0][0].batch.shape[0])
