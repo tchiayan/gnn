@@ -152,7 +152,7 @@ class ModelTraining():
             test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_constrastive_multigraphs_omic_2.pt")
             test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_constrastive_multigraphs_omic_3.pt")
             
-            self.in_channels = train_omic_1_graphs[0].x.size(1)
+            self.in_channels = train_omic_1_graphs[0][0].x.size(1)
             
             self.train_loader = DataLoader(
                 PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) ,
