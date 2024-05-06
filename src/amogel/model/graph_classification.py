@@ -481,7 +481,7 @@ class TripletLearning(pl.LightningModule):
         loss = self.alpha * self.triplet_loss(embedding_anchor , embedding_positive , embedding_negative) \
             + (1 - self.alpha) * self.loss(torch.nn.functional.softmax(output_anchor , dim=-1) , actual_anchor) 
             
-        acc = self.acc(torch.nn.functional.softmax(output_positive) , actual_positive.squeeze(dim=-1))
+        acc = self.acc(torch.nn.functional.softmax(output_positive , dim=-1) , actual_positive.squeeze(dim=-1))
 
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch[0][0].batch.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch[0][0].batch.shape[0])
