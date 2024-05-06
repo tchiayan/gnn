@@ -25,11 +25,11 @@ knowledge_graph:
   ppi_combined_score: 300 
   
 model_training: 
-  dataset: 'unified_multigraph' # support ['unified' , 'correlation' , 'embedding' , 'unified_multigraph']
-  model: 'MultiGraphClassification' # support ['MultiGraphClassification' , 'BinaryLearning']
+  dataset: 'triplet_multigraph' # support ['unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph']
+  model: 'ContrastiveLearning' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
   hidden_units: 32
-  learning_rate: 0.00001
-  learning_epoch: 300
+  learning_rate: 0.0001
+  learning_epoch: 600
   drop_out: 0.1
   batch_size: 10
   weight: null # [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ] 

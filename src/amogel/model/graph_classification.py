@@ -431,6 +431,110 @@ class ContrastiveLearning(pl.LightningModule):
         final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
         return final_prediction , acutal_class , batch_shape
     
+class TripletLearning(pl.LightningModule):
+    
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None) -> None: 
+        super().__init__()
+        self.lr = lr 
+        self.mlflow = mlflow
+        self.multi_graph_testing = multi_graph_testing
+        self.num_classes = num_classes
+        
+        self.multi_graph_conv = MultiGraphConvolution(in_channels , hidden_channels , 32)
+        
+        self.classifier = torch.nn.Linear(32 , 1) # binary classification
+        self.loss = torch.nn.BCEWithLogitsLoss()
+        self.acc = Accuracy(task='binary' , num_classes=2)
+        self.multi_acc = Accuracy(task='multiclass' , num_classes=num_classes)
+        self.binary_loss_positive = torch.nn.BCEWithLogitsLoss()
+        self.binary_loss_negative = torch.nn.BCEWithLogitsLoss()
+        self.triplet_loss = torch.nn.TripletMarginLoss()
+        # self.auc = AUROC(task='multiclass' , num_classes=num_classes)
+        # self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
+        # self.specificity = Specificity(task="multiclass" , num_classes=num_classes)
+        # self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
+    
+    def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
+        embedding = self.multi_graph_conv(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+        output = self.classifier(embedding)
+        return output , embedding
+    
+    def configure_optimizers(self) -> OptimizerLRScheduler:
+        return optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
+    
+    def get_train_output(self, batch , i):
+        batch1 , batch2 , batch3 = batch
+        
+        x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1[i].x , batch1[i].edge_index , batch1[i].edge_attr , batch1[i].batch ,  batch1[i].y
+        x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2[i].x , batch2[i].edge_index , batch2[i].edge_attr , batch2[i].batch ,  batch2[i].y
+        x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3[i].x , batch3[i].edge_index , batch3[i].edge_attr , batch3[i].batch ,  batch3[i].y
+        
+        output , embedding = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+        
+        return output , embedding
+        
+    def training_step(self , batch):
+        
+        # Positive pair
+        output_anchor , embedding_anchor = self.get_train_output(batch , 0)
+        output_positive , embedding_positive = self.get_train_output(batch , 1)
+        output_negative , embedding_negative = self.get_train_output(batch , 2)
+        
+        loss = self.binary_loss_positive(output_positive.squeeze(dim=-1) , torch.ones_like(output_positive.squeeze(dim=-1))) \
+                + self.binary_loss_positive(output_anchor.squeeze(dim=-1) , torch.ones_like(output_anchor.squeeze(dim=-1))) \
+                + self.binary_loss_negative(output_negative.squeeze(dim=-1) , torch.zeros_like(output_negative.squeeze(dim=-1))) \
+                + self.triplet_loss(embedding_anchor , embedding_positive , embedding_negative)
+            
+        acc = self.acc(torch.nn.functional.sigmoid(output_positive).squeeze(dim=-1) , torch.ones_like(output_positive).squeeze(dim=-1))
+
+        self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch[0][0].batch.shape[0])
+        self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch[0][0].batch.shape[0])
+        return loss
+    
+    def validation_step(self , batch):
+        
+        
+        output , actual_class , batch_shape = self.get_output(batch)
+        
+        #loss = self.loss(output , actual_class)
+        acc = self.multi_acc(torch.nn.functional.softmax(output) , actual_class)
+        # f1 = self.f1(torch.nn.functional.sigmoid(output) , actual_class)
+        # auroc = self.auc(torch.nn.functional.sigmoid(output) , actual_class)
+        # specificity = self.specificity(torch.nn.functional.sigmoid(output) , actual_class)
+        # sensivity = self.sensivity(torch.nn.functional.sigmoid(output) , actual_class)
+        
+        # self.log("val_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch_shape)
+        self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        # self.log("val_f1" , f1 , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        # self.log("val_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        # self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        # self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        
+    def get_output(self , batch):
+        batch1 , batch2 , batch3 = batch # batch1 , batch2 , batch3 contains multiple topology of the same omic type
+        
+        #results = []
+        results_1 = []
+        for i in range(self.num_classes):
+            x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1[i].x , batch1[i].edge_index , batch1[i].edge_attr , batch1[i].batch ,  batch1[i].y
+            x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2[i].x , batch2[i].edge_index , batch2[i].edge_attr , batch2[i].batch ,  batch2[i].y
+            x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3[i].x , batch3[i].edge_index , batch3[i].edge_attr , batch3[i].batch ,  batch3[i].y
+            
+            output , embedding = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+            acutal_class = y1
+            batch_shape = batch1_idx.shape[0]
+            # loss = self.loss(output , y1)
+            output_softmax = torch.nn.functional.sigmoid(output)
+            
+            with open("multigraph_testing_logs.txt" , "a") as log_file: 
+                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Confidence score: {output_softmax}\t| Actual class: {y1}\n")
+            #results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
+            results_1.append(output_softmax[0].item())
+        
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
+        return final_prediction , acutal_class , batch_shape
+    
 class MultiGraphClassification(pl.LightningModule):
     
     def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None) -> None:

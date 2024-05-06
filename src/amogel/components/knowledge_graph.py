@@ -71,7 +71,7 @@ class KnowledgeGraph():
             raise FileNotFoundError(f"Data file not found at {train_datapath}")
         
         logger.info(f"Loading data : {train_datapath}")
-        df_train = pd.read_csv(train_datapath)
+        df_train = pd.read_csv(train_datapath , header=None)
         
         return df_train
     
@@ -83,7 +83,7 @@ class KnowledgeGraph():
             raise FileNotFoundError(f"Data file not found at {test_datapath}")
         
         logger.info(f"Loading data : {test_datapath}")
-        df_test = pd.read_csv(test_datapath)
+        df_test = pd.read_csv(test_datapath , header=None)
 
         return df_test
     
@@ -95,7 +95,7 @@ class KnowledgeGraph():
             raise FileNotFoundError(f"Data file not found at {train_label_path}")
         
         logger.info(f"Loading label data : {train_label_path}")
-        df_label = pd.read_csv(train_label_path)
+        df_label = pd.read_csv(train_label_path , header=None)
         
         return df_label
     
@@ -107,7 +107,7 @@ class KnowledgeGraph():
             raise FileNotFoundError(f"Data file not found at {test_label_path}")
         
         logger.info(f"Loading label data : {test_label_path}")
-        df_label = pd.read_csv(test_label_path)
+        df_label = pd.read_csv(test_label_path , header=None)
         
         return df_label
     
@@ -400,6 +400,80 @@ class KnowledgeGraph():
         torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_contrastive_multigraphs_omic_{self.omic_type}.pt"))
         logger.info("Saving Testing Graphs")
         torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_constrastive_multigraphs_omic_{self.omic_type}.pt"))
+        
+    def generate_triplet_multigraph(self , ppi=True , kegg_go=False, synthetic=True):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0]
+        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        
+        if ppi:
+            partial_knowledge_tensor = self.ppi_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if kegg_go:
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if synthetic:
+            synthetic_tensor_dict = self.synthetic_graph
+        
+        logger.info("Generate training triplet multigraph")
+        training_graphs = []
+        labels = synthetic_tensor_dict.keys()
+        with tqdm(total=self.train_data.shape[0]) as pbar:
+            for idx , sample in self.train_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                label = int(self.train_label.iloc[idx].values.item())
+                same_label_sample_idx = [x for x in self.train_label[self.train_label[0] == label].index.to_list() if x != idx ]
+                same_label = int(self.train_label.iloc[random.choice(same_label_sample_idx)].values.item())
+                
+                non_label = [x for x in labels if x != label]
+                positive_topology = synthetic_tensor_dict[label] + knowledge_tensor
+                negative_topology = synthetic_tensor_dict[np.random.choice(non_label)] + knowledge_tensor
+
+                # anchor graph 
+                anchor_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , 1)
+                anchor_graph = coo_to_pyg_data(coo_matrix=anchor_coo_matrix , node_features=torch_sample , y = torch.tensor([label] , dtype=torch.long) , extra_label=True )
+                
+                # positive graph (From another sample with same label)
+                positive_torch_sample = torch.tensor(self.train_data.iloc[random.choice(same_label_sample_idx)].values, dtype=torch.float32 , device=device).unsqueeze(-1)
+                positive_graph = coo_to_pyg_data(coo_matrix=anchor_coo_matrix , node_features=positive_torch_sample , y = torch.tensor([same_label] , dtype=torch.long) , extra_label=True )
+                
+                # negative graph (Same sample with different topology)
+                negative_coo_matrix = symmetric_matrix_to_coo(negative_topology.numpy() , 1)
+                negative_graph = coo_to_pyg_data(coo_matrix=negative_coo_matrix , node_features=torch_sample , y = torch.tensor([non_label] , dtype=torch.long) , extra_label=True )
+                
+                training_graphs.append([anchor_graph ,  positive_graph , negative_graph])
+                pbar.update(1)
+        
+        logger.info("Generate testing triplet multigraph")
+        testing_graphs = []
+        with tqdm(total=self.test_data.shape[0]) as pbar:
+            for idx , sample in self.test_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                topology = knowledge_tensor
+                graphs = []
+                for synthetic_graph in synthetic_tensor_dict.values():
+                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , 1)
+                    graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
+                    graphs.append(graph)
+                testing_graphs.append(graphs)
+                pbar.update(1)
+        
+        # Measure 
+        # self.__measure_graph_from_data(training_graphs , f"Training Unified Graph")
+        # self.__measure_graph_from_data(testing_graphs , f"Testing Unified Graph")
+        
+        # Save the graphs 
+        logger.info("Saving Training Graphs")
+        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_triplet_multigraphs_omic_{self.omic_type}.pt"))
+        logger.info("Saving Testing Graphs")
+        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_triplet_multigraphs_omic_{self.omic_type}.pt"))
         
     def generate_binaryclassifier_multigraph(self , ppi=True , kegg_go=False, synthetic=True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
