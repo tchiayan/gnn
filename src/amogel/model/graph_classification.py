@@ -529,7 +529,7 @@ class TripletLearning(pl.LightningModule):
             results_1.append(predicted_prob)
         
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        final_prediction = torch.tensor(results_1, dtype=torch.float32 , device=device)
+        final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
         return final_prediction , acutal_class , batch_shape
     
 class MultiGraphClassification(pl.LightningModule):
