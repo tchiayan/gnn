@@ -493,7 +493,7 @@ class TripletLearning(pl.LightningModule):
         output , actual_class , batch_shape = self.get_output(batch)
         
         #loss = self.loss(output , actual_class)
-        acc = self.acc(torch.nn.functional.softmax(output) , actual_class)
+        acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         # f1 = self.f1(torch.nn.functional.sigmoid(output) , actual_class)
         # auroc = self.auc(torch.nn.functional.sigmoid(output) , actual_class)
         # specificity = self.specificity(torch.nn.functional.sigmoid(output) , actual_class)
