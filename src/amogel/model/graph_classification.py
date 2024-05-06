@@ -442,12 +442,9 @@ class TripletLearning(pl.LightningModule):
         
         self.multi_graph_conv = MultiGraphConvolution(in_channels , hidden_channels , 32)
         
-        self.classifier = torch.nn.Linear(32 , 1) # binary classification
-        self.loss = torch.nn.BCEWithLogitsLoss()
-        self.acc = Accuracy(task='binary' , num_classes=2)
-        self.multi_acc = Accuracy(task='multiclass' , num_classes=num_classes)
-        self.binary_loss_positive = torch.nn.BCEWithLogitsLoss()
-        self.binary_loss_negative = torch.nn.BCEWithLogitsLoss()
+        self.classifier = torch.nn.Linear(32 , num_classes) # binary classification
+        self.loss = torch.nn.CrossEntropyLoss()
+        self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
         self.triplet_loss = torch.nn.TripletMarginLoss()
         # self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         # self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
@@ -471,21 +468,19 @@ class TripletLearning(pl.LightningModule):
         
         output , embedding = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
         
-        return output , embedding
+        return output , embedding , y1
         
     def training_step(self , batch):
         
         # Positive pair
-        output_anchor , embedding_anchor = self.get_train_output(batch , 0)
-        output_positive , embedding_positive = self.get_train_output(batch , 1)
-        output_negative , embedding_negative = self.get_train_output(batch , 2)
+        output_anchor , embedding_anchor , actual_anchor = self.get_train_output(batch , 0)
+        output_positive , embedding_positive , actual_positive = self.get_train_output(batch , 1)
+        output_negative , embedding_negative , _ = self.get_train_output(batch , 2)
         
-        loss = self.binary_loss_positive(output_positive.squeeze(dim=-1) , torch.ones_like(output_positive.squeeze(dim=-1))) \
-                + self.binary_loss_positive(output_anchor.squeeze(dim=-1) , torch.ones_like(output_anchor.squeeze(dim=-1))) \
-                + self.binary_loss_negative(output_negative.squeeze(dim=-1) , torch.zeros_like(output_negative.squeeze(dim=-1))) \
-                + self.triplet_loss(embedding_anchor , embedding_positive , embedding_negative)
+        loss = self.triplet_loss(embedding_anchor , embedding_positive , embedding_negative) \
+            + self.loss(torch.nn.functional.softmax(output_anchor , dim=-1) , actual_anchor) 
             
-        acc = self.acc(torch.nn.functional.sigmoid(output_positive).squeeze(dim=-1) , torch.ones_like(output_positive).squeeze(dim=-1))
+        acc = self.acc(torch.nn.functional.softmax(output_positive) , actual_positive.squeeze(dim=-1))
 
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch[0][0].batch.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch[0][0].batch.shape[0])
@@ -497,7 +492,7 @@ class TripletLearning(pl.LightningModule):
         output , actual_class , batch_shape = self.get_output(batch)
         
         #loss = self.loss(output , actual_class)
-        acc = self.multi_acc(torch.nn.functional.softmax(output) , actual_class)
+        acc = self.acc(torch.nn.functional.softmax(output) , actual_class)
         # f1 = self.f1(torch.nn.functional.sigmoid(output) , actual_class)
         # auroc = self.auc(torch.nn.functional.sigmoid(output) , actual_class)
         # specificity = self.specificity(torch.nn.functional.sigmoid(output) , actual_class)
@@ -524,15 +519,16 @@ class TripletLearning(pl.LightningModule):
             acutal_class = y1
             batch_shape = batch1_idx.shape[0]
             # loss = self.loss(output , y1)
-            output_softmax = torch.nn.functional.sigmoid(output)
+            output_softmax = torch.nn.functional.softmax(output , dim=-1)
+            predicted_prob = output_softmax[0][i].item()
             
             with open("multigraph_testing_logs.txt" , "a") as log_file: 
-                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Confidence score: {output_softmax}\t| Actual class: {y1}\n")
+                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Confidence score: {predicted_prob}\t| Actual class: {y1}\n")
             #results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
-            results_1.append(output_softmax[0].item())
+            results_1.append(predicted_prob)
         
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-        final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
+        final_prediction = torch.tensor(results_1, dtype=torch.float32 , device=device)
         return final_prediction , acutal_class , batch_shape
     
 class MultiGraphClassification(pl.LightningModule):
