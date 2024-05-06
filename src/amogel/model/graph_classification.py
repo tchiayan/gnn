@@ -444,6 +444,7 @@ class TripletLearning(pl.LightningModule):
         
         self.classifier = torch.nn.Linear(32 , num_classes) # binary classification
         self.loss = torch.nn.CrossEntropyLoss()
+        self.alpha = 0.2
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
         self.triplet_loss = torch.nn.TripletMarginLoss()
         # self.auc = AUROC(task='multiclass' , num_classes=num_classes)
@@ -477,8 +478,8 @@ class TripletLearning(pl.LightningModule):
         output_positive , embedding_positive , actual_positive = self.get_train_output(batch , 1)
         output_negative , embedding_negative , _ = self.get_train_output(batch , 2)
         
-        loss = self.triplet_loss(embedding_anchor , embedding_positive , embedding_negative) \
-            + self.loss(torch.nn.functional.softmax(output_anchor , dim=-1) , actual_anchor) 
+        loss = self.alpha * self.triplet_loss(embedding_anchor , embedding_positive , embedding_negative) \
+            + (1 - self.alpha) * self.loss(torch.nn.functional.softmax(output_anchor , dim=-1) , actual_anchor) 
             
         acc = self.acc(torch.nn.functional.softmax(output_positive) , actual_positive.squeeze(dim=-1))
 
