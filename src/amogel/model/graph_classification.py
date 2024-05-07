@@ -443,7 +443,9 @@ class TripletLearning(pl.LightningModule):
         self.multi_graph_conv = MultiGraphConvolution(in_channels , hidden_channels , 32)
         
         self.classifier = torch.nn.Linear(32 , num_classes if not binary else 1) # class classification
-        self.loss = torch.nn.CrossEntropyLoss() if not binary else torch.nn.BCEWithLogitsLoss()
+        self.loss = torch.nn.CrossEntropyLoss(
+                weight=weight
+            ) if not binary else torch.nn.BCEWithLogitsLoss()
         self.alpha = alpha
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes) if not binary else Accuracy(task='binary' , num_classes=2)
         self.triplet_loss = torch.nn.TripletMarginLoss()
