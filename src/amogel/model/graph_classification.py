@@ -433,7 +433,7 @@ class ContrastiveLearning(pl.LightningModule):
     
 class TripletLearning(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None) -> None: 
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None , alpha=0.2) -> None: 
         super().__init__()
         self.lr = lr 
         self.mlflow = mlflow
@@ -444,7 +444,7 @@ class TripletLearning(pl.LightningModule):
         
         self.classifier = torch.nn.Linear(32 , num_classes) # binary classification
         self.loss = torch.nn.CrossEntropyLoss()
-        self.alpha = 0.2
+        self.alpha = alpha
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
         self.triplet_loss = torch.nn.TripletMarginLoss()
         # self.auc = AUROC(task='multiclass' , num_classes=num_classes)

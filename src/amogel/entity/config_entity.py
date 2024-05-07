@@ -84,6 +84,7 @@ class ModelTrainingConfig:
     enable_validation: bool 
     enable_testing: bool
     enable_training: bool
+    alpha: float
     weight: Optional[List[float]] = None
     
 

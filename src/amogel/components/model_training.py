@@ -203,7 +203,8 @@ class ModelTraining():
             drop_out=self.config.drop_out, 
             mlflow=mlflow, 
             multi_graph_testing = (self.config.dataset == "unified_multigraph" or self.config.dataset == "contrastive_multigraph"), 
-            weight=self.config.weight
+            weight=self.config.weight , 
+            alpha=self.config.alpha
         )
         
         # clean multigraph_testing_logs.txt

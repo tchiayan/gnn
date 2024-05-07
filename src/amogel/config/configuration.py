@@ -129,7 +129,8 @@ class ConfigurationManager:
             weight=params.weight,
             enable_validation=params.enable_validation,
             enable_testing=params.enable_testing, 
-            enable_training=params.enable_training
+            enable_training=params.enable_training, 
+            alpha=params.alpha
         )
         
         return model_training_config
