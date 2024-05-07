@@ -451,6 +451,7 @@ class TripletLearning(pl.LightningModule):
         # self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
         # self.specificity = Specificity(task="multiclass" , num_classes=num_classes)
         # self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
+        self.test_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
         embedding = self.multi_graph_conv(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
@@ -494,6 +495,7 @@ class TripletLearning(pl.LightningModule):
         
         #loss = self.loss(output , actual_class)
         acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        self.test_confusion_matrix.update(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         # f1 = self.f1(torch.nn.functional.sigmoid(output) , actual_class)
         # auroc = self.auc(torch.nn.functional.sigmoid(output) , actual_class)
         # specificity = self.specificity(torch.nn.functional.sigmoid(output) , actual_class)
@@ -532,6 +534,20 @@ class TripletLearning(pl.LightningModule):
         final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
         return final_prediction , acutal_class , batch_shape
     
+    def on_validation_epoch_end(self) -> None: 
+        
+        if self.current_epoch % 10 == 0:
+            
+            if self.mlflow is not None:
+                logger.info("Logging confusion matrix for test epoch {}".format(self.current_epoch))
+                # calculate confusion matrix
+
+                self.test_confusion_matrix.compute()
+                fig , ax = self.test_confusion_matrix.plot() 
+                self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}.png".format(self.current_epoch))
+                plt.close(fig)
+                
+        self.test_confusion_matrix.reset()
 class MultiGraphClassification(pl.LightningModule):
     
     def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None) -> None:
