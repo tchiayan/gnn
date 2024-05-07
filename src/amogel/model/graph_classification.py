@@ -448,7 +448,7 @@ class TripletLearning(pl.LightningModule):
             ) if not binary else torch.nn.BCEWithLogitsLoss()
         self.alpha = alpha
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes) if not binary else Accuracy(task='binary')
-        self.test_acc = AttributeError(task='multiclass' , num_classes=num_classes)
+        self.test_acc = Accuracy(task='multiclass' , num_classes=num_classes)
         self.triplet_loss = torch.nn.TripletMarginLoss()
         # self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         # self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
