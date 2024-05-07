@@ -444,10 +444,11 @@ class TripletLearning(pl.LightningModule):
         
         self.classifier = torch.nn.Linear(32 , num_classes if not binary else 1) # class classification
         self.loss = torch.nn.CrossEntropyLoss(
-                weight=weight
+                weight=torch.tensor(weight , dtype=torch.float32) if weight is not None else None
             ) if not binary else torch.nn.BCEWithLogitsLoss()
         self.alpha = alpha
-        self.acc = Accuracy(task='multiclass' , num_classes=num_classes) if not binary else Accuracy(task='binary' , num_classes=2)
+        self.acc = Accuracy(task='multiclass' , num_classes=num_classes) if not binary else Accuracy(task='binary')
+        self.test_acc = AttributeError(task='multiclass' , num_classes=num_classes)
         self.triplet_loss = torch.nn.TripletMarginLoss()
         # self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         # self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
@@ -502,7 +503,7 @@ class TripletLearning(pl.LightningModule):
         output , actual_class , batch_shape = self.get_output(batch)
         
         #loss = self.loss(output , actual_class)
-        acc = self.acc(
+        acc = self.test_acc(
             torch.nn.functional.softmax(output , dim=-1) , actual_class)
         self.test_confusion_matrix.update(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         # f1 = self.f1(torch.nn.functional.sigmoid(output) , actual_class)
