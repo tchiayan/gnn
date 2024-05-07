@@ -204,7 +204,8 @@ class ModelTraining():
             mlflow=mlflow, 
             multi_graph_testing = (self.config.dataset == "unified_multigraph" or self.config.dataset == "contrastive_multigraph"), 
             weight=self.config.weight , 
-            alpha=self.config.alpha
+            alpha=self.config.alpha , 
+            binary=self.config.binary
         )
         
         # clean multigraph_testing_logs.txt

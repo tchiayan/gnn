@@ -130,7 +130,8 @@ class ConfigurationManager:
             enable_validation=params.enable_validation,
             enable_testing=params.enable_testing, 
             enable_training=params.enable_training, 
-            alpha=params.alpha
+            alpha=params.alpha,
+            binary=params.binary
         )
         
         return model_training_config

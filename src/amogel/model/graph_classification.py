@@ -433,19 +433,19 @@ class ContrastiveLearning(pl.LightningModule):
     
 class TripletLearning(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None , alpha=0.2) -> None: 
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None , alpha=0.2 , binary = False) -> None: 
         super().__init__()
         self.lr = lr 
         self.mlflow = mlflow
         self.multi_graph_testing = multi_graph_testing
         self.num_classes = num_classes
-        
+        self.binary = binary
         self.multi_graph_conv = MultiGraphConvolution(in_channels , hidden_channels , 32)
         
-        self.classifier = torch.nn.Linear(32 , num_classes) # binary classification
-        self.loss = torch.nn.CrossEntropyLoss()
+        self.classifier = torch.nn.Linear(32 , num_classes if not binary else 1) # class classification
+        self.loss = torch.nn.CrossEntropyLoss() if not binary else torch.nn.BCEWithLogitsLoss()
         self.alpha = alpha
-        self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
+        self.acc = Accuracy(task='multiclass' , num_classes=num_classes) if not binary else Accuracy(task='binary' , num_classes=2)
         self.triplet_loss = torch.nn.TripletMarginLoss()
         # self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         # self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
@@ -480,9 +480,15 @@ class TripletLearning(pl.LightningModule):
         output_negative , embedding_negative , _ = self.get_train_output(batch , 2)
         
         loss = self.alpha * self.triplet_loss(embedding_anchor , embedding_positive , embedding_negative) \
-            + (1 - self.alpha) * self.loss(torch.nn.functional.softmax(output_anchor , dim=-1) , actual_anchor) 
+            + (1 - self.alpha) * self.loss(
+                torch.nn.functional.softmax(output_anchor , dim=-1) if not self.binary else torch.nn.functional.sigmoid(output_anchor.squeeze()) , 
+                actual_anchor if not self.binary else torch.ones_like(actual_positive.squeeze(dim=-1) , dtype=torch.float)
+                )
             
-        acc = self.acc(torch.nn.functional.softmax(output_positive , dim=-1) , actual_positive.squeeze(dim=-1))
+        acc = self.acc(
+            torch.nn.functional.softmax(output_positive , dim=-1) if not self.binary else torch.nn.functional.sigmoid(output_positive.squeeze()) , 
+            actual_positive.squeeze(dim=-1) if not self.binary else torch.ones_like(actual_positive.squeeze(dim=-1) , dtype=torch.long)
+        )
 
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch[0][0].batch.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch[0][0].batch.shape[0])
@@ -494,7 +500,8 @@ class TripletLearning(pl.LightningModule):
         output , actual_class , batch_shape = self.get_output(batch)
         
         #loss = self.loss(output , actual_class)
-        acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        acc = self.acc(
+            torch.nn.functional.softmax(output , dim=-1) , actual_class)
         self.test_confusion_matrix.update(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         # f1 = self.f1(torch.nn.functional.sigmoid(output) , actual_class)
         # auroc = self.auc(torch.nn.functional.sigmoid(output) , actual_class)
@@ -521,14 +528,13 @@ class TripletLearning(pl.LightningModule):
             output , embedding = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
             acutal_class = y1
             batch_shape = batch1_idx.shape[0]
-            # loss = self.loss(output , y1)
-            output_softmax = torch.nn.functional.softmax(output , dim=-1)
-            predicted_prob = output_softmax[0][i].item()
+            
+            class_confidence = torch.nn.functional.softmax(output , dim=-1)[0][i].item() if not self.binary else torch.nn.functional.sigmoid(output)[0].item()
             
             with open("multigraph_testing_logs.txt" , "a") as log_file: 
-                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Confidence score: {predicted_prob}\t| Actual class: {y1}\n")
+                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Confidence score: {class_confidence}\t| Actual class: {y1}\n")
             #results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
-            results_1.append(predicted_prob)
+            results_1.append(class_confidence)
         
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)

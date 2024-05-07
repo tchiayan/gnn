@@ -26,7 +26,7 @@ knowledge_graph:
   
 model_training: 
   dataset: 'triplet_multigraph' # support ['unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph']
-  model: 'ContrastiveLearning' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
+  model: 'TripletLearning' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
   hidden_units: 32
   learning_rate: 0.0001
   learning_epoch: 600
@@ -37,3 +37,4 @@ model_training:
   enable_testing: false
   enable_training: true
   alpha: 0.2
+  binary: false
