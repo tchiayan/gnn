@@ -480,13 +480,16 @@ class TripletLearning(pl.LightningModule):
         # Positive pair
         output_anchor , embedding_anchor , actual_anchor = self.get_train_output(batch , 0)
         output_positive , embedding_positive , actual_positive = self.get_train_output(batch , 1)
-        output_negative , embedding_negative , _ = self.get_train_output(batch , 2)
+        output_negative , embedding_negative , actual_negative = self.get_train_output(batch , 2)
         
         loss = self.alpha * self.triplet_loss(embedding_anchor , embedding_positive , embedding_negative) \
             + (1 - self.alpha) * self.loss(
                 torch.nn.functional.softmax(output_anchor , dim=-1) if not self.binary else torch.nn.functional.sigmoid(output_anchor.squeeze()) , 
                 actual_anchor if not self.binary else torch.ones_like(actual_positive.squeeze(dim=-1) , dtype=torch.float)
                 )
+            
+        if self.binary: 
+            loss += self.loss(torch.zeros_like(actual_negative.squeeze(dim=-1) , dtype=torch.float) , torch.nn.functional.sigmoid(output_negative.squeeze()) )
             
         acc = self.acc(
             torch.nn.functional.softmax(output_positive , dim=-1) if not self.binary else torch.nn.functional.sigmoid(output_positive.squeeze()) , 
