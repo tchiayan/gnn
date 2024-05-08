@@ -489,7 +489,8 @@ class TripletLearning(pl.LightningModule):
                 )
             
         if self.binary: 
-            loss += self.loss(torch.nn.functional.sigmoid(output_negative.squeeze()) , torch.zeros(actual_negative.shape[0] , dtype=torch.float))
+            device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+            loss += self.loss(torch.nn.functional.sigmoid(output_negative.squeeze()) , torch.zeros(actual_negative.shape[0] , dtype=torch.float , device=device))
             
         acc = self.acc(
             torch.nn.functional.softmax(output_positive , dim=-1) if not self.binary else torch.nn.functional.sigmoid(output_positive.squeeze()) , 
