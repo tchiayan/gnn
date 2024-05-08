@@ -489,11 +489,11 @@ class TripletLearning(pl.LightningModule):
                 )
             
         if self.binary: 
-            loss += self.loss(torch.nn.functional.sigmoid(output_negative.squeeze()) , torch.zeros_like(actual_negative.squeeze(dim=-1) , dtype=torch.float))
+            loss += self.loss(torch.nn.functional.sigmoid(output_negative.squeeze()) , torch.zeros(actual_negative.shape[0] , dtype=torch.float))
             
         acc = self.acc(
             torch.nn.functional.softmax(output_positive , dim=-1) if not self.binary else torch.nn.functional.sigmoid(output_positive.squeeze()) , 
-            actual_positive.squeeze(dim=-1) if not self.binary else torch.zeros(actual_negative.shape[0] , dtype=torch.long)
+            actual_positive.squeeze(dim=-1) if not self.binary else torch.zeros(actual_positive.squeeze(dim=-1) , dtype=torch.long)
         )
 
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch[0][0].batch.shape[0])
