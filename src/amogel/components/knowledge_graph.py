@@ -432,7 +432,8 @@ class KnowledgeGraph():
                 
                 non_label = [x for x in labels if x != label]
                 positive_topology = synthetic_tensor_dict[label] + knowledge_tensor
-                negative_topology = synthetic_tensor_dict[np.random.choice(non_label)] + knowledge_tensor
+                random_negative_label = np.random.choice(non_label)
+                negative_topology = synthetic_tensor_dict[random_negative_label] + knowledge_tensor
 
                 # anchor graph 
                 anchor_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , 1)
@@ -444,7 +445,7 @@ class KnowledgeGraph():
                 
                 # negative graph (Same sample with different topology)
                 negative_coo_matrix = symmetric_matrix_to_coo(negative_topology.numpy() , 1)
-                negative_graph = coo_to_pyg_data(coo_matrix=negative_coo_matrix , node_features=torch_sample , y = torch.tensor([non_label] , dtype=torch.long) , extra_label=True )
+                negative_graph = coo_to_pyg_data(coo_matrix=negative_coo_matrix , node_features=torch_sample , y = torch.tensor([random_negative_label] , dtype=torch.long) , extra_label=True )
                 
                 training_graphs.append([anchor_graph ,  positive_graph , negative_graph])
                 pbar.update(1)
