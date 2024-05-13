@@ -70,6 +70,11 @@ class KnowledgeGraphConfig:
     ppi_dir: Path 
     data_dir: Path
     combined_score: int
+    ppi: bool 
+    kegg_go: bool 
+    synthetic: bool
+    dataset: str
+    edge_threshold: float
     
 @dataclass(frozen=True)
 class ModelTrainingConfig: 

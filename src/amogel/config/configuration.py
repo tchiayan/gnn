@@ -108,7 +108,12 @@ class ConfigurationManager:
             embedding_dir=config.embedding_dir,
             ppi_dir=config.ppi_dir,
             data_dir=config.data_dir, 
-            combined_score=params.ppi_combined_score
+            combined_score=params.ppi_combined_score, 
+            ppi= params.ppi,
+            kegg_go=params.kegg_go,
+            synthetic=params.synthetic, 
+            dataset= self.params.model_training.dataset,
+            edge_threshold=params.edge_threshold
         )
         
         return knowledge_graph_config

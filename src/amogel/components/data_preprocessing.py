@@ -200,7 +200,7 @@ class DataPreprocessing:
         df_label.iloc[: , 0] = label
         
         # train test split 
-        X_train, X_test, y_train, y_test = train_test_split(df_label.index, df_label.iloc[: , 0:1], test_size=0.2, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(df_label.index, df_label.iloc[: , 0:1], test_size=0.3, random_state=42)
         
         df_miRNA.loc[X_train,:].to_csv(os.path.join(root_dir, dataset , "3_tr.csv") , index=False , header=False)
         df_miRNA.loc[X_test,:].to_csv(os.path.join(root_dir, dataset , "3_te.csv") , index=False , header=False)
@@ -321,3 +321,10 @@ class DataPreprocessing:
             logger.info(f"Generate AC rules for dataset {dataset} | ac_rule_{i}.tsv")
             data_filepath = os.path.join(self.config.root_dir , dataset , f"{i}_tr.csv")
             generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}.tsv") , min_rule=True)
+            
+        # generate ac rules for test data
+        label_path = os.path.join(self.config.root_dir , dataset , "labels_te.csv")
+        for i in range(1,4):
+            logger.info(f"Generate AC rules for dataset {dataset} | ac_rule_{i}_te.tsv")
+            data_filepath = os.path.join(self.config.root_dir , dataset , f"{i}_te.csv")
+            generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}_te.tsv") , min_rule=True , min_rule_per_class=500)

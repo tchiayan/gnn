@@ -279,6 +279,9 @@ class KnowledgeGraph():
                 knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
                 knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
             
+            # normalize the tensor
+            knowledge_tensor = knowledge_tensor / knowledge_tensor.sum(dim=1 , keepdim=True)
+            
             synthetic_tensor[int(label)] = knowledge_tensor
         
         logger.info("Saving Synthetic Knowledge Tensor")
@@ -365,11 +368,11 @@ class KnowledgeGraph():
                 negative_topology = synthetic_tensor_dict[np.random.choice(non_label)] + knowledge_tensor
             
                 # positive graph
-                positive_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , 1)
+                positive_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , self.config.edge_threshold)
                 positive_graph = coo_to_pyg_data(coo_matrix=positive_coo_matrix , node_features=torch_sample , y = torch.tensor([1] , dtype=torch.long) , extra_label=True )
                 
                 # negative graph
-                negative_coo_matrix = symmetric_matrix_to_coo(negative_topology.numpy() , 1)
+                negative_coo_matrix = symmetric_matrix_to_coo(negative_topology.numpy() , self.config.edge_threshold)
                 negative_graph = coo_to_pyg_data(coo_matrix=negative_coo_matrix , node_features=torch_sample , y = torch.tensor([0] , dtype=torch.long) , extra_label=True )
                 
                 training_graphs.append([positive_graph , negative_graph])
@@ -384,7 +387,7 @@ class KnowledgeGraph():
                 topology = knowledge_tensor
                 graphs = []
                 for synthetic_graph in synthetic_tensor_dict.values():
-                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , 1)
+                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                     graphs.append(graph)
                 testing_graphs.append(graphs)
@@ -436,7 +439,7 @@ class KnowledgeGraph():
                 negative_topology = synthetic_tensor_dict[random_negative_label] + knowledge_tensor
 
                 # anchor graph 
-                anchor_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , 1)
+                anchor_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , self.config.edge_threshold)
                 anchor_graph = coo_to_pyg_data(coo_matrix=anchor_coo_matrix , node_features=torch_sample , y = torch.tensor([label] , dtype=torch.long) , extra_label=True )
                 
                 # positive graph (From another sample with same label)
@@ -444,7 +447,7 @@ class KnowledgeGraph():
                 positive_graph = coo_to_pyg_data(coo_matrix=anchor_coo_matrix , node_features=positive_torch_sample , y = torch.tensor([same_label] , dtype=torch.long) , extra_label=True )
                 
                 # negative graph (Same sample with different topology)
-                negative_coo_matrix = symmetric_matrix_to_coo(negative_topology.numpy() , 1)
+                negative_coo_matrix = symmetric_matrix_to_coo(negative_topology.numpy() , self.config.edge_threshold)
                 negative_graph = coo_to_pyg_data(coo_matrix=negative_coo_matrix , node_features=torch_sample , y = torch.tensor([random_negative_label] , dtype=torch.long) , extra_label=True )
                 
                 training_graphs.append([anchor_graph ,  positive_graph , negative_graph])
@@ -459,7 +462,7 @@ class KnowledgeGraph():
                 topology = knowledge_tensor
                 graphs = []
                 for synthetic_graph in synthetic_tensor_dict.values():
-                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , 1)
+                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                     graphs.append(graph)
                 testing_graphs.append(graphs)
@@ -507,7 +510,7 @@ class KnowledgeGraph():
                 topology = synthetic_tensor_dict[random_label] + knowledge_tensor
             
                 # random graph
-                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , 1)
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor([random_label == label], dtype=torch.long) , extra_label=True )
                 
                 training_graphs.append(graph)
@@ -522,7 +525,7 @@ class KnowledgeGraph():
                 topology = knowledge_tensor
                 graphs = []
                 for synthetic_graph in synthetic_tensor_dict.values():
-                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , 1)
+                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                     graphs.append(graph)
                 testing_graphs.append(graphs)
@@ -572,7 +575,7 @@ class KnowledgeGraph():
                 else: 
                     topology = knowledge_tensor
                     
-                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , 1)
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
                 training_graphs.append(graph)
                 pbar.update(1)
@@ -586,7 +589,7 @@ class KnowledgeGraph():
                 topology = knowledge_tensor
                 graphs = []
                 for synthetic_graph in synthetic_tensor_dict.values():
-                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , 1)
+                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                     graphs.append(graph)
                 testing_graphs.append(graphs)
@@ -636,7 +639,7 @@ class KnowledgeGraph():
                 else: 
                     topology = knowledge_tensor
                     
-                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , 1)
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
                 training_graphs.append(graph)
                 pbar.update(1)
@@ -648,7 +651,7 @@ class KnowledgeGraph():
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
                 topology = knowledge_tensor
-                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , 1)
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                 testing_graphs.append(graph)
                 pbar.update(1)
@@ -698,7 +701,7 @@ class KnowledgeGraph():
                 else: 
                     topology = knowledge_tensor
                     
-                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , 1)
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
                 training_graphs.append(graph)
                 pbar.update(1)
@@ -707,7 +710,7 @@ class KnowledgeGraph():
         testing_graphs = []
         # Get correlation graph for test dataset 
         corr_matrix = self.test_data.corr().to_numpy()
-        coo_matrix = symmetric_matrix_to_coo(corr_matrix , 0.5)
+        coo_matrix = symmetric_matrix_to_coo(corr_matrix , self.config.edge_threshold)
         
         with tqdm(total=self.test_data.shape[0]) as pbar:
             for idx , sample in self.test_data.iterrows():
