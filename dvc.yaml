@@ -24,16 +24,16 @@ stages:
     outs:
     - artifacts/data_preprocessing
 
-  train_embedding:
-    cmd: python src/amogel/pipeline/stage_train_embedding.py
-    deps:
-    - config/config.yaml
-    - src/amogel/components/train_embedding.py
-    - src/amogel/pipeline/stage_train_embedding.py
-    params:
-    - embedding_training
-    outs:
-    - artifacts/train_embedding
+  # train_embedding:
+  #   cmd: python src/amogel/pipeline/stage_train_embedding.py
+  #   deps:
+  #   - config/config.yaml
+  #   - src/amogel/components/train_embedding.py
+  #   - src/amogel/pipeline/stage_train_embedding.py
+  #   params:
+  #   - embedding_training
+  #   outs:
+  #   - artifacts/train_embedding
 
   # train_encoder:
   #   cmd: python src/amogel/pipeline/stage_train_encoder.py
