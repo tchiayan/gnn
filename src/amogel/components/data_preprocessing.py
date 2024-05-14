@@ -7,6 +7,7 @@ from pathlib import Path
 from sklearn.feature_selection import VarianceThreshold , SelectKBest , f_classif
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.model_selection import train_test_split
+from pickle import dump
 
 import os 
 
@@ -320,7 +321,10 @@ class DataPreprocessing:
         for i in range(1,4):
             logger.info(f"Generate AC rules for dataset {dataset} | ac_rule_{i}.tsv")
             data_filepath = os.path.join(self.config.root_dir , dataset , f"{i}_tr.csv")
-            generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}.tsv") , min_rule=True)
+            est = generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}.tsv") , min_rule=True)
+            
+            logger.info(f"Store the KbinsDiscretizer for dataset {dataset} | kbins_{i}.joblib")
+            dump(est , open(os.path.join(self.config.root_dir , dataset , f"kbins_{i}.joblib"), 'wb'))
             
         # generate ac rules for test data
         label_path = os.path.join(self.config.root_dir , dataset , "labels_te.csv")

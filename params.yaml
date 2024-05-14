@@ -29,13 +29,13 @@ knowledge_graph:
   edge_threshold: 0.0
   
 model_training: 
-  dataset: 'triplet_multigraph' # support ['unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph']
-  model: 'TripletLearning' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
+  dataset: 'common_multigraph' # support ['unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
+  model: 'MultiGraphClassification' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
   hidden_units: 32
   learning_rate: 0.0001
   learning_epoch: 600
   drop_out: 0.1
-  batch_size: 5
+  batch_size: 10
   weight: null # [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ] 
   enable_validation: true
   enable_testing: false

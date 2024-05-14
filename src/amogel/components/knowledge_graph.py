@@ -667,6 +667,73 @@ class KnowledgeGraph():
         logger.info("Saving Testing Graphs")
         torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_unified_graphs_omic_{self.omic_type}.pt"))
         
+    def generate_common_graph(self , ppi=True , kegg_go=False, synthetic=True):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0]
+        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        
+        if ppi:
+            partial_knowledge_tensor = self.ppi_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if kegg_go:
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if synthetic:
+            synthetic_tensor = torch.zeros_like(knowledge_tensor)
+            
+            for label in self.synthetic_graph.keys():
+                synthetic_tensor += self.synthetic_graph[label]
+        
+        logger.info("Generate training common graph")
+        training_graphs = []
+        with tqdm(total=self.train_data.shape[0]) as pbar:
+            for idx , sample in self.train_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                if synthetic: 
+                    label = int(self.train_label.iloc[idx].values.item())
+                    # print(synthetic_tensor_dict.keys())
+                    # print(label)
+                    # print(type(label))
+                    topology = synthetic_tensor + knowledge_tensor
+                else: 
+                    topology = knowledge_tensor
+                    
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
+                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
+                training_graphs.append(graph)
+                pbar.update(1)
+        
+        logger.info("Generate testing common graph")
+        testing_graphs = []
+        with tqdm(total=self.test_data.shape[0]) as pbar:
+            for idx , sample in self.test_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                if synthetic:
+                    topology = knowledge_tensor + synthetic_tensor
+                else:
+                    topology = knowledge_tensor
+                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
+                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
+                testing_graphs.append(graph)
+                pbar.update(1)
+        
+        # Measure 
+        self.__measure_graph_from_data(training_graphs , f"Training Common Graph")
+        self.__measure_graph_from_data(testing_graphs , f"Testing Common Graph")
+        
+        # Save the graphs 
+        logger.info("Saving Training Graphs")
+        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_common_graphs_omic_{self.omic_type}.pt"))
+        logger.info("Saving Testing Graphs")
+        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_common_graphs_omic_{self.omic_type}.pt"))
+        
     
     def generate_correlation_graph(self , ppi=True , kegg_go=False, synthetic=True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

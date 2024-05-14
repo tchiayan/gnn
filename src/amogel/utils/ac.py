@@ -89,6 +89,9 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
     # Discretization
     df = pd.read_csv(data_file, header=None)
     est = preprocessing.KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
+    
+    # Get discretized threshold
+    
     est.fit(df)
 
     df = pd.DataFrame(est.transform(df))
@@ -180,6 +183,8 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
     with open(output_file , 'w') as ac_file:
         string_row = [ "\t".join(x) for x in output ]
         ac_file.write("\n".join(string_row))
+        
+    return est
 
 
 if __name__ == "__main__":

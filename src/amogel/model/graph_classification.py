@@ -579,7 +579,7 @@ class TripletLearning(pl.LightningModule):
         self.test_confusion_matrix.reset()
 class MultiGraphClassification(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None) -> None:
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None, alpha=0.2 , binary = False) -> None:
         super().__init__() 
         
         self.lr = lr 
@@ -634,11 +634,11 @@ class MultiGraphClassification(pl.LightningModule):
         
         output = self.mlp(output)
         
-        self.rank = {
-            'omic1': ( perm11 , perm12 , score11 , score12 , batch11 , batch12 , attr_score11 , attr_score12 ) ,
-            'omic2': ( perm21 , perm22 , score21 , score22 , batch21 , batch22 , attr_score21 , attr_score22 ) ,
-            'omic3': ( perm31 , perm32 , score31 , score32 , batch31 , batch32 , attr_score31 , attr_score32 ) ,
-        }
+        # self.rank = {
+        #     'omic1': ( perm11 , perm12 , score11 , score12 , batch11 , batch12 , attr_score11 , attr_score12 ) ,
+        #     'omic2': ( perm21 , perm22 , score21 , score22 , batch21 , batch22 , attr_score21 , attr_score22 ) ,
+        #     'omic3': ( perm31 , perm32 , score31 , score32 , batch31 , batch32 , attr_score31 , attr_score32 ) ,
+        # }
         
         return output
     
@@ -764,20 +764,20 @@ class MultiGraphClassification(pl.LightningModule):
         specificity = self.specificity(torch.nn.functional.softmax(output , dim=-1) , y1)
         sensivity = self.sensivity(torch.nn.functional.softmax(output , dim=-1) , y1)
         
-        omic1_pool1 , omic1_pool2 = self.get_rank_genes(self.rank['omic1'] , batch1.extra_label , batch1.num_graphs , 1000)
-        omic2_pool1 , omic2_pool2 = self.get_rank_genes(self.rank['omic2'] , batch2.extra_label , batch2.num_graphs , 1000)
-        omic3_pool1 , omic3_pool2 = self.get_rank_genes(self.rank['omic3'] , batch3.extra_label , batch3.num_graphs , 503)
+        # omic1_pool1 , omic1_pool2 = self.get_rank_genes(self.rank['omic1'] , batch1.extra_label , batch1.num_graphs , 1000)
+        # omic2_pool1 , omic2_pool2 = self.get_rank_genes(self.rank['omic2'] , batch2.extra_label , batch2.num_graphs , 1000)
+        # omic3_pool1 , omic3_pool2 = self.get_rank_genes(self.rank['omic3'] , batch3.extra_label , batch3.num_graphs , 503)
         
-        self.genes['omic1_pool1'].extend(omic1_pool1)
-        self.genes['omic1_pool2'].extend(omic1_pool2)
-        self.genes['omic2_pool1'].extend(omic2_pool1)
-        self.genes['omic2_pool2'].extend(omic2_pool2)
-        self.genes['omic3_pool1'].extend(omic3_pool1)
-        self.genes['omic3_pool2'].extend(omic3_pool2)
+        # self.genes['omic1_pool1'].extend(omic1_pool1)
+        # self.genes['omic1_pool2'].extend(omic1_pool2)
+        # self.genes['omic2_pool1'].extend(omic2_pool1)
+        # self.genes['omic2_pool2'].extend(omic2_pool2)
+        # self.genes['omic3_pool1'].extend(omic3_pool1)
+        # self.genes['omic3_pool2'].extend(omic3_pool2)
         
-        self.allrank['omic1'].append(self.rank['omic1'])
-        self.allrank['omic2'].append(self.rank['omic2'])
-        self.allrank['omic3'].append(self.rank['omic3'])
+        # self.allrank['omic1'].append(self.rank['omic1'])
+        # self.allrank['omic2'].append(self.rank['omic2'])
+        # self.allrank['omic3'].append(self.rank['omic3'])
         
         self.log("test_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
         self.log("test_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
