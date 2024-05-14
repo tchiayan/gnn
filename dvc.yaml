@@ -51,6 +51,9 @@ stages:
     - config/config.yaml
     - src/amogel/components/knowledge_graph.py
     - src/amogel/pipeline/stage_knowledge_graph.py
+    params: 
+    - knowledge_graph 
+    - model_training.dataset
     outs:
     - artifacts/knowledge_graph
   
