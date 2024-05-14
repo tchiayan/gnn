@@ -121,13 +121,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "common_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_graphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_graphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
