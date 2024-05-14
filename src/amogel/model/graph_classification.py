@@ -9,6 +9,7 @@ from lightning.pytorch.utilities.types import  OptimizerLRScheduler
 from torch import optim
 from amogel import logger
 import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report
 
 class GraphConvolution(torch.nn.Module):
     def __init__(self , in_channels , hidden_channels , out_channels , jump = True , **args):
@@ -624,6 +625,8 @@ class MultiGraphClassification(pl.LightningModule):
         self.test_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
         self.specificity = Specificity(task="multiclass" , num_classes=num_classes)
         self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
+        self.predictions = []
+        self.actuals = []
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
         output1 , perm11 , perm12 , score11 , score12 , batch11 , batch12 , attr_score11 , attr_score12 = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx , log=True)
@@ -700,6 +703,8 @@ class MultiGraphClassification(pl.LightningModule):
         specificity = self.specificity(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         sensivity = self.sensivity(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         self.test_confusion_matrix.update(output , actual_class)  
+        self.predictions.extend(torch.argmax(torch.nn.functional.softmax(output , dim=-1) , dim=-1).cpu().numpy())
+        self.actuals.extend(actual_class.cpu().numpy())
         
         # if self.current_epoch == self.trainer.max_epochs - 1:
             
@@ -734,7 +739,13 @@ class MultiGraphClassification(pl.LightningModule):
                 self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}.png".format(self.current_epoch))
                 plt.close(fig)
                 
+                logger.info(f"Logging classification report for test epoch {self.current_epoch}")
+                report = classification_report(self.actuals , self.predictions)
+                self.mlflow.log_text(report , "test_classification_report_epoch_{}.txt".format(self.current_epoch))
+                
         self.test_confusion_matrix.reset()
+        self.predictions = []
+        self.actuals = []
     
     def on_train_epoch_end(self) -> None:
         
