@@ -20,7 +20,7 @@ class KnowledgeGraph():
         os.makedirs(os.path.join(self.config.root_dir , dataset) , exist_ok=True)
         self.omic_type = omic_type 
         self.dataset = dataset
-        self.embedding = self.__load_embedding()
+        # self.embedding = self.__load_embedding()
         self.feature_names = self.__load_feature_name(extract_gene_name=(omic_type == 1))
         self.train_data = self.__load_train_data()
         self.test_data = self.__load_test_data()

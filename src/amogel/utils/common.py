@@ -53,6 +53,11 @@ def symmetric_matrix_to_pyg(matrix , node_features , y):
     
     indices , values = to_undirected(torch.LongTensor(np.vstack((rows, cols))) , torch.FloatTensor(data))
     
+    ## Filter the edges with all features is more than 0 
+    mask = torch.all(values > 0 , dim=-1)
+    indices = indices[:,mask]
+    values = values[mask]
+    
     return Data(x=node_features , edge_index=indices , edge_attr=values , num_nodes=node_features.shape[0] , y=y , extra_label=torch.arange(node_features.size(0)))
     
 
