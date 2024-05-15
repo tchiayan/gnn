@@ -12,18 +12,24 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 
 class GraphConvolution(torch.nn.Module):
-    def __init__(self , in_channels , hidden_channels , out_channels , jump = True , **args):
+    def __init__(self , in_channels , hidden_channels , out_channels , jump = True, *args, **kwargs):
         super().__init__() 
         
+        multihead = kwargs.get('multihead' , 1)
+        concat = kwargs.get('multihead_concat' , False)
+        
+        middle_channels = hidden_channels if not concat else hidden_channels * multihead
+        mid_out_channels = out_channels if not concat else out_channels * multihead
+        
         # Graph Convolution
-        self.graph_conv1 = geom_nn.GATConv(in_channels=in_channels , out_channels=hidden_channels, **args)
-        self.graph_conv2 = geom_nn.GATConv(in_channels=hidden_channels , out_channels=hidden_channels, **args)
-        self.graph_conv3 = geom_nn.GATConv(in_channels=hidden_channels , out_channels=out_channels, **args)
+        self.graph_conv1 = geom_nn.GATConv(in_channels=in_channels , out_channels=hidden_channels, heads=multihead , concat=concat)
+        self.graph_conv2 = geom_nn.GATConv(in_channels=middle_channels , out_channels=hidden_channels, heads=multihead, concat=concat)
+        self.graph_conv3 = geom_nn.GATConv(in_channels=middle_channels , out_channels=out_channels, heads=multihead, concat=concat)
         
         
-        self.batch_norm1 = geom_nn.BatchNorm(in_channels=hidden_channels)
-        self.batch_norm2 = geom_nn.BatchNorm(in_channels=hidden_channels)
-        self.batch_norm3 = geom_nn.BatchNorm(in_channels=out_channels)
+        self.batch_norm1 = geom_nn.BatchNorm(in_channels=middle_channels)
+        self.batch_norm2 = geom_nn.BatchNorm(in_channels=middle_channels)
+        self.batch_norm3 = geom_nn.BatchNorm(in_channels=mid_out_channels)
         
         self.jump = jump
         
@@ -65,26 +71,34 @@ class GraphConvolution(torch.nn.Module):
             return x3 , x1_edge_attr , x2_edge_attr , x3_edge_attr
         
 class GraphPooling(torch.nn.Module):
-    def __init__(self , in_channels , hidden_channels) -> None: 
+    def __init__(self , in_channels , hidden_channels , *args, **kwargs) -> None: 
         super().__init__()
         
+        multihead = kwargs.get('multihead' , 1)
+        concat = kwargs.get('multihead_concat' , False)
+        
+        if multihead > 1 and concat : 
+            graph_conv_output = hidden_channels * multihead * 3
+        else: 
+            graph_conv_output = hidden_channels * 3
+        
         # Graph Convolution
-        self.graph_conv1 = GraphConvolution(in_channels , hidden_channels , hidden_channels)
+        self.graph_conv1 = GraphConvolution(in_channels , hidden_channels , hidden_channels , **kwargs)
         
         # Graph Pooling 
-        self.pooling = geom_nn.TopKPooling(in_channels=hidden_channels*3 , ratio=0.5) # TopK pooling much stable than SAGPooling
-        self.graph_norm1 = geom_nn.GraphNorm(hidden_channels*3)
+        self.pooling = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
+        self.graph_norm1 = geom_nn.GraphNorm(graph_conv_output)
         # self.pooling = geom_nn.DMoNPooling(channels=hidden_channels*3 , k=100)
         
         # Graph Convolution
-        self.graph_conv2 = GraphConvolution(hidden_channels*3 , hidden_channels , hidden_channels)
+        self.graph_conv2 = GraphConvolution(graph_conv_output , hidden_channels , hidden_channels, **kwargs)
         
         # Graph Pooling 
-        self.pooling2 = geom_nn.TopKPooling(in_channels=hidden_channels*3 , ratio=0.5) # TopK pooling much stable than SAGPooling
-        self.graph_norm2 = geom_nn.GraphNorm(hidden_channels*3)
+        self.pooling2 = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
+        self.graph_norm2 = geom_nn.GraphNorm(graph_conv_output)
         
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels*3 , hidden_channels*4), 
+            torch.nn.Linear(graph_conv_output , hidden_channels*4), 
             torch.nn.ReLU(), 
             torch.nn.BatchNorm1d(hidden_channels*4), 
             torch.nn.Linear(hidden_channels*4 , hidden_channels*2), 
@@ -580,7 +594,7 @@ class TripletLearning(pl.LightningModule):
         self.test_confusion_matrix.reset()
 class MultiGraphClassification(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None, alpha=0.2 , binary = False) -> None:
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None, alpha=0.2 , binary = False , *args, **kwargs) -> None:
         super().__init__() 
         
         self.lr = lr 
@@ -588,9 +602,9 @@ class MultiGraphClassification(pl.LightningModule):
         self.multi_graph_testing = multi_graph_testing
         self.num_classes = num_classes
         
-        self.graph1 = GraphPooling(in_channels , hidden_channels)
-        self.graph2 = GraphPooling(in_channels , hidden_channels)
-        self.graph3 = GraphPooling(in_channels , hidden_channels)
+        self.graph1 = GraphPooling(in_channels , hidden_channels , **kwargs)
+        self.graph2 = GraphPooling(in_channels , hidden_channels , **kwargs)
+        self.graph3 = GraphPooling(in_channels , hidden_channels , **kwargs)
         
         self.rank = {}
         self.allrank = {
@@ -608,7 +622,7 @@ class MultiGraphClassification(pl.LightningModule):
         }
         
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels*3*2 , hidden_channels),
+            torch.nn.Linear(hidden_channels*3*2 , hidden_channels), # 3 omics with 2 * hidden_channels
             torch.nn.ReLU(), 
             torch.nn.BatchNorm1d(hidden_channels),
             torch.nn.Linear(hidden_channels , num_classes),

@@ -91,6 +91,8 @@ class ModelTrainingConfig:
     enable_training: bool
     alpha: float
     binary: bool
+    multihead: int
+    multihead_concat: bool
     weight: Optional[List[float]] = None
     
 

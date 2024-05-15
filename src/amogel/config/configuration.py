@@ -136,7 +136,9 @@ class ConfigurationManager:
             enable_testing=params.enable_testing, 
             enable_training=params.enable_training, 
             alpha=params.alpha,
-            binary=params.binary
+            binary=params.binary, 
+            multihead=params.multihead,
+            multihead_concat=params.multihead_concat
         )
         
         return model_training_config

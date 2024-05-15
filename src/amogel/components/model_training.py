@@ -254,7 +254,9 @@ class ModelTraining():
             multi_graph_testing = (self.config.dataset == "unified_multigraph" or self.config.dataset == "contrastive_multigraph"), 
             weight=self.config.weight , 
             alpha=self.config.alpha , 
-            binary=self.config.binary
+            binary=self.config.binary , 
+            multihead=self.config.multihead, 
+            multihead_concat=self.config.multihead_concat
         )
         
         # clean multigraph_testing_logs.txt
