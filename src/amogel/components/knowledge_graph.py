@@ -5,7 +5,7 @@ import os
 import torch 
 import pandas as pd
 from tqdm import tqdm
-from amogel.utils.common import symmetric_matrix_to_coo , coo_to_pyg_data
+from amogel.utils.common import symmetric_matrix_to_coo , coo_to_pyg_data , symmetric_matrix_to_pyg
 import itertools
 from torch_geometric.data import Data
 from torch_geometric.utils import is_undirected
@@ -269,21 +269,26 @@ class KnowledgeGraph():
         synthetic_tensor = {}
         
         logger.info(f"Generating Synthetic Knowledge Tensor for {len(unique_class)} classes")
-        for label in unique_class:
-            
-            knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
-            
-            for idx , row in synthetic_df_filtered[synthetic_df_filtered['class'] == label].iterrows():
-                node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
-                vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
-                knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
-                knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
-            
-            # normalize the tensor
-            knowledge_tensor = knowledge_tensor / knowledge_tensor.sum(dim=1 , keepdim=True)
-            
-            synthetic_tensor[int(label)] = knowledge_tensor
-        
+        with tqdm(total=len(unique_class)) as pbar:
+            for label in unique_class:
+                
+                knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+                
+                for idx , row in synthetic_df_filtered[synthetic_df_filtered['class'] == label].iterrows():
+                    node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
+                    vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
+                    knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
+                    knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+                
+                # normalize the numpy [0, 1]
+                knowledge_tensor = knowledge_tensor / knowledge_tensor.sum(dim=1 , keepdim=True)
+                
+                # change nan to 0
+                knowledge_tensor[torch.isnan(knowledge_tensor)] = 0
+                
+                synthetic_tensor[int(label)] = knowledge_tensor
+                pbar.update(1)
+                
         logger.info("Saving Synthetic Knowledge Tensor")
         torch.save(synthetic_tensor , os.path.join(self.config.root_dir , self.dataset , f"knowledge_synthetic_{self.omic_type}.pt"))
         
@@ -666,7 +671,71 @@ class KnowledgeGraph():
         torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_unified_graphs_omic_{self.omic_type}.pt"))
         logger.info("Saving Testing Graphs")
         torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_unified_graphs_omic_{self.omic_type}.pt"))
+    
+    def generate_multiedges_graph(self , ppi=True , kegg_go=False , synthetic=True):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0]
+        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        
+        if ppi:
+            partial_knowledge_tensor = self.ppi_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if kegg_go:
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if synthetic:
+            synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
+        
+        logger.info("Generate training multiedges graph")
+        training_graphs = []
+        with tqdm(total=self.train_data.shape[0]) as pbar:
+            for idx , sample in self.train_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                if synthetic: 
+                    label = int(self.train_label.iloc[idx].values.item())
+                    # print(synthetic_tensor_dict.keys())
+                    # print(label)
+                    # print(type(label))
+                    topology = synthetic_tensor # + knowledge_tensor
+                else: 
+                    topology = knowledge_tensor
+                    
+                # coo_matrix = symmetric_matrix_to_coo(topology.numpy())
+                graph = symmetric_matrix_to_pyg(
+                    matrix=topology.numpy() , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) 
+                )
+                training_graphs.append(graph)
+                pbar.update(1)
+                
+        logger.info("Generate testing multiedges graph")
+        testing_graphs = []
+        with tqdm(total=self.test_data.shape[0]) as pbar:
+            for idx , sample in self.test_data.iterrows():
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                if synthetic:
+                    topology = synthetic_tensor # + synthetic_tensor
+                else:
+                    topology = knowledge_tensor
+                #coo_matrix = symmetric_matrix_to_coo(topology.numpy())
+                graph = symmetric_matrix_to_pyg(
+                    matrix=topology.numpy() , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) 
+                )
+                testing_graphs.append(graph)
+                pbar.update(1)
+                
+        # Save the graphs 
+        logger.info("Saving Training Graphs")
+        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_multiedges_multigraphs_omic_{self.omic_type}.pt"))
+        logger.info("Saving Testing Graphs")
+        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_multiedges_multigraphs_omic_{self.omic_type}.pt"))
+                
     def generate_common_graph(self , ppi=True , kegg_go=False, synthetic=True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         

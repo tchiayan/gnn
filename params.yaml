@@ -29,7 +29,7 @@ knowledge_graph:
   edge_threshold: 0.0
   
 model_training: 
-  dataset: 'common_multigraph' # support ['unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
+  dataset: 'multiedges_multigraph' # support ['unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
   model: 'MultiGraphClassification' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
   hidden_units: 32
   learning_rate: 0.0001

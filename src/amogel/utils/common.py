@@ -46,6 +46,15 @@ def coo_to_pyg_data(coo_matrix , node_features , y=None , extra_label=False):
     else:
         return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0])
 
+def symmetric_matrix_to_pyg(matrix , node_features , y):
+    rows, cols = np.triu_indices_from(np.ones((matrix.shape[0] , matrix.shape[1])))
+    
+    data = matrix[rows, cols] # [number of edges , number of features]
+    
+    indices , values = to_undirected(torch.LongTensor(np.vstack((rows, cols))) , torch.FloatTensor(data))
+    
+    return Data(x=node_features , edge_index=indices , edge_attr=values , num_nodes=node_features.shape[0] , y=y , extra_label=torch.arange(node_features.size(0)))
+    
 
 def symmetric_matrix_to_coo(matrix , threshold):
     # Find the nonzero entries in the upper triangle (including the main diagonal)
