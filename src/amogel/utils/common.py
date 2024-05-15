@@ -46,7 +46,7 @@ def coo_to_pyg_data(coo_matrix , node_features , y=None , extra_label=False):
     else:
         return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0])
 
-def symmetric_matrix_to_pyg(matrix , node_features , y):
+def symmetric_matrix_to_pyg(matrix , node_features , y , edge_threshold=0.0):
     rows, cols = np.triu_indices_from(np.ones((matrix.shape[0] , matrix.shape[1])))
     
     data = matrix[rows, cols] # [number of edges , number of features]
@@ -54,7 +54,7 @@ def symmetric_matrix_to_pyg(matrix , node_features , y):
     indices , values = to_undirected(torch.LongTensor(np.vstack((rows, cols))) , torch.FloatTensor(data))
     
     ## Filter the edges with all features is more than 0 
-    mask = torch.all(values > 0 , dim=-1)
+    mask = torch.all(values > edge_threshold , dim=-1)
     indices = indices[:,mask]
     values = values[mask]
     

@@ -707,7 +707,7 @@ class KnowledgeGraph():
                     
                 # coo_matrix = symmetric_matrix_to_coo(topology.numpy())
                 graph = symmetric_matrix_to_pyg(
-                    matrix=topology.numpy() , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) 
+                    matrix=topology.numpy() , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , edge_thresold=self.config.edge_threshold
                 )
                 training_graphs.append(graph)
                 pbar.update(1)
@@ -724,7 +724,7 @@ class KnowledgeGraph():
                     topology = knowledge_tensor
                 #coo_matrix = symmetric_matrix_to_coo(topology.numpy())
                 graph = symmetric_matrix_to_pyg(
-                    matrix=topology.numpy() , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) 
+                    matrix=topology.numpy() , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , edge_thresold=self.config.edge_threshold
                 )
                 testing_graphs.append(graph)
                 pbar.update(1)
