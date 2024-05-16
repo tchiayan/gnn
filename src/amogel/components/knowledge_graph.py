@@ -72,7 +72,8 @@ class KnowledgeGraph():
             raise FileNotFoundError(f"KBins model not found at {kbin_model_filepath}")
         
         logger.info(f"Loading KBins model : {kbin_model_filepath}")
-        kbin_model = pickle.load(kbin_model_filepath)
+        with open(kbin_model_filepath, 'rb') as file:
+            kbin_model = pickle.load(file)
         
         return kbin_model
     
