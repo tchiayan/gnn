@@ -50,11 +50,13 @@ def symmetric_matrix_to_pyg(matrix , node_features , y , edge_threshold=0.0):
     rows, cols = np.triu_indices_from(np.ones((matrix.shape[0] , matrix.shape[1])))
     
     data = matrix[rows, cols] # [number of edges , number of features]
-    
+    if len(data.shape) == 1:
+        data = data.reshape(-1,1)
+        
     indices , values = to_undirected(torch.LongTensor(np.vstack((rows, cols))) , torch.FloatTensor(data))
     
     ## Filter the edges with all features is more than 0 
-    mask = torch.all(values > edge_threshold , dim=-1)
+    mask = torch.any(values > edge_threshold , dim=-1)
     indices = indices[:,mask]
     values = values[mask]
     
