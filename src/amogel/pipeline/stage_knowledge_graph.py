@@ -29,6 +29,8 @@ class KnowledgeGraphPipeline():
                 knowledge_graph.generate_common_graph( ppi=knowledge_graph_config.ppi , kegg_go=knowledge_graph_config.kegg_go , synthetic=knowledge_graph_config.synthetic )
             elif knowledge_graph_config.dataset == 'multiedges_multigraph':
                 knowledge_graph.generate_multiedges_graph( ppi=knowledge_graph_config.ppi , kegg_go=knowledge_graph_config.kegg_go , synthetic=knowledge_graph_config.synthetic )
+            elif knowledge_graph_config.dataset == 'unified_multigraph_test':
+                knowledge_graph.generate_unified_test_multigraph( ppi=knowledge_graph_config.ppi , kegg_go=knowledge_graph_config.kegg_go , synthetic=knowledge_graph_config.synthetic )
             else:
                 raise ValueError("Invalid dataset")
             # knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )

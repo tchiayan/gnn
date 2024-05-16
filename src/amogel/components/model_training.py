@@ -120,6 +120,30 @@ class ModelTraining():
                 shuffle=False ,
                 collate_fn=self.collate_multigraph
             )
+        elif self.config.dataset == "unified_multigraph_test":
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_test_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_test_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_test_multigraphs_omic_3.pt")
+            
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_test_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_test_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_test_multigraphs_omic_3.pt")
+            
+            self.in_channels = train_omic_1_graphs[0].x.size(1)
+            
+            self.train_loader = DataLoader(
+                PairDataset(train_omic_1_graphs , train_omic_2_graphs , train_omic_3_graphs) ,
+                batch_size=self.config.batch_size ,
+                shuffle=True ,
+                collate_fn=self.collate
+            )
+            
+            self.test_loader = DataLoader(
+                PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) ,
+                batch_size=1 ,
+                shuffle=False ,
+                collate_fn=self.collate_multigraph
+            )
         elif self.config.dataset == "multiedges_multigraph":
             train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_multiedges_multigraphs_omic_1.pt")
             train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_multiedges_multigraphs_omic_2.pt")
