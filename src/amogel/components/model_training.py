@@ -145,13 +145,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "discretized_unified_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_unified_test_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_unified_test_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_unified_test_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_unified_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_unified_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_unified_multigraphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_unified_test_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_unified_test_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_unified_test_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_unified_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_unified_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_unified_multigraphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
