@@ -192,7 +192,7 @@ class ModelTraining():
                 shuffle=False ,
                 collate_fn=self.collate_multigraph
             )
-        elif self.config.dataset == "discretized_unified_multigraph":
+        elif self.config.dataset == "discretized_common_multigraph":
             train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_common_graphs_omic_1.pt")
             train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_common_graphs_omic_2.pt")
             train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_common_graphs_omic_3.pt")

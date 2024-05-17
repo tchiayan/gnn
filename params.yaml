@@ -26,10 +26,10 @@ knowledge_graph:
   ppi: false
   kegg_go: false
   synthetic: true
-  edge_threshold: 0.0
+  edge_threshold: 0.8
   
 model_training: 
-  dataset: 'multiedges_multigraph' # support ['discretized_unified_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
+  dataset: 'discretized_multiedges_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
   model: 'MultiGraphClassification' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
   hidden_units: 32
   multihead: 1

@@ -295,7 +295,7 @@ class KnowledgeGraph():
                     knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
                 
                 # normalize the numpy [0, 1]
-                knowledge_tensor = knowledge_tensor / knowledge_tensor.sum(dim=1 , keepdim=True)
+                knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
                 
                 # change nan to 0
                 knowledge_tensor[torch.isnan(knowledge_tensor)] = 0
@@ -860,7 +860,90 @@ class KnowledgeGraph():
         torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_multiedges_multigraphs_omic_{self.omic_type}.pt"))
         logger.info("Saving Testing Graphs")
         torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_multiedges_multigraphs_omic_{self.omic_type}.pt"))
+    
+    def generate_discretized_multiedges_graph(self , ppi=True , kegg_go=False , synthetic=True):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        
+        # feature dimension (no of genes)
+        no_of_genes = self.feature_names.shape[0]
+        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        
+        if ppi:
+            partial_knowledge_tensor = self.ppi_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if kegg_go:
+            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            knowledge_tensor += partial_knowledge_tensor
+        
+        if synthetic:
+            synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
+        
+        logger.info("Generate training discretized multiedges graph")
+        training_graphs = []
+        num_edges = []
+        with tqdm(total=self.train_data.shape[0]) as pbar:
+            for idx , sample in self.train_data.iterrows():
+                sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
+                torch_sample = torch.tensor(sample_value, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
+                if synthetic: 
+                    label = int(self.train_label.iloc[idx].values.item())
+                    # print(synthetic_tensor_dict.keys())
+                    # print(label)
+                    # print(type(label))
+                    topology = synthetic_tensor # + knowledge_tensor
+                else: 
+                    topology = knowledge_tensor
+                    
+                # coo_matrix = symmetric_matrix_to_coo(topology.numpy())
+                graph = symmetric_matrix_to_pyg(
+                    matrix=topology.numpy() , node_features=torch_sample , 
+                    y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) ,
+                    edge_threshold=self.config.edge_threshold
+                )
+                num_edges.append(graph.edge_index.shape[1])
+                training_graphs.append(graph)
+                pbar.update(1)
+        # calculate average no of edges and std deviation
+        avg_no_of_edges = np.mean(num_edges)
+        std_no_of_edges = np.std(num_edges)
+        logger.info(f"Average no of edges in testing graph: {avg_no_of_edges} +- {std_no_of_edges}")
+                
+        logger.info("Generate testing discretized multiedges graph")
+        testing_graphs = []
+        num_edges = []
+        with tqdm(total=self.test_data.shape[0]) as pbar:
+            for idx , sample in self.test_data.iterrows():
+                sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
+                torch_sample = torch.tensor(sample_value, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                
+                if synthetic:
+                    topology = synthetic_tensor # + synthetic_tensor
+                else:
+                    topology = knowledge_tensor
+                #coo_matrix = symmetric_matrix_to_coo(topology.numpy())
+                graph = symmetric_matrix_to_pyg(
+                    matrix=topology.numpy() , node_features=torch_sample , 
+                    y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , 
+                    edge_threshold=self.config.edge_threshold
+                )
+                num_edges.append(graph.edge_index.shape[1])
+                testing_graphs.append(graph)
+                pbar.update(1)
+        # calculate average no of edges and std deviation
+        avg_no_of_edges = np.mean(num_edges)
+        std_no_of_edges = np.std(num_edges)
+        logger.info(f"Average no of edges in testing graph: {avg_no_of_edges} +- {std_no_of_edges}")
+        
+        # Save the graphs 
+        logger.info("Saving Training Graphs")
+        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        torch.save(training_graphs , os.path.join(self.config.root_dir , self.dataset , f"training_discretized_multiedges_multigraphs_omic_{self.omic_type}.pt"))
+        logger.info("Saving Testing Graphs")
+        torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_discretized_multiedges_multigraphs_omic_{self.omic_type}.pt"))
+                
+                            
     def generate_common_graph(self , ppi=True , kegg_go=False, synthetic=True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
@@ -965,8 +1048,9 @@ class KnowledgeGraph():
                 else: 
                     topology = knowledge_tensor
                     
-                coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
-                graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
+                graph = symmetric_matrix_to_pyg(
+                    matrix=topology.numpy() , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , edge_threshold=self.config.edge_threshold
+                )
                 training_graphs.append(graph)
                 pbar.update(1)
         
