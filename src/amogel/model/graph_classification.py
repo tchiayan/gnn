@@ -22,14 +22,14 @@ class GraphConvolution(torch.nn.Module):
         mid_out_channels = out_channels if not concat else out_channels * multihead
         
         # Graph Convolution
-        self.graph_conv1 = geom_nn.GATConv(in_channels=in_channels , out_channels=hidden_channels, heads=multihead , concat=concat)
-        self.graph_conv2 = geom_nn.GATConv(in_channels=middle_channels , out_channels=hidden_channels, heads=multihead, concat=concat)
-        self.graph_conv3 = geom_nn.GATConv(in_channels=middle_channels , out_channels=out_channels, heads=multihead, concat=concat)
+        self.graph_conv1 = geom_nn.GATConv(in_channels=in_channels , out_channels=out_channels, heads=multihead , concat=concat)
+        # self.graph_conv2 = geom_nn.GATConv(in_channels=middle_channels , out_channels=hidden_channels, heads=multihead, concat=concat)
+        # self.graph_conv3 = geom_nn.GATConv(in_channels=middle_channels , out_channels=out_channels, heads=multihead, concat=concat)
         
         
-        self.batch_norm1 = geom_nn.BatchNorm(in_channels=middle_channels)
-        self.batch_norm2 = geom_nn.BatchNorm(in_channels=middle_channels)
-        self.batch_norm3 = geom_nn.BatchNorm(in_channels=mid_out_channels)
+        self.batch_norm1 = geom_nn.BatchNorm(in_channels=mid_out_channels)
+        # self.batch_norm2 = geom_nn.BatchNorm(in_channels=middle_channels)
+        # self.batch_norm3 = geom_nn.BatchNorm(in_channels=mid_out_channels)
         
         self.jump = jump
         
@@ -40,35 +40,36 @@ class GraphConvolution(torch.nn.Module):
             x1 = x1.relu() # batch
             if batch_norm:
                 x1 = self.batch_norm1(x1)
-            x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , edge_attr , return_attention_weights=True)
-            x2 - x2.relu()
-            if batch_norm:
-                x2 = self.batch_norm2(x2)
-            x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , edge_attr , return_attention_weights=True)
-            x3 = x3.relu()
-            if batch_norm:
-                x3 = self.batch_norm3(x3)
+            # x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , edge_attr , return_attention_weights=True)
+            # x2 - x2.relu()
+            # if batch_norm:
+            #     x2 = self.batch_norm2(x2)
+            # x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , edge_attr , return_attention_weights=True)
+            # x3 = x3.relu()
+            # if batch_norm:
+            #     x3 = self.batch_norm3(x3)
         else: 
             x1 , x1_edge_attr = self.graph_conv1(x , edge_index , return_attention_weights=True)
             x1 = x1.relu() # batch
-            if batch_norm:
-                x1 = self.batch_norm1(x1)
-            x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , return_attention_weights=True)
-            x2 = x2.relu()
-            if batch_norm:
-                x2 = self.batch_norm2(x2)
-            x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , return_attention_weights=True)
-            x3 = x3.relu()
-            if batch_norm:
-                x3 = self.batch_norm3(x3)
+            # if batch_norm:
+            #     x1 = self.batch_norm1(x1)
+            # x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , return_attention_weights=True)
+            # x2 = x2.relu()
+            # if batch_norm:
+            #     x2 = self.batch_norm2(x2)
+            # x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , return_attention_weights=True)
+            # x3 = x3.relu()
+            # if batch_norm:
+            #     x3 = self.batch_norm3(x3)
             
         # Jumping knowledge 
         # x = torch.stack([x1 , x2 , x3], dim=-1).mean(dim=-1)
-        if self.jump:
-            x = torch.concat([x1,x2,x3] , dim=-1)
-            return x , x1_edge_attr , x2_edge_attr , x3_edge_attr
-        else: 
-            return x3 , x1_edge_attr , x2_edge_attr , x3_edge_attr
+        # if self.jump:
+        #     x = torch.concat([x1,x2,x3] , dim=-1)
+        #     return x , x1_edge_attr , x2_edge_attr , x3_edge_attr
+        # else: 
+        #     return x3 , x1_edge_attr , x2_edge_attr , x3_edge_attr
+        return x , x1_edge_attr , None , None
         
 class GraphPooling(torch.nn.Module):
     def __init__(self , in_channels , hidden_channels , *args, **kwargs) -> None: 
@@ -78,9 +79,9 @@ class GraphPooling(torch.nn.Module):
         concat = kwargs.get('multihead_concat' , False)
         
         if multihead > 1 and concat : 
-            graph_conv_output = hidden_channels * multihead * 3
+            graph_conv_output = hidden_channels * multihead * 1
         else: 
-            graph_conv_output = hidden_channels * 3
+            graph_conv_output = hidden_channels * 1
         
         # Graph Convolution
         self.graph_conv1 = GraphConvolution(in_channels , hidden_channels , hidden_channels , **kwargs)
@@ -124,25 +125,21 @@ class GraphPooling(torch.nn.Module):
 
         
          
-        gc1_k1_edge_attr_dense = geom_utils.to_dense_adj(gc1_k1_edge_attr[0] , batch  , edge_attr=gc1_k1_edge_attr[1])
-        gc1_k2_edge_attr_dense = geom_utils.to_dense_adj(gc1_k2_edge_attr[0] , batch  , edge_attr=gc1_k2_edge_attr[1])
-        gc1_k3_edge_attr_dense = geom_utils.to_dense_adj(gc1_k3_edge_attr[0] , batch  , edge_attr=gc1_k3_edge_attr[1])
-        gc1_dense = torch.stack([gc1_k1_edge_attr_dense , gc1_k2_edge_attr_dense , gc1_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
-        fea_attr_scr1 = gc1_dense.squeeze(dim=-1).mean(dim=0)
+        # gc1_k1_edge_attr_dense = geom_utils.to_dense_adj(gc1_k1_edge_attr[0] , batch  , edge_attr=gc1_k1_edge_attr[1])
+        # gc1_k2_edge_attr_dense = geom_utils.to_dense_adj(gc1_k2_edge_attr[0] , batch  , edge_attr=gc1_k2_edge_attr[1])
+        # gc1_k3_edge_attr_dense = geom_utils.to_dense_adj(gc1_k3_edge_attr[0] , batch  , edge_attr=gc1_k3_edge_attr[1])
+        # gc1_dense = torch.stack([gc1_k1_edge_attr_dense , gc1_k2_edge_attr_dense , gc1_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
+        # fea_attr_scr1 = gc1_dense.squeeze(dim=-1).mean(dim=0)
         
-        if log: 
-            pass
-            #print(gc1_dense.shape)
-            #print(fea_attr_scr1.shape)
-        gc2_k1_edge_attr_dense = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
-        gc2_k2_edge_attr_dense = geom_utils.to_dense_adj(gc2_k2_edge_attr[0] , batch1 , edge_attr=gc2_k2_edge_attr[1])
-        gc2_k3_edge_attr_dense = geom_utils.to_dense_adj(gc2_k3_edge_attr[0] , batch1 , edge_attr=gc2_k3_edge_attr[1])
-        gc2_dense = torch.stack([gc2_k1_edge_attr_dense , gc2_k2_edge_attr_dense , gc2_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
-        fea_attr_scr2 = gc2_dense.squeeze(dim=-1).mean(dim=0)
+        # gc2_k1_edge_attr_dense = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
+        # gc2_k2_edge_attr_dense = geom_utils.to_dense_adj(gc2_k2_edge_attr[0] , batch1 , edge_attr=gc2_k2_edge_attr[1])
+        # gc2_k3_edge_attr_dense = geom_utils.to_dense_adj(gc2_k3_edge_attr[0] , batch1 , edge_attr=gc2_k3_edge_attr[1])
+        # gc2_dense = torch.stack([gc2_k1_edge_attr_dense , gc2_k2_edge_attr_dense , gc2_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
+        # fea_attr_scr2 = gc2_dense.squeeze(dim=-1).mean(dim=0)
         
         x = self.mlp(x)
         
-        return x , perm_1 , perm_2 , score_1 , score_2 , batch1 , batch2 , fea_attr_scr1 , fea_attr_scr2
+        return x , perm_1 , perm_2 , score_1 , score_2 , batch1 , batch2 , None , None
     
 class GraphClassification(pl.LightningModule):
     def __init__(self, in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None) -> None:
