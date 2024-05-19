@@ -22,7 +22,8 @@ class GraphConvolution(torch.nn.Module):
         mid_out_channels = out_channels if not concat else out_channels * multihead
         
         # Graph Convolution
-        self.graph_conv1 = geom_nn.GATConv(in_channels=in_channels , out_channels=out_channels, heads=multihead , concat=concat)
+        self.graph_conv1 = geom_nn.GINEConv(torch.nn.Linear(in_channels, out_channels) , edge_dim=5)
+        # self.graph_conv1 = geom_nn.GINEConv(in_channels=in_channels , out_channels=out_channels, heads=multihead , concat=concat)
         # self.graph_conv2 = geom_nn.GATConv(in_channels=middle_channels , out_channels=hidden_channels, heads=multihead, concat=concat)
         # self.graph_conv3 = geom_nn.GATConv(in_channels=middle_channels , out_channels=out_channels, heads=multihead, concat=concat)
         
@@ -36,7 +37,7 @@ class GraphConvolution(torch.nn.Module):
     def forward(self , x , edge_index , edge_attr = None , batch_norm = True ): 
         
         if edge_attr is not None:
-            x1 , x1_edge_attr = self.graph_conv1(x , edge_index , edge_attr , return_attention_weights=True)
+            x1 = self.graph_conv1(x , edge_index , edge_attr )
             x1 = x1.relu() # batch
             if batch_norm:
                 x1 = self.batch_norm1(x1)
@@ -49,7 +50,7 @@ class GraphConvolution(torch.nn.Module):
             # if batch_norm:
             #     x3 = self.batch_norm3(x3)
         else: 
-            x1 , x1_edge_attr = self.graph_conv1(x , edge_index , return_attention_weights=True)
+            x1  = self.graph_conv1(x , edge_index )
             x1 = x1.relu() # batch
             # if batch_norm:
             #     x1 = self.batch_norm1(x1)
@@ -69,7 +70,7 @@ class GraphConvolution(torch.nn.Module):
         #     return x , x1_edge_attr , x2_edge_attr , x3_edge_attr
         # else: 
         #     return x3 , x1_edge_attr , x2_edge_attr , x3_edge_attr
-        return x , x1_edge_attr , None , None
+        return x , None , None , None
         
 class GraphPooling(torch.nn.Module):
     def __init__(self , in_channels , hidden_channels , *args, **kwargs) -> None: 
@@ -112,13 +113,13 @@ class GraphPooling(torch.nn.Module):
         # First layer graph convolution
         x , gc1_k1_edge_attr , gc1_k2_edge_attr , gc1_k3_edge_attr = self.graph_conv1(x , edge_index , edge_attr)
         #print(x)
-        x , edge_index , _ , batch1 ,  perm_1 , score_1 = self.pooling(x , edge_index , edge_attr , batch)
+        x , edge_index , edge_attr , batch1 ,  perm_1 , score_1 = self.pooling(x , edge_index , edge_attr , batch)
         
         x = self.graph_norm1(x , batch1)
         
         # Second layer graph convolution
-        x , gc2_k1_edge_attr , gc2_k2_edge_attr , gc2_k3_edge_attr  = self.graph_conv2(x , edge_index)
-        x , edge_index , _ , batch2 ,  perm_2 , score_2 = self.pooling2(x , edge_index , batch=batch1)
+        x , gc2_k1_edge_attr , gc2_k2_edge_attr , gc2_k3_edge_attr  = self.graph_conv2(x , edge_index , edge_attr)
+        x , edge_index , _ , batch2 ,  perm_2 , score_2 = self.pooling2(x , edge_index , edge_attr , batch=batch1)
         x = self.graph_norm2(x , batch2)
         
         x = geom_nn.global_mean_pool(x , batch2)
