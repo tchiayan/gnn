@@ -877,11 +877,12 @@ class MultiGraphClassification(pl.LightningModule):
                 # results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
                 
                 store_result.extend(output_softmax[0].tolist())
+                store_result.extend([y1.item()])
                 results_1.append(output_softmax[0][i].item())
                 
             # log only the last epoch 
-            if self.current_epoch == self.trainer.max_epochs - 1:
-                with open("multigraph_testing_logs.txt" , "a") as log_file: 
+            if self.current_epoch % 10 == 0:
+                with open(f"multigraph_testing_epochs_{self.current_epoch}_logs.txt" , "a") as log_file: 
                     log_file.write("\t".join([f"{x:.4f}" for x in store_result]))
                     log_file.write("\n")
             
