@@ -882,7 +882,7 @@ class MultiGraphClassification(pl.LightningModule):
             # log only the last epoch 
             if self.current_epoch == self.trainer.max_epochs - 1:
                 with open("multigraph_testing_logs.txt" , "a") as log_file: 
-                    log_file.write("\t".join(store_result))
+                    log_file.write("\t".join([f"{x:.4f}" for x in store_result]))
                     log_file.write("\n")
             
             device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
