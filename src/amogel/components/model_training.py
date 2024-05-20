@@ -323,7 +323,7 @@ class ModelTraining():
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
             mlflow=mlflow, 
-            multi_graph_testing = (self.config.dataset == "unified_multigraph" or self.config.dataset == "contrastive_multigraph"), 
+            multi_graph_testing = (self.config.dataset == "unified_multigraph" or self.config.dataset == "contrastive_multigraph" or self.config.dataset == "unified_multigraph_test"), 
             weight=self.config.weight , 
             alpha=self.config.alpha , 
             binary=self.config.binary , 

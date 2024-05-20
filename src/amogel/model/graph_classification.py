@@ -857,7 +857,7 @@ class MultiGraphClassification(pl.LightningModule):
         else: 
             batch1 , batch2 , batch3 = batch # batch1 , batch2 , batch3 contains multiple topology of the same omic type
         
-            results = []
+            store_result = [] # number_of_classes * number_of_topologies
             results_1 = []
             for i in range(self.num_classes):
                 x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1[i].x , batch1[i].edge_index , batch1[i].edge_attr , batch1[i].batch ,  batch1[i].y
@@ -869,13 +869,21 @@ class MultiGraphClassification(pl.LightningModule):
                 batch_shape = batch1_idx.shape[0]
                 # loss = self.loss(output , y1)
                 output_softmax = torch.nn.functional.softmax(output , dim=-1)
-                predicted_class = output_softmax.argmax(dim=-1)
-                predicted_prob , _ = output_softmax.max(dim=-1)
                 
-                with open("multigraph_testing_logs.txt" , "a") as log_file: 
-                    log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Predicted class: {predicted_class}\t| Predicted probability: {predicted_prob}\t | Output: {output_softmax}\t| Class confidence score: {output_softmax[0][i]}\t| Actual class: {y1}\n")
-                results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
+                # predicted_class = output_softmax.argmax(dim=-1)
+                # predicted_prob , _ = output_softmax.max(dim=-1)
+                # with open("multigraph_testing_logs.txt" , "a") as log_file: 
+                #     log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Predicted class: {predicted_class}\t| Predicted probability: {predicted_prob}\t | Output: {output_softmax}\t| Class confidence score: {output_softmax[0][i]}\t| Actual class: {y1}\n")
+                # results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
+                
+                store_result.extend(output_softmax[0].tolist())
                 results_1.append(output_softmax[0][i].item())
+                
+            # log only the last epoch 
+            if self.current_epoch == self.trainer.max_epochs - 1:
+                with open("multigraph_testing_logs.txt" , "a") as log_file: 
+                    log_file.write("\t".join(store_result))
+                    log_file.write("\n")
             
             device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
             final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)

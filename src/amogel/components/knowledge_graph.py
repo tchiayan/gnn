@@ -32,7 +32,7 @@ class KnowledgeGraph():
         self.ppi_graph_tensor = self.__generate_ppi_graph()
         self.kegg_go_graph_tensor = self.__generate_kegg_go_graph()
         self.synthetic_graph = self.__generate_synthetic_graph()
-        self.synthetic_test_graph = self.__generate_synthetic_test_graph()
+        self.synthetic_graph_test = self.__generate_synthetic_test_graph()
         self.kbin_model = self.__load_kbin_model()
         
         self.graph_topology_summary = []

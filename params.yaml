@@ -23,19 +23,19 @@ train_encoder:
   
 knowledge_graph: 
   ppi_combined_score: 300 
-  ppi: false
-  kegg_go: false
+  ppi: true
+  kegg_go: true
   synthetic: true
   edge_threshold: 0.8
   
 model_training: 
-  dataset: 'discretized_multiedges_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
+  dataset: 'unified_multigraph_test' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
   model: 'MultiGraphClassification' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
   hidden_units: 32
   multihead: 1
   multihead_concat: false
   learning_rate: 0.0001
-  learning_epoch: 300
+  learning_epoch: 2
   drop_out: 0.1
   batch_size: 10
   weight: null # [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ] 
