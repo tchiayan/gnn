@@ -306,8 +306,12 @@ class KnowledgeGraph():
                 
                 synthetic_tensor[int(label)] = knowledge_tensor
                 pbar.update(1)
-                
+        
+        ## sort the tensor based on the key
+        synthetic_tensor = dict(sorted(synthetic_tensor.items()))
+            
         logger.info("Saving Synthetic Knowledge Tensor")
+        
         torch.save(synthetic_tensor , os.path.join(self.config.root_dir , self.dataset , f"knowledge_synthetic_{self.omic_type}.pt"))
         
         return synthetic_tensor
@@ -356,7 +360,10 @@ class KnowledgeGraph():
                 
                 synthetic_tensor[int(label)] = knowledge_tensor
                 pbar.update(1)
-                
+            
+        ## sort the tensor based on the key
+        synthetic_tensor = dict(sorted(synthetic_tensor.items()))
+        
         logger.info("Saving Synthetic Knowledge Tensor")
         torch.save(synthetic_tensor , os.path.join(self.config.root_dir , self.dataset , f"knowledge_synthetic_test_{self.omic_type}.pt"))
         
