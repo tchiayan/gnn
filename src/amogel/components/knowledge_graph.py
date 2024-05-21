@@ -322,7 +322,7 @@ class KnowledgeGraph():
         no_of_genes = self.feature_names.shape[0]
         
         
-        synthetic_rules_filepath = os.path.join(self.config.data_dir , self.dataset , f"ac_rule_{self.omic_type}_te.tsv" )
+        synthetic_rules_filepath = os.path.join(self.config.data_dir , self.dataset , f"ac_rule_{self.omic_type}.tsv" )
         
         if not os.path.exists(synthetic_rules_filepath):
             raise FileNotFoundError(f"Synthetic rules file not found at {synthetic_rules_filepath}")
