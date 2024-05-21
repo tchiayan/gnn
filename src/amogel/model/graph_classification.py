@@ -884,7 +884,7 @@ class MultiGraphClassification(pl.LightningModule):
                 store_result.extend([y1.item()])
                 results_1.append(output_softmax[0][i].item())
                 
-                if i == y1.item()[0]:
+                if i == y1.item():
                     paper_result = output 
             # log only the last epoch 
             if self.current_epoch % 10 == 0:

@@ -29,11 +29,11 @@ class KnowledgeGraph():
         self.test_label = self.__load_test_label()
         self.related_protein = self.__load_ppi()
         
-        self.ppi_graph_tensor = self.__generate_ppi_graph()
-        self.kegg_go_graph_tensor = self.__generate_kegg_go_graph()
-        self.synthetic_graph = self.__generate_synthetic_graph()
-        self.synthetic_graph_test = self.__generate_synthetic_test_graph()
-        self.kbin_model = self.__load_kbin_model()
+        # self.ppi_graph_tensor = self.__generate_ppi_graph()
+        # self.kegg_go_graph_tensor = self.__generate_kegg_go_graph()
+        # self.synthetic_graph = self.__generate_synthetic_graph()
+        # self.synthetic_graph_test = self.__generate_synthetic_test_graph()
+        # self.kbin_model = self.__load_kbin_model()
         
         self.graph_topology_summary = []
         self.dataset_summary = []
@@ -262,7 +262,7 @@ class KnowledgeGraph():
         
         return knowledge_tensor 
     
-    def __generate_synthetic_graph(self , topk = 50):
+    def __generate_synthetic_graph(self , topk = 50 , normalize=True , normalize_method='max'):
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0]
@@ -294,8 +294,12 @@ class KnowledgeGraph():
                     knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
                     knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
                 
-                # normalize the numpy [0, 1]
-                knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
+                if normalize:
+                    if normalize_method == 'max':
+                        # normalize the numpy [0, 1]
+                        knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
+                    elif normalize_method == 'binary':
+                        knowledge_tensor = (knowledge_tensor > 0).float()
                 
                 # change nan to 0
                 knowledge_tensor[torch.isnan(knowledge_tensor)] = 0
@@ -308,7 +312,7 @@ class KnowledgeGraph():
         
         return synthetic_tensor
     
-    def __generate_synthetic_test_graph(self , topk = 50):
+    def __generate_synthetic_test_graph(self , topk = 50, normalize=True , normalize_method='max'):
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0]
@@ -340,8 +344,12 @@ class KnowledgeGraph():
                     knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
                     knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
                 
-                # normalize the numpy [0, 1]
-                knowledge_tensor = knowledge_tensor / knowledge_tensor.sum(dim=1 , keepdim=True)
+                if normalize:
+                    if normalize_method == 'max':
+                        # normalize the numpy [0, 1]
+                        knowledge_tensor = knowledge_tensor / knowledge_tensor.sum(dim=1 , keepdim=True)
+                    elif normalize_method == 'binary':
+                        knowledge_tensor = (knowledge_tensor > 0).float()
                 
                 # change nan to 0
                 knowledge_tensor[torch.isnan(knowledge_tensor)] = 0
@@ -679,16 +687,16 @@ class KnowledgeGraph():
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         if ppi:
-            partial_knowledge_tensor = self.ppi_graph_tensor
+            partial_knowledge_tensor = self.__generate_ppi_graph() # self.ppi_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
         if kegg_go:
-            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            partial_knowledge_tensor = self.__generate_kegg_go_graph() # self.kegg_go_graph_tensor
             knowledge_tensor += partial_knowledge_tensor
         
         if synthetic:
-            synthetic_tensor_dict = self.synthetic_graph
-            synthetic_tensor_dict_test = self.synthetic_graph_test
+            synthetic_tensor_dict = self.__generate_synthetic_graph(normalize_method='binary')  # self.synthetic_graph
+            synthetic_tensor_dict_test = self.__generate_synthetic_test_graph(normalize_method='binary') # self.synthetic_graph_test
         
         logger.info("Generate training unified multigraph (synthetic train)")
         training_graphs = []
@@ -704,22 +712,27 @@ class KnowledgeGraph():
                     topology = synthetic_tensor_dict[label] + knowledge_tensor
                 else: 
                     topology = knowledge_tensor
+                
+                # convert to binary 
+                topology = (topology > 0).float()
                     
                 coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.train_label.iloc[idx].values , dtype=torch.long) , extra_label=True )
                 training_graphs.append(graph)
                 pbar.update(1)
         
-        logger.info("Generate testing unified multigraph (synthetic test)")
+        logger.info(f"Generate testing unified multigraph (synthetic test) : {synthetic_tensor_dict_test.keys()}")
         testing_graphs = []
         with tqdm(total=self.test_data.shape[0]) as pbar:
             for idx , sample in self.test_data.iterrows():
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
-                topology = knowledge_tensor
+                
                 graphs = []
                 for synthetic_graph in synthetic_tensor_dict_test.values():
-                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , self.config.edge_threshold)
+                    topology = knowledge_tensor + synthetic_graph
+                    topology = (topology > 0).float()
+                    coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                     graphs.append(graph)
                 testing_graphs.append(graphs)
