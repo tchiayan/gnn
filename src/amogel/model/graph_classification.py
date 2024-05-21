@@ -629,6 +629,7 @@ class MultiGraphClassification(pl.LightningModule):
         )
         
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
+        self.paper_acc = Accuracy(task='multiclass' , num_classes=num_classes)
         if weight is not None:
             self.loss = torch.nn.CrossEntropyLoss()
         else: 
@@ -708,10 +709,11 @@ class MultiGraphClassification(pl.LightningModule):
     def validation_step(self , batch):
         
         
-        output , actual_class , batch_shape = self.get_output(batch)
+        output , actual_class , batch_shape , paper_output = self.get_output(batch)
         
         loss = self.loss(output , actual_class)
         acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        paper_acc = self.acc(torch.nn.functional.softmax(paper_output , dim=-1) , actual_class)
         f1 = self.f1(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         auroc = self.auc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         specificity = self.specificity(torch.nn.functional.softmax(output , dim=-1) , actual_class)
@@ -739,6 +741,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("val_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
         self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
         self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        self.log('val_paper_acc' , paper_acc , on_step=False , prog_bar=True , batch_size=batch_shape)
     
     def on_validation_epoch_end(self) -> None: 
         
@@ -859,6 +862,7 @@ class MultiGraphClassification(pl.LightningModule):
         
             store_result = [] # number_of_classes * number_of_topologies
             results_1 = []
+            paper_result = []
             for i in range(self.num_classes):
                 x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1[i].x , batch1[i].edge_index , batch1[i].edge_attr , batch1[i].batch ,  batch1[i].y
                 x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2[i].x , batch2[i].edge_index , batch2[i].edge_attr , batch2[i].batch ,  batch2[i].y
@@ -880,6 +884,8 @@ class MultiGraphClassification(pl.LightningModule):
                 store_result.extend([y1.item()])
                 results_1.append(output_softmax[0][i].item())
                 
+                if i == y1.item()[0]:
+                    paper_result = output 
             # log only the last epoch 
             if self.current_epoch % 10 == 0:
                 with open(f"multigraph_testing_epochs_{self.current_epoch}_logs.txt" , "a") as log_file: 
@@ -888,7 +894,7 @@ class MultiGraphClassification(pl.LightningModule):
             
             device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
             final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
-            return final_prediction , acutal_class , batch_shape
+            return final_prediction , acutal_class , batch_shape , paper_result
         
     def test_step(self , batch): 
         if not self.multi_graph_testing:
