@@ -716,7 +716,10 @@ class KnowledgeGraph():
                     # print(synthetic_tensor_dict.keys())
                     # print(label)
                     # print(type(label))
-                    topology = synthetic_tensor_dict[label] + knowledge_tensor
+                    if label in synthetic_tensor_dict.keys():
+                        topology = synthetic_tensor_dict[label] + knowledge_tensor
+                    else:
+                        topology = knowledge_tensor
                 else: 
                     topology = knowledge_tensor
                 
@@ -736,8 +739,13 @@ class KnowledgeGraph():
                 
                 
                 graphs = []
-                for synthetic_graph in synthetic_tensor_dict_test.values():
-                    topology = knowledge_tensor + synthetic_graph
+                for i in range(0 , 5):
+                #for synthetic_graph in synthetic_tensor_dict_test.values():
+                    if i in synthetic_tensor_dict_test.keys():
+                        synthetic_graph = synthetic_tensor_dict_test[i]
+                        topology = knowledge_tensor + synthetic_graph
+                    else:
+                        topology = knowledge_tensor 
                     topology = (topology > 0).float()
                     coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
