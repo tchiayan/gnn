@@ -567,15 +567,15 @@ class KnowledgeGraph():
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         if ppi:
-            partial_knowledge_tensor = self.ppi_graph_tensor
+            partial_knowledge_tensor = self.__generate_ppi_graph()
             knowledge_tensor += partial_knowledge_tensor
         
         if kegg_go:
-            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            partial_knowledge_tensor = self.__generate_kegg_go_graph()
             knowledge_tensor += partial_knowledge_tensor
         
         if synthetic:
-            synthetic_tensor_dict = self.synthetic_graph
+            synthetic_tensor_dict = self.__generate_synthetic_graph(normalize_method='binary')
         
         logger.info("Generate training binary classifier multigraph")
         training_graphs = []
@@ -604,10 +604,18 @@ class KnowledgeGraph():
                 
                 topology = knowledge_tensor
                 graphs = []
-                for synthetic_graph in synthetic_tensor_dict.values():
-                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , self.config.edge_threshold)
+                for i in range(0,5):
+                    
+                    if i in synthetic_tensor_dict.keys():
+                        synthetic_graph = synthetic_tensor_dict[i]
+                        topology = synthetic_graph + knowledge_tensor
+                    else:
+                        topology = knowledge_tensor
+                        
+                    coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                     graphs.append(graph)
+                    
                 testing_graphs.append(graphs)
                 pbar.update(1)
         

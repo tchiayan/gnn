@@ -262,7 +262,7 @@ class MultiGraphConvolution(torch.nn.Module):
 
 class BinaryLearning(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None , alpha=0.2 , binary = False) -> None: 
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None , alpha=0.2 , binary = False , *args, **kwargs) -> None: 
         super().__init__()
         self.lr = lr 
         self.mlflow = mlflow
@@ -280,6 +280,8 @@ class BinaryLearning(pl.LightningModule):
         self.specificity = Specificity(task="multiclass" , num_classes=num_classes)
         self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
         self.test_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
+        self.predictions = []
+        self.actuals = []
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
         x = self.multi_graph_conv(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
@@ -340,8 +342,8 @@ class BinaryLearning(pl.LightningModule):
             # loss = self.loss(output , y1)
             output_softmax = torch.nn.functional.sigmoid(output)
             
-            with open("multigraph_testing_logs.txt" , "a") as log_file: 
-                log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Confidence score: {output_softmax}\t| Actual class: {y1}\n")
+            # with open("multigraph_testing_logs.txt" , "a") as log_file: 
+            #     log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Confidence score: {output_softmax}\t| Actual class: {y1}\n")
             #results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
             results_1.append(output_softmax[0].item())
         
