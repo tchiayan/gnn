@@ -113,7 +113,8 @@ class ConfigurationManager:
             kegg_go=params.kegg_go,
             synthetic=params.synthetic, 
             dataset= self.params.model_training.dataset,
-            edge_threshold=params.edge_threshold
+            edge_threshold=params.edge_threshold, 
+            discretized=params.discretized
         )
         
         return knowledge_graph_config

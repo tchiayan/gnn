@@ -75,6 +75,7 @@ class KnowledgeGraphConfig:
     synthetic: bool
     dataset: str
     edge_threshold: float
+    discretized: bool
     
 @dataclass(frozen=True)
 class ModelTrainingConfig: 

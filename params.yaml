@@ -27,6 +27,7 @@ knowledge_graph:
   kegg_go: true
   synthetic: true
   edge_threshold: 0.8
+  discretized: true 
   
 model_training: 
   dataset: 'binarylearning_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]

@@ -2,6 +2,7 @@
 from amogel import logger 
 from amogel.entity.config_entity import KnowledgeGraphConfig
 import os
+from sklearn.preprocessing import KBinsDiscretizer
 import torch 
 import pandas as pd
 from tqdm import tqdm
@@ -65,17 +66,24 @@ class KnowledgeGraph():
         logger.info(f"Saving dataset summary to {output_filepath}")
         df.to_csv(output_filepath , index=False)
         
-    def __load_kbin_model(self):
-        kbin_model_filepath = os.path.join(self.config.data_dir , self.dataset , f"kbins_{self.omic_type}.joblib")
+    def __load_kbin_model(self , transform:pd.DataFrame):
+        # kbin_model_filepath = os.path.join(self.config.data_dir , self.dataset , f"kbins_{self.omic_type}.joblib")
         
-        if not os.path.exists(kbin_model_filepath):
-            raise FileNotFoundError(f"KBins model not found at {kbin_model_filepath}")
+        # if not os.path.exists(kbin_model_filepath):
+        #     raise FileNotFoundError(f"KBins model not found at {kbin_model_filepath}")
         
-        logger.info(f"Loading KBins model : {kbin_model_filepath}")
-        with open(kbin_model_filepath, 'rb') as file:
-            kbin_model = pickle.load(file)
+        # logger.info(f"Loading KBins model : {kbin_model_filepath}")
+        # with open(kbin_model_filepath, 'rb') as file:
+        #     kbin_model = pickle.load(file)
         
-        return kbin_model
+        # return kbin_model
+        
+        est = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
+        est.fit(self.train_data)
+        
+        transformed_result = est.transform(transform)
+        df = pd.DataFrame(transformed_result)
+        return df
     
     def __load_train_data(self):
         
@@ -581,7 +589,12 @@ class KnowledgeGraph():
         training_graphs = []
         labels = synthetic_tensor_dict.keys()
         with tqdm(total=self.train_data.shape[0]) as pbar:
+            
+            if self.config.discretized: 
+                self.train_data = self.__load_kbin_model(self.train_data)
+                
             for idx , sample in self.train_data.iterrows():
+                
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
                 label = int(self.train_label.iloc[idx].values.item())
@@ -602,6 +615,10 @@ class KnowledgeGraph():
         logger.info("Generate testing  binary classifier multigraph")
         testing_graphs = []
         with tqdm(total=self.test_data.shape[0]) as pbar:
+            
+            if self.config.discretized:
+                self.test_data = self.__load_kbin_model(self.test_data)
+                
             for idx , sample in self.test_data.iterrows():
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
