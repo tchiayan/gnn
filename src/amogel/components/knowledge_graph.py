@@ -605,6 +605,9 @@ class KnowledgeGraph():
                 else: 
                     topology = knowledge_tensor
                     
+                # convert to 0 and 1 
+                topology = (topology > 0).float()
+                    
                 # random graph
                 coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor([random_label == label], dtype=torch.long) , extra_label=True )
@@ -631,7 +634,10 @@ class KnowledgeGraph():
                         topology = synthetic_graph + knowledge_tensor
                     else:
                         topology = knowledge_tensor
-                        
+                    
+                    # convert to 0 and 1 
+                    topology = (topology > 0).float()
+                    
                     coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                     graphs.append(graph)
