@@ -587,8 +587,11 @@ class KnowledgeGraph():
                 label = int(self.train_label.iloc[idx].values.item())
                 non_label = np.random.choice([x for x in labels if x != label])
                 random_label = random.choice([label , non_label])
-                topology = synthetic_tensor_dict[random_label] + knowledge_tensor
-            
+                if random_label in synthetic_tensor_dict.keys():
+                    topology = synthetic_tensor_dict[random_label] + knowledge_tensor
+                else: 
+                    topology = knowledge_tensor
+                    
                 # random graph
                 coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                 graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor([random_label == label], dtype=torch.long) , extra_label=True )
