@@ -473,7 +473,7 @@ class ContrastiveLearning(pl.LightningModule):
     
 class TripletLearning(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None , alpha=0.2 , binary = False) -> None: 
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None , alpha=0.2 , binary = False , *args, **kwargs) -> None: 
         super().__init__()
         self.lr = lr 
         self.mlflow = mlflow
