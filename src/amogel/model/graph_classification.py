@@ -282,6 +282,7 @@ class BinaryLearning(pl.LightningModule):
         self.test_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
         self.predictions = []
         self.actuals = []
+        self.print_results = []
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
         x = self.multi_graph_conv(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
@@ -329,6 +330,7 @@ class BinaryLearning(pl.LightningModule):
     def get_output(self , batch):
         batch1 , batch2 , batch3 = batch # batch1 , batch2 , batch3 contains multiple topology of the same omic type
         
+        print_row = []
         #results = []
         results_1 = []
         for i in range(self.num_classes):
@@ -337,19 +339,19 @@ class BinaryLearning(pl.LightningModule):
             x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3[i].x , batch3[i].edge_index , batch3[i].edge_attr , batch3[i].batch ,  batch3[i].y
             
             output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
-            acutal_class = y1
+            actual_class = y1
             batch_shape = batch1_idx.shape[0]
             # loss = self.loss(output , y1)
             output_softmax = torch.nn.functional.sigmoid(output)
             
-            # with open("multigraph_testing_logs.txt" , "a") as log_file: 
-            #     log_file.write(f"Epoch: {self.current_epoch}\t| Topology: {i}\t| Confidence score: {output_softmax}\t| Actual class: {y1}\n")
-            #results.append({'topology': i , 'predicted_class': predicted_class , 'predicted_prob': predicted_prob , 'output': output })
+            print_row.append(f"Topology: {i} | P: {output_softmax[0].item()} | A: {actual_class[0].item()}")
             results_1.append(output_softmax[0].item())
+        
+        self.print_results.append(" , ".join(print_row)) 
         
         device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
         final_prediction = torch.tensor([results_1], dtype=torch.float32 , device=device)
-        return final_prediction , acutal_class , batch_shape
+        return final_prediction , actual_class , batch_shape
     
     def on_validation_epoch_end(self) -> None: 
         
@@ -364,6 +366,11 @@ class BinaryLearning(pl.LightningModule):
                 self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}.png".format(self.current_epoch))
                 plt.close(fig)
                 
+                # save txt 
+                self.mlflow.log_text("\n".join(self.print_results) , "test_prediction_epoch_{}".format(self.current_epoch))
+        
+        # reset 
+        self.print_results = []
         self.test_confusion_matrix.reset()
 class ContrastiveLearning(pl.LightningModule):
     
