@@ -4,6 +4,7 @@ import requests
 import os
 from zipfile import ZipFile
 import gzip
+import pandas as pd
 
 class PPIPreparation:
     
@@ -59,19 +60,21 @@ class PPIPreparation:
         
         # unzip protein link file
         protein_link_path = os.path.join(self.config.save_dir , "protein_links.txt.gzip")
-        protein_link_unzip_path = os.path.join(unzip_folder , "protein_links.txt")
+        protein_link_unzip_path = os.path.join(unzip_folder , "protein_links.parquet.gzip")
         logger.info(f"Unzipping {protein_link_path}")
         with gzip.open(protein_link_path, 'rb') as f_in:
-            with open(protein_link_unzip_path, 'wb') as f_out:
-                f_out.write(f_in.read())
+            pd.read_csv(f_in , sep="\s" , engine="python").to_parquet(protein_link_unzip_path , compression="gzip")
+            # with open(protein_link_unzip_path, 'wb') as f_out:
+            #     f_out.write(f_in.read())
                 
         # unzip protein info file
         protein_info_path = os.path.join(self.config.save_dir , "protein_info.txt.gzip")
-        protein_info_unzip_path = os.path.join(unzip_folder , "protein_info.txt")
+        protein_info_unzip_path = os.path.join(unzip_folder , "protein_info.parquet.gzip")
         logger.info(f"Unzipping {protein_info_path}")
         with gzip.open(protein_info_path, 'rb') as f_in:
-            with open(protein_info_unzip_path, 'wb') as f_out:
-                f_out.write(f_in.read())
+            pd.read_csv(f_in , sep="\t").to_parquet(protein_info_unzip_path , compression="gzip")
+            # with open(protein_info_unzip_path, 'wb') as f_out:
+            #     f_out.write(f_in.read())
         
         
         

@@ -170,8 +170,8 @@ class KnowledgeGraph():
         
         logger.info("Loading PPI data")
         
-        ppi_info_path = os.path.join(self.config.ppi_dir, f"protein_info.txt")
-        ppi_link_path = os.path.join(self.config.ppi_dir, f"protein_links.txt")
+        ppi_info_path = os.path.join(self.config.ppi_dir, f"protein_info.parquet.gzip")
+        ppi_link_path = os.path.join(self.config.ppi_dir, f"protein_links.parquet.gzip")
         
         if not os.path.exists(ppi_info_path):
             raise FileNotFoundError(f"PPI info file not found at {ppi_info_path}")
@@ -180,8 +180,8 @@ class KnowledgeGraph():
             raise FileNotFoundError(f"PPI link file not found at {ppi_link_path}")
         
         logger.info(f"Loading PPI info : {ppi_info_path} , PPI link : {ppi_link_path}")
-        df_protein = pd.read_csv(ppi_info_path, sep='\t')
-        df_protein_link = pd.read_csv(ppi_link_path, sep='\s' , engine="python")
+        df_protein = pd.read_parquet(ppi_info_path)
+        df_protein_link = pd.read_parquet(ppi_link_path)
         
         df_protein_merged = pd.merge(df_protein_link, df_protein[['#string_protein_id','preferred_name']], left_on="protein1", right_on="#string_protein_id")
         df_protein_merged.rename(columns={"preferred_name":"protein1_name"}, inplace=True)

@@ -11,6 +11,7 @@ stages:
     cmd: python src/amogel/pipeline/stage_ppi_preparation.py
     deps:
     - src/amogel/pipeline/stage_ppi_preparation.py
+    - src/amogel/components/ppi_preparation.py
     - config/config.yaml
     outs:
     - artifacts/ppi_data
