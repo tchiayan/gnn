@@ -500,15 +500,15 @@ class KnowledgeGraph():
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         if ppi:
-            partial_knowledge_tensor = self.ppi_graph_tensor
+            partial_knowledge_tensor = self.__generate_ppi_graph()
             knowledge_tensor += partial_knowledge_tensor
         
         if kegg_go:
-            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            partial_knowledge_tensor = self.__generate_kegg_go_graph()
             knowledge_tensor += partial_knowledge_tensor
         
         if synthetic:
-            synthetic_tensor_dict = self.synthetic_graph
+            synthetic_tensor_dict = self.__generate_synthetic_graph(normalize_method='binary')
         
         logger.info("Generate training triplet multigraph")
         training_graphs = []
@@ -522,9 +522,15 @@ class KnowledgeGraph():
                 same_label = int(self.train_label.iloc[random.choice(same_label_sample_idx)].values.item())
                 
                 non_label = [x for x in labels if x != label]
-                positive_topology = synthetic_tensor_dict[label] + knowledge_tensor
+                if label in synthetic_tensor_dict.keys():
+                    positive_topology = (synthetic_tensor_dict[label] + knowledge_tensor > 0).float()
+                else:
+                    positive_topology = (knowledge_tensor > 0).float()
                 random_negative_label = np.random.choice(non_label)
-                negative_topology = synthetic_tensor_dict[random_negative_label] + knowledge_tensor
+                if random_negative_label in synthetic_tensor_dict.keys():
+                    negative_topology = (synthetic_tensor_dict[random_negative_label] + knowledge_tensor > 0).float()
+                else:
+                    negative_topology = (knowledge_tensor > 0).float()
 
                 # anchor graph 
                 anchor_coo_matrix = symmetric_matrix_to_coo(positive_topology.numpy() , self.config.edge_threshold)
@@ -547,10 +553,17 @@ class KnowledgeGraph():
             for idx , sample in self.test_data.iterrows():
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
-                topology = knowledge_tensor
+                # topology = knowledge_tensor
                 graphs = []
-                for synthetic_graph in synthetic_tensor_dict.values():
-                    coo_matrix = symmetric_matrix_to_coo((topology + synthetic_graph).numpy() , self.config.edge_threshold)
+                for i in range(0 , 5):
+                    
+                    if i in synthetic_tensor_dict.keys():
+                        synthetic_graph = synthetic_tensor_dict[i]
+                        topology = (synthetic_graph + knowledge_tensor > 0).float()
+                    else:
+                        topology = (knowledge_tensor > 0).float()
+                    
+                    coo_matrix = symmetric_matrix_to_coo(topology.numpy() , self.config.edge_threshold)
                     graph = coo_to_pyg_data(coo_matrix=coo_matrix , node_features=torch_sample , y = torch.tensor(self.test_label.iloc[idx].values , dtype=torch.long) , extra_label=True)
                     graphs.append(graph)
                 testing_graphs.append(graphs)
