@@ -1,33 +1,33 @@
 schema: '2.0'
 stages:
   data_preparation:
-    cmd: python src/amogel/pipeline/stage_01_data_preparation.py
+    cmd: python src/amogel/pipeline/stage_data_preparation.py
     deps:
     - path: config/config.yaml
       hash: md5
-      md5: 7ea32f52ad7aeb98519c7022f0552939
-      size: 1806
-    - path: src/amogel/pipeline/stage_01_data_preparation.py
+      md5: 4f7d0981eaea14a2e0040873e8336697
+      size: 1879
+    - path: src/amogel/pipeline/stage_data_preparation.py
       hash: md5
-      md5: 842e194cd17a5681ca912ff0b3aef267
-      size: 920
+      md5: bfb545bbf4b434af78d00edddbf3a741
+      size: 891
     outs:
     - path: artifacts/data_ingestion
       hash: md5
-      md5: 23b38032eda1dc959b2fe77e89941675.dir
-      size: 33030144
-      nfiles: 1
+      md5: 3c483789dcf6b65cc011cb4ffe788e16.dir
+      size: 10760967104
+      nfiles: 61
   ppi_data_prepration:
-    cmd: python src/amogel/pipeline/stage_02_ppi_preparation.py
+    cmd: python src/amogel/pipeline/stage_ppi_preparation.py
     deps:
     - path: config/config.yaml
       hash: md5
-      md5: 4f549569bddb8c463cfe8486d1d51772
-      size: 1403
-    - path: src/amogel/pipeline/stage_02_ppi_preparation.py
+      md5: 4f7d0981eaea14a2e0040873e8336697
+      size: 1879
+    - path: src/amogel/pipeline/stage_ppi_preparation.py
       hash: md5
-      md5: 3983deecbc41d28fd372f3dabe17f50b
-      size: 887
+      md5: a1264c12174910b802531371ee6dd006
+      size: 860
     outs:
     - path: artifacts/ppi_data
       hash: md5
@@ -35,26 +35,26 @@ stages:
       size: 722301045
       nfiles: 4
   data_preprocessing:
-    cmd: python src\amogel\pipeline\stage_03_data_preprocessing.py
+    cmd: python src/amogel/pipeline/stage_data_preprocessing.py
     deps:
-    - path: config\config.yaml
+    - path: config/config.yaml
       hash: md5
-      md5: 4f549569bddb8c463cfe8486d1d51772
-      size: 1403
-    - path: src\amogel\components\data_preprocessing.py
+      md5: 4f7d0981eaea14a2e0040873e8336697
+      size: 1879
+    - path: src/amogel/components/data_preprocessing.py
       hash: md5
-      md5: 7274ac64ad5bb57dd8a6092a685e1ee2
-      size: 14534
-    - path: src\amogel\pipeline\stage_03_data_preprocessing.py
+      md5: 0bde7b157cec1959b4f8809073cf1406
+      size: 15177
+    - path: src/amogel/pipeline/stage_data_preprocessing.py
       hash: md5
-      md5: 6fda2847e05423cb8afe0da35c29f16f
-      size: 1239
+      md5: 240fe8ae57fa88bcd91159b3c86ed69a
+      size: 1206
     outs:
-    - path: artifacts\data_preprocessing
+    - path: artifacts/data_preprocessing
       hash: md5
-      md5: 57d60e85e3d8a4d100bd2ee8b91ceda3.dir
-      size: 187160106
-      nfiles: 14
+      md5: 3fa169e42deaf0c97fd80c9a39809eb6.dir
+      size: 175310298
+      nfiles: 20
   model_training:
     cmd: python src/amogel/pipeline/stage_06_model_training.py
     deps:
@@ -76,26 +76,36 @@ stages:
           learning_epoch: 300
           drop_out: 0.1
   knowledge_graph:
-    cmd: python src/amogel/pipeline/stage_05_knowledge_graph.py
+    cmd: python src/amogel/pipeline/stage_knowledge_graph.py
     deps:
     - path: config/config.yaml
       hash: md5
-      md5: ca58382f51a64a2f78b3f8c157550b07
-      size: 1842
+      md5: 4f7d0981eaea14a2e0040873e8336697
+      size: 1879
     - path: src/amogel/components/knowledge_graph.py
       hash: md5
-      md5: ef8d13be34776da4abe43036b1ee679c
-      size: 28239
-    - path: src/amogel/pipeline/stage_05_knowledge_graph.py
+      md5: a5236ea4452ebceb2e1858c69098fb02
+      size: 65508
+    - path: src/amogel/pipeline/stage_knowledge_graph.py
       hash: md5
-      md5: 87f27cda6128d6b1c37184668b443292
-      size: 2646
+      md5: 920ab25491092ddd8b6c22d756bccaa8
+      size: 3727
+    params:
+      params.yaml:
+        knowledge_graph:
+          ppi_combined_score: 300
+          ppi: true
+          kegg_go: true
+          synthetic: true
+          edge_threshold: 0.8
+          discretized: true
+        model_training.dataset: binarylearning_multigraph
     outs:
     - path: artifacts/knowledge_graph
       hash: md5
-      md5: 91451948a0cfbedb577978ab94c9f0f0.dir
-      size: 60445458136
-      nfiles: 39
+      md5: 5c6e8e545205931d1983d888391ed1d3.dir
+      size: 22908668187
+      nfiles: 15
   train_encoder:
     cmd: python src/amogel/pipeline/stage_06_train_encoder.py
     deps:

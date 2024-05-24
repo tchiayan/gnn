@@ -367,7 +367,7 @@ class BinaryLearning(pl.LightningModule):
                 plt.close(fig)
                 
                 # save txt 
-                self.mlflow.log_text("\n".join(self.print_results) , "test_prediction_epoch_{}".format(self.current_epoch))
+                self.mlflow.log_text("\n".join(self.print_results) , "test_prediction_epoch_{}.txt".format(self.current_epoch))
         
         # reset 
         self.print_results = []
