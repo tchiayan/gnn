@@ -959,10 +959,16 @@ class KnowledgeGraph():
         logger.info("Generate training discretized multiedges graph")
         training_graphs = []
         num_edges = []
+        
+        # discretize the data
+        if self.config.discretized: 
+            kbin = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
+            self.train_data = kbin.fit_transform(self.train_data)
+            
         with tqdm(total=self.train_data.shape[0]) as pbar:
             for idx , sample in self.train_data.iterrows():
-                sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
-                torch_sample = torch.tensor(sample_value, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                #sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
                 if synthetic: 
                     label = int(self.train_label.iloc[idx].values.item())
@@ -990,10 +996,13 @@ class KnowledgeGraph():
         logger.info("Generate testing discretized multiedges graph")
         testing_graphs = []
         num_edges = []
+        if self.config.discretized:
+            self.test_data = kbin.transform(self.test_data)
+            
         with tqdm(total=self.test_data.shape[0]) as pbar:
             for idx , sample in self.test_data.iterrows():
-                sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
-                torch_sample = torch.tensor(sample_value, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                #sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
+                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
                 if synthetic:
                     topology = synthetic_tensor # + synthetic_tensor
