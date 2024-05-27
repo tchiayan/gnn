@@ -615,20 +615,24 @@ class MultiGraphClassification(pl.LightningModule):
         self.graph2 = GraphPooling(in_channels , hidden_channels , **kwargs)
         self.graph3 = GraphPooling(in_channels , hidden_channels , **kwargs)
         
-        self.rank = {}
-        self.allrank = {
-            'omic1': [] ,
-            'omic2': [] ,
-            'omic3': [] ,
-        }
-        self.genes = {
-            'omic1_pool1': [],
-            'omic1_pool2': [],  
-            'omic2_pool1': [], 
-            'omic2_pool2': [], 
-            'omic3_pool1': [],
-            'omic3_pool2': [],
-        }
+        self.class_1 = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels*2 , hidden_channels), 
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_channels , num_classes)
+        )
+        
+        self.class_2 = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels*2 , hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_channels , num_classes)
+        )
+        
+        self.class_3 = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels*2 , hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_channels , num_classes)
+        )
+        
         
         self.mlp = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels*3*2 , hidden_channels), # 3 omics with 2 * hidden_channels
@@ -638,6 +642,9 @@ class MultiGraphClassification(pl.LightningModule):
         )
         
         self.acc = Accuracy(task='multiclass' , num_classes=num_classes)
+        self.acc_1 = Accuracy(task='multiclass' , num_classes=num_classes)
+        self.acc_2 = Accuracy(task='multiclass' , num_classes=num_classes)
+        self.acc_3 = Accuracy(task='multiclass' , num_classes=num_classes)
         self.paper_acc = Accuracy(task='multiclass' , num_classes=num_classes)
         if weight is not None:
             self.loss = torch.nn.CrossEntropyLoss()
@@ -658,16 +665,13 @@ class MultiGraphClassification(pl.LightningModule):
         output3 , perm31 , perm32 , score31 , score32 , batch31 , batch32 , attr_score31 , attr_score32 = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
         
         output = torch.concat([output1 , output2 , output3] , dim=-1) # shape -> [ batch , hidden_dimension * 3 * 2 ]
-        
         output = self.mlp(output)
         
-        # self.rank = {
-        #     'omic1': ( perm11 , perm12 , score11 , score12 , batch11 , batch12 , attr_score11 , attr_score12 ) ,
-        #     'omic2': ( perm21 , perm22 , score21 , score22 , batch21 , batch22 , attr_score21 , attr_score22 ) ,
-        #     'omic3': ( perm31 , perm32 , score31 , score32 , batch31 , batch32 , attr_score31 , attr_score32 ) ,
-        # }
+        output1 = self.class_1(output1)
+        output2 = self.class_2(output2)
+        output3 = self.class_3(output3)
         
-        return output
+        return output , output1 , output2 , output3
     
     def configure_optimizers(self) -> OptimizerLRScheduler:
         return optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
@@ -678,15 +682,25 @@ class MultiGraphClassification(pl.LightningModule):
         x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
         x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
         
-        output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+        output , output1 , output2 , output3 = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
         
         loss = self.loss(output , y1)
+        loss1 = self.loss(output1 , y1)
+        loss2 = self.loss(output2 , y2)
+        loss3 = self.loss(output3 , y3)
+        
         acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , y1)
+        acc1 = self.acc_1(torch.nn.functional.softmax(output1 , dim=-1) , y1)
+        acc2 = self.acc_2(torch.nn.functional.softmax(output2 , dim=-1) , y2)
+        acc3 = self.acc_3(torch.nn.functional.softmax(output3 , dim=-1) , y3)
         self.train_confusion_matrix.update(output , y1)  
         
         self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
-        return loss
+        self.log("train_acc_omic1" , acc1 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
+        self.log("train_acc_omic2" , acc2 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
+        self.log("train_acc_omic3" , acc3 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
+        return loss + loss1 + loss2 + loss3
     
     def get_rank_genes(self , pooling_info , batch_extra_label , batch_size , num_genes=1000):
         perm_1 , perm2 , score1 , score2 , pollbatch1 , poolbatch2 , _ , _ = pooling_info
@@ -718,11 +732,21 @@ class MultiGraphClassification(pl.LightningModule):
     def validation_step(self , batch):
         
         
-        output , actual_class , batch_shape , paper_output = self.get_output(batch)
+        output , actual_class , batch_shape , paper_output , output1 , output2 , output3 = self.get_output(batch)
         
         loss = self.loss(output , actual_class)
         acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
-        paper_acc = self.acc(torch.nn.functional.softmax(paper_output , dim=-1) , actual_class)
+        if paper_output is not None:
+            paper_acc = self.paper_acc(torch.nn.functional.softmax(paper_output , dim=-1) , actual_class)
+        else:
+            acc1 = self.acc_1(torch.nn.functional.softmax(output1 , dim=-1) , actual_class)
+            acc2 = self.acc_2(torch.nn.functional.softmax(output2 , dim=-1) , actual_class)
+            acc3 = self.acc_3(torch.nn.functional.softmax(output3 , dim=-1) , actual_class)
+            
+            self.log("val_acc_omic1" , acc1 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch_shape)
+            self.log("val_acc_omic2" , acc2 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch_shape)
+            self.log("val_acc_omic3" , acc3 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch_shape)
+            
         f1 = self.f1(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         auroc = self.auc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         specificity = self.specificity(torch.nn.functional.softmax(output , dim=-1) , actual_class)
@@ -863,9 +887,9 @@ class MultiGraphClassification(pl.LightningModule):
             x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
             x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
             
-            output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+            output , output1 , output2 , output3 = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
             
-            return output , y1 , batch1_idx.shape[0]
+            return output , y1 , batch1_idx.shape[0] , None , output1 , output2 , output3
         else: 
             batch1 , batch2 , batch3 = batch # batch1 , batch2 , batch3 contains multiple topology of the same omic type
         
@@ -877,7 +901,7 @@ class MultiGraphClassification(pl.LightningModule):
                 x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2[i].x , batch2[i].edge_index , batch2[i].edge_attr , batch2[i].batch ,  batch2[i].y
                 x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3[i].x , batch3[i].edge_index , batch3[i].edge_attr , batch3[i].batch ,  batch3[i].y
                 
-                output = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
+                output , _ , _ , _ = self.forward(x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx)
                 acutal_class = y1
                 batch_shape = batch1_idx.shape[0]
                 # loss = self.loss(output , y1)

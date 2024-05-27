@@ -40,7 +40,7 @@ knowledge_graph:
   root_dir: artifacts/knowledge_graph 
   embedding_dir: artifacts/train_embedding 
   ppi_dir: artifacts/ppi_data/unzip
-  data_dir: ./
+  data_dir: ./artifact/data_preprocessing
 
 train_encoder: 
   root_dir: artifacts/train_encoder
