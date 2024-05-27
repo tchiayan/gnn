@@ -963,7 +963,7 @@ class KnowledgeGraph():
         # discretize the data
         if self.config.discretized: 
             kbin = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
-            self.train_data = kbin.fit_transform(self.train_data)
+            self.train_data = pd.DataFrame(kbin.fit_transform(self.train_data))
             
         with tqdm(total=self.train_data.shape[0]) as pbar:
             for idx , sample in self.train_data.iterrows():
@@ -997,7 +997,7 @@ class KnowledgeGraph():
         testing_graphs = []
         num_edges = []
         if self.config.discretized:
-            self.test_data = kbin.transform(self.test_data)
+            self.test_data = pd.DataFrame(kbin.transform(self.test_data))
             
         with tqdm(total=self.test_data.shape[0]) as pbar:
             for idx , sample in self.test_data.iterrows():
