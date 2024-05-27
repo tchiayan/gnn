@@ -175,23 +175,25 @@ class MultiEmbeddingTrainer():
         #         loss = self.model.recon_loss(z , data.train_pos_edge_index)
         #         loss.backward()
         #         pbar.update(1)
-        for data in self.graphs:
-            z = self.model.encode(data.x , data.train_pos_edge_index)
-            output = self.class_model(z)
-            class_loss = criteron(output , data.y)
-            encoder_loss = self.model.recon_loss(z, data.train_pos_edge_index)
-            loss = encoder_loss + class_loss
-            loss.backward()        
-            
-            prediction.append(output.argmax())
-            actual.append(data.y)
-    
-        report = classification_report(torch.stack(prediction).numpy() , torch.stack(actual).numpy())
-        print(report)      
-        # device = "cuda" if torch.cuda.is_available() else "cpu"
-        # prediction  = torch.stack(prediction).to(device)
-        # actual = torch.stack(actual).to(device)
-        # prediction = torch.argmax(prediction , dim=1)
+        with tqdm(total=len(self.graphs)) as pbar:
+            for data in self.graphs:
+                z = self.model.encode(data.x , data.train_pos_edge_index)
+                output = self.class_model(z)
+                class_loss = criteron(output , data.y)
+                encoder_loss = self.model.recon_loss(z, data.train_pos_edge_index)
+                loss = encoder_loss + class_loss
+                loss.backward()        
+                
+                prediction.append(output.argmax())
+                actual.append(data.y)
+                pbar.update(1)
+                   
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        prediction  = torch.stack(prediction).to(device)
+        actual = torch.stack(actual).to(device)
+        prediction = torch.argmax(prediction , dim=1)
+        report = classification_report(actual.numpy() , prediction.numpy())
+        print(report)
         # acc = prediction.eq(actual).sum().item() / len(actual)
         #print(prediction)
         #print(actual)
