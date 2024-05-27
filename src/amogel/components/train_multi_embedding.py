@@ -184,7 +184,7 @@ class MultiEmbeddingTrainer():
             
             prediction.append(output)
             actual.append(data.y)
-        acc = accuracy(torch.stack(prediction) , torch.stack(actual))
+        acc = accuracy(torch.stack(prediction) , torch.stack(actual)).to_device('cpu').item()
             
         self.optimizer.step()
         return float(loss) , float(acc)
@@ -216,15 +216,15 @@ class MultiEmbeddingTrainer():
                 total_auc += auc
                 total_ap += ap
             
-        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , acc(torch.stack(prediction) , torch.stack(actual))
+        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , acc(torch.stack(prediction) , torch.stack(actual)).to_device('cpu').item()
     
     def run(self):
         logger.info(f"Learn multi embedding encoder for {self.omic_type} omic type")
         for epoch in range(self.epochs+1):
             loss , train_acc = self.train()
-            auc , ap = self.test()
+            auc , ap , test_acc = self.test()
             if epoch % self.config.print_interval == 0:
-                logger.info(f"Epoch: {epoch}\t| Loss: {loss}\t| AUC: {auc}\t| AP: {ap}\t| Train Acc: {train_acc}")
+                logger.info(f"Epoch: {epoch}\t| Loss: {loss}\t| AUC: {auc}\t| AP: {ap}\t| Train Acc: {train_acc}\t| Test Acc: {test_acc}")
                 
         self.loss = loss 
         self.auc = auc 
