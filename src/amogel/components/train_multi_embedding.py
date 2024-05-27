@@ -14,6 +14,7 @@ import os
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import KBinsDiscretizer
+from sklearn.metrics import classification_report
 from torchmetrics import Accuracy
 
 MODEL = {
@@ -182,20 +183,22 @@ class MultiEmbeddingTrainer():
             loss = encoder_loss + class_loss
             loss.backward()        
             
-            prediction.append(output)
+            prediction.append(output.argmax())
             actual.append(data.y)
-        
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        prediction  = torch.stack(prediction).to(device)
-        actual = torch.stack(actual).to(device)
-        prediction = torch.argmax(prediction , dim=1)
-        acc = prediction.eq(actual).sum().item() / len(actual)
+    
+        report = classification_report(torch.stack(prediction) , torch.stack(actual))
+        print(report)      
+        # device = "cuda" if torch.cuda.is_available() else "cpu"
+        # prediction  = torch.stack(prediction).to(device)
+        # actual = torch.stack(actual).to(device)
+        # prediction = torch.argmax(prediction , dim=1)
+        # acc = prediction.eq(actual).sum().item() / len(actual)
         #print(prediction)
         #print(actual)
         #acc = accuracy(prediction , actual).to(device).item()
             
         self.optimizer.step()
-        return float(loss) , acc
+        return float(loss) , None
     
     def test(self):
         self.model.eval()
