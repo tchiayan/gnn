@@ -114,7 +114,8 @@ class ConfigurationManager:
             synthetic=params.synthetic, 
             dataset= self.params.model_training.dataset,
             edge_threshold=params.edge_threshold, 
-            discretized=params.discretized
+            discretized=params.discretized, 
+            topk=params.topk
         )
         
         return knowledge_graph_config

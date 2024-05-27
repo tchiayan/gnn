@@ -27,6 +27,7 @@ knowledge_graph:
   kegg_go: false
   synthetic: true
   edge_threshold: 0.8
+  topk: 50 
   discretized: true 
 
 model_training: 

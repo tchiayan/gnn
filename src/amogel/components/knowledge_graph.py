@@ -952,7 +952,7 @@ class KnowledgeGraph():
             knowledge_tensor += partial_knowledge_tensor
         
         if synthetic:
-            synthetic_tensor_dict = self.__generate_synthetic_graph(normalize_method='binary')
+            synthetic_tensor_dict = self.__generate_synthetic_graph(topk=self.config.topk , normalize_method='binary')
             synthetic_tensor = torch.stack(list(synthetic_tensor_dict.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
             #synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
         
