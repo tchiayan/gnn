@@ -188,6 +188,8 @@ class MultiEmbeddingTrainer():
         device = "cuda" if torch.cuda.is_available() else "cpu"
         prediction  = torch.stack(prediction).to(device)
         actual = torch.stack(actual).to(device)
+        print(prediction)
+        print(actual)
         acc = accuracy(prediction , actual).item()
             
         self.optimizer.step()
