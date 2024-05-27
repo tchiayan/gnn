@@ -18,6 +18,10 @@ from sklearn.metrics import classification_report
 from torchmetrics import Accuracy
 from torch_geometric.loader import DataLoader 
 
+# suppress warning
+import warnings
+warnings.filterwarnings("ignore")
+
 MODEL = {
     'GAE': GAE,
     'VGAE': VGAE
@@ -96,22 +100,26 @@ class MultiEmbeddingTrainer():
         # df_data.T => # number of node x number of feature (sample)
         self.graphs = []
         
-        for idx , row in df_data.iterrows():
-            
-            target_label = df_label.loc[idx].values[0]
-            #synthetic_adjacancy_matrix = synthetic_adjacancy_dict[target_label]
-            synthetic_adjacancy_matrix = self._generate_synthetic_network(row.values)
-            
-            edge_coo = self.symmetric_matrix_to_coo(synthetic_adjacancy_matrix , 0.5)
-            geom_data = self.coo_to_pyg_data(edge_coo , torch.tensor(row.values , dtype=torch.float32 , device=device).unsqueeze(1) , y=torch.tensor(target_label , dtype=torch.long , device=device))
-            
-            # split data 
-            geom_data.train_mask = geom_data.val_mask = geom_data.test_mask = None
-            geom_data = train_test_split_edges(geom_data)
-            
-            # move to GPU (if available)
-            geom_data = geom_data.to(device)
-            self.graphs.append(geom_data)
+        logger.info(f"Generate synthetic graph for omic type: {omic_type}")
+        
+        with tqdm(total=len(df_data)) as pbar:
+            for idx , row in df_data.iterrows():
+                
+                target_label = df_label.loc[idx].values[0]
+                #synthetic_adjacancy_matrix = synthetic_adjacancy_dict[target_label]
+                synthetic_adjacancy_matrix = self._generate_synthetic_network(row.values)
+                
+                edge_coo = self.symmetric_matrix_to_coo(synthetic_adjacancy_matrix , 0.5)
+                geom_data = self.coo_to_pyg_data(edge_coo , torch.tensor(row.values , dtype=torch.float32 , device=device).unsqueeze(1) , y=torch.tensor(target_label , dtype=torch.long , device=device))
+                
+                # split data 
+                geom_data.train_mask = geom_data.val_mask = geom_data.test_mask = None
+                geom_data = train_test_split_edges(geom_data)
+                
+                # move to GPU (if available)
+                geom_data = geom_data.to(device)
+                self.graphs.append(geom_data)
+                pbar.update(1)
             
         self.loader = DataLoader(self.graphs , batch_size=20 , shuffle=True)
             
