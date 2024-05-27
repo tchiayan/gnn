@@ -186,7 +186,7 @@ class MultiEmbeddingTrainer():
             prediction.append(output.argmax())
             actual.append(data.y)
     
-        report = classification_report(torch.stack(prediction) , torch.stack(actual))
+        report = classification_report(torch.stack(prediction).numpy() , torch.stack(actual).numpy())
         print(report)      
         # device = "cuda" if torch.cuda.is_available() else "cpu"
         # prediction  = torch.stack(prediction).to(device)
