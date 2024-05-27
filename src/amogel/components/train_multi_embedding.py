@@ -186,7 +186,9 @@ class MultiEmbeddingTrainer():
             actual.append(data.y)
         
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        acc = accuracy(torch.stack(prediction) , torch.stack(actual)).to_device(device).item()
+        prediction  = torch.stack(prediction).to(device)
+        actual = torch.stack(actual).to(device)
+        acc = accuracy(prediction , actual).to_device(device).item()
             
         self.optimizer.step()
         return float(loss) , float(acc)
@@ -219,7 +221,10 @@ class MultiEmbeddingTrainer():
                 total_ap += ap
             
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , acc(torch.stack(prediction) , torch.stack(actual)).to_device(device).item()
+        prediction = torch.stack(prediction).to(device)
+        actual = torch.stack(actual).to(device)
+        
+        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , acc(prediction , actual).item()
     
     def run(self):
         logger.info(f"Learn multi embedding encoder for {self.omic_type} omic type")
