@@ -39,6 +39,10 @@ class MultiEmbeddingTrainer():
         self.num_features = df_data.shape[1]
         self.num_sample = df_data.shape[0]
         
+        # load sample label 
+        label_filepath = os.path.join(self.config.data_preprocessing_dir , self.dataset , f"labels_tr.csv")
+        df_label = pd.read_csv(label_filepath , header=None , colums=['label'])
+        
         # create model & optimizer
         self.model = MODEL[config.model](ENCODER[config.model](1 , out_channels)) # GAE(GCNEncoder(1 , out_channels))
         self.optimizer = torch.optim.Adam(self.model.parameters() , lr = lr)
@@ -64,24 +68,30 @@ class MultiEmbeddingTrainer():
                 
                 pbar.update(1)
         
+        synthetic_adjacancy_dict = self._generate_synthetic_graph()
         # normalize adjacency matrix 
-        normalized_adjacancy_matrix = adjacancy_matrix / adjacancy_matrix.max() 
+        # normalized_adjacancy_matrix = adjacancy_matrix / adjacancy_matrix.max() 
         
         # Duplicated from training_embedding
         # plot adjacency matrix and save to root_dir
-        os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
-        plt.figure(figsize=(10,10))
-        sns.heatmap(normalized_adjacancy_matrix)
-        plt.savefig(os.path.join(self.config.root_dir , self.dataset , f"{omic_type}_adjacency_matrix.png"))
+        # os.makedirs(os.path.join(self.config.root_dir , self.dataset) , exist_ok=True)
+        # plt.figure(figsize=(10,10))
+        # sns.heatmap(normalized_adjacancy_matrix)
+        # plt.savefig(os.path.join(self.config.root_dir , self.dataset , f"{omic_type}_adjacency_matrix.png"))
         
         # build pytorch geometric data
-        edge_coo = self.symmetric_matrix_to_coo(normalized_adjacancy_matrix , 0.5)
+        # edge_coo = self.symmetric_matrix_to_coo(normalized_adjacancy_matrix , 0.5)
         
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
         # df_data.T => # number of node x number of feature (sample)
         self.graphs = []
         for idx , row in df_data.iterrows():
+            
+            target_label = df_label.loc[idx].values[0]
+            synthetic_adjacancy_matrix = synthetic_adjacancy_dict[target_label]
+            
+            edge_coo = self.symmetric_matrix_to_coo(synthetic_adjacancy_matrix , 0.5)
             geom_data = self.coo_to_pyg_data(edge_coo , torch.tensor(row.values , dtype=torch.float32).unsqueeze(1))
             
             # split data 
@@ -94,7 +104,49 @@ class MultiEmbeddingTrainer():
             
         self.model = self.model.to(device)
         
-    
+    def _generate_synthetic_graph(self , topk=50 , normalize=True , normalize_method='max'):
+        # load ac filepath 
+        ac_file_path = os.path.join(self.config.data_preprocessing_dir , self.dataset , f"ac_rule_{self.omic_type}.tsv")
+        df_ac = pd.read_csv(ac_file_path , sep="\t" , header=None)
+        df_ac.columns = ['class' , 'support', 'confidence' , 'antecedents', 'interestingness']
+        
+        # select top 1000 rules for each class with highest interestingness 
+        df_ac_filtered = df_ac.groupby(["class"]).apply(lambda x: x.nlargest(topk , 'interestingness')).reset_index(drop=True) 
+        
+        # generate synthetic graph for each class 
+        unique_class = df_ac_filtered['class'].unique()
+        synthetic_tensor = {}
+        
+        logger.info(f"Generate synthetic graph for omic type: {self.omic_type}")
+        with tqdm(total=len(unique_class)) as pbar:
+            for class_label in unique_class:
+                
+                knowledge_tensor = torch.zeros(self.num_features, self.num_features)
+                
+                for idx , row in df_ac_filtered[df_ac_filtered['class'] == class_label].iterrows():
+                    node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
+                    vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
+                    knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
+                    knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+                
+                if normalize:
+                    if normalize_method == 'max':
+                        # normalize the numpy [0, 1]
+                        knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
+                    elif normalize_method == 'binary':
+                        knowledge_tensor = (knowledge_tensor > 0).float()
+                
+                # change nan to 0
+                knowledge_tensor[torch.isnan(knowledge_tensor)] = 0
+                
+                synthetic_tensor[int(class_label)] = knowledge_tensor
+                pbar.update(1)
+                
+        ## sort the tensor based on the key
+        synthetic_tensor = dict(sorted(synthetic_tensor.items()))
+        
+        return synthetic_tensor
+                
     def train(self):
         
         self.model.train()

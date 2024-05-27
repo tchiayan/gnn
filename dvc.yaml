@@ -36,15 +36,15 @@ stages:
   #   outs:
   #   - artifacts/train_embedding
 
-  # train_encoder:
-  #   cmd: python src/amogel/pipeline/stage_train_encoder.py
-  #   deps:
-  #   - src/amogel/components/train_multi_embedding.py
-  #   - src/amogel/pipeline/stage_train_encoder.py
-  #   params:
-  #   - train_encoder
-  #   outs:
-  #   - artifacts/train_encoder
+  train_encoder:
+    cmd: python src/amogel/pipeline/stage_train_encoder.py
+    deps:
+    - src/amogel/components/train_multi_embedding.py
+    - src/amogel/pipeline/stage_train_encoder.py
+    params:
+    - train_encoder
+    outs:
+    - artifacts/train_encoder
 
   knowledge_graph:
     cmd: python src/amogel/pipeline/stage_knowledge_graph.py
