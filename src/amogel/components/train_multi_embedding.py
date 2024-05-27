@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import KBinsDiscretizer
 from sklearn.metrics import classification_report
 from torchmetrics import Accuracy
+from torch_geometric.loader import DataLoader 
 
 MODEL = {
     'GAE': GAE,
@@ -111,6 +112,8 @@ class MultiEmbeddingTrainer():
             geom_data = geom_data.to(device)
             self.graphs.append(geom_data)
             
+        self.loader = DataLoader(self.graphs , batch_size=20 , shuffle=True)
+            
         self.model = self.model.to(device)
         self.class_model = self.class_model.to(device)
         
@@ -175,31 +178,25 @@ class MultiEmbeddingTrainer():
         #         loss = self.model.recon_loss(z , data.train_pos_edge_index)
         #         loss.backward()
         #         pbar.update(1)
-        with tqdm(total=len(self.graphs)) as pbar:
-            for data in self.graphs:
-                z = self.model.encode(data.x , data.train_pos_edge_index)
-                output = self.class_model(z)
-                class_loss = criteron(output , data.y)
-                encoder_loss = self.model.recon_loss(z, data.train_pos_edge_index)
-                loss = encoder_loss + class_loss
-                loss.backward()        
-                prediction.append(output)
-                actual.append(data.y)
+        with tqdm(total=len(self.loader)) as pbar:
+            for batch in self.loader:
+                z = self.model.encode(batch.x , batch.train_pos_edge_index)
+                loss = self.model.recon_loss(z , batch.train_pos_edge_index)
+                
                 pbar.update(1)
-                   
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        prediction  = torch.stack(prediction).to(device)
-        actual = torch.stack(actual).to(device)
-        prediction = torch.argmax(prediction , dim=1)
-        report = classification_report(actual.cpu().numpy() , prediction.cpu().numpy())
-        print(report)
+        # device = "cuda" if torch.cuda.is_available() else "cpu"
+        # prediction  = torch.stack(prediction).to(device)
+        # actual = torch.stack(actual).to(device)
+        # prediction = torch.argmax(prediction , dim=1)
+        # report = classification_report(actual.cpu().numpy() , prediction.cpu().numpy())
+        # print(report)
         # acc = prediction.eq(actual).sum().item() / len(actual)
         #print(prediction)
         #print(actual)
         #acc = accuracy(prediction , actual).to(device).item()
             
         self.optimizer.step()
-        return float(loss) , None
+        return loss , None
     
     def test(self):
         self.model.eval()
@@ -207,34 +204,32 @@ class MultiEmbeddingTrainer():
         with torch.no_grad():
             total_auc = 0
             total_ap = 0
-            prediction = []
-            actual = []
+            # prediction = []
+            # actual = []
             
-            acc = Accuracy(task='multiclass' , num_classes=5)
-            # with tqdm(total=len(self.graphs)) as pbar:
-            #     pbar.set_description("Testing")
-            #     for data in self.graphs:
-            #         z = self.model.encode(data.x , data.train_pos_edge_index)
-            #         auc , ap = self.model.test(z , data.test_pos_edge_index , data.test_neg_edge_index)
-            #         total_auc += auc
-            #         total_ap += ap
-            #         pbar.update(1)
-            for data in self.graphs:
-                z = self.model.encode(data.x , data.train_pos_edge_index)
-                output = self.class_model(z)
-                prediction.append(output)
-                actual.append(data.y)
-                auc , ap = self.model.test(z , data.test_pos_edge_index , data.test_neg_edge_index)
-                total_auc += auc
-                total_ap += ap
+            # acc = Accuracy(task='multiclass' , num_classes=5)
+            with tqdm(total=len(self.loader)) as pbar:
+                for batch in self.loader:
+                    z = self.model.encode(batch.x , batch.train_pos_edge_index)
+                    auc , ap = self.model.test(z , batch.test_pos_edge_index , batch.test_neg_edge_index)
+                    total_auc += auc
+                    total_ap += ap
+                    
+                    pbar.update(1)
+                    
+                # for data in self.graphs:
+                #     z = self.model.encode(batch.x , data.train_pos_edge_index)
+                #     auc , ap = self.model.test(z , data.test_pos_edge_index , data.test_neg_edge_index)
+                #     total_auc += auc
+                #     total_ap += ap
             
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        prediction = torch.stack(prediction).to(device)
-        actual = torch.stack(actual).to(device)
-        prediction = torch.argmax(prediction , dim=1)
-        acc = prediction.eq(actual).sum().item() / len(actual)
+        # device = "cuda" if torch.cuda.is_available() else "cpu"
+        # prediction = torch.stack(prediction).to(device)
+        # actual = torch.stack(actual).to(device)
+        # prediction = torch.argmax(prediction , dim=1)
+        # acc = prediction.eq(actual).sum().item() / len(actual)
         
-        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , acc
+        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , None
     
     def run(self):
         logger.info(f"Learn multi embedding encoder for {self.omic_type} omic type")
@@ -242,7 +237,7 @@ class MultiEmbeddingTrainer():
             loss , train_acc = self.train()
             auc , ap , test_acc = self.test()
             if epoch % self.config.print_interval == 0:
-                logger.info(f"Epoch: {epoch}\t| Loss: {loss}\t| AUC: {auc}\t| AP: {ap}\t| Train Acc: {train_acc}\t| Test Acc: {test_acc}")
+                logger.info(f"Epoch: {epoch}\t| Loss: {loss}\t| AUC: {auc}\t| AP: {ap}")
                 
         self.loss = loss 
         self.auc = auc 
