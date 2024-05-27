@@ -23,8 +23,8 @@ train_encoder:
   
 knowledge_graph: 
   ppi_combined_score: 300 
-  ppi: true
-  kegg_go: true
+  ppi: false
+  kegg_go: false
   synthetic: true
   edge_threshold: 0.8
   discretized: true 

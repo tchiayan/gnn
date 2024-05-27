@@ -944,15 +944,17 @@ class KnowledgeGraph():
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         if ppi:
-            partial_knowledge_tensor = self.ppi_graph_tensor
+            partial_knowledge_tensor = self.__generate_ppi_graph()
             knowledge_tensor += partial_knowledge_tensor
         
         if kegg_go:
-            partial_knowledge_tensor = self.kegg_go_graph_tensor
+            partial_knowledge_tensor = self.__generate_kegg_go_graph()
             knowledge_tensor += partial_knowledge_tensor
         
         if synthetic:
-            synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
+            synthetic_tensor_dict = self.__generate_synthetic_graph(normalize_method='binary')
+            synthetic_tensor = torch.stack(list(synthetic_tensor_dict.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
+            #synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
         
         logger.info("Generate training discretized multiedges graph")
         training_graphs = []
