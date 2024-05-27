@@ -190,7 +190,7 @@ class MultiEmbeddingTrainer():
         actual = torch.stack(actual).to(device)
         print(prediction)
         print(actual)
-        acc = accuracy(prediction , actual).item()
+        acc = accuracy(prediction , actual).to(device).item()
             
         self.optimizer.step()
         return float(loss) , float(acc)
@@ -226,7 +226,7 @@ class MultiEmbeddingTrainer():
         prediction = torch.stack(prediction).to(device)
         actual = torch.stack(actual).to(device)
         
-        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , acc(prediction , actual).item()
+        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , acc(prediction , actual).to(device).item()
     
     def run(self):
         logger.info(f"Learn multi embedding encoder for {self.omic_type} omic type")
