@@ -99,7 +99,8 @@ class MultiEmbeddingTrainer():
         for idx , row in df_data.iterrows():
             
             target_label = df_label.loc[idx].values[0]
-            synthetic_adjacancy_matrix = synthetic_adjacancy_dict[target_label]
+            #synthetic_adjacancy_matrix = synthetic_adjacancy_dict[target_label]
+            synthetic_adjacancy_matrix = self._generate_synthetic_network(row.values)
             
             edge_coo = self.symmetric_matrix_to_coo(synthetic_adjacancy_matrix , 0.5)
             geom_data = self.coo_to_pyg_data(edge_coo , torch.tensor(row.values , dtype=torch.float32 , device=device).unsqueeze(1) , y=torch.tensor(target_label , dtype=torch.long , device=device))
@@ -116,6 +117,28 @@ class MultiEmbeddingTrainer():
             
         self.model = self.model.to(device)
         self.class_model = self.class_model.to(device)
+    
+    def _generate_synthetic_network(self , expression_values  ,topk=50 ):
+        
+        ac_file_path = os.path.join(self.config.data_preprocessing_dir , self.dataset , f"ac_rule_{self.omic_type}.tsv")
+        df_ac = pd.read_csv(ac_file_path , sep="\t" , header=None)
+        df_ac.columns = ['class' , 'support', 'confidence' , 'antecedents', 'interestingness']
+        
+        df_ac_filtered = df_ac.groupby(["class"]).apply(lambda x: x.nlargest(topk , 'interestingness')).reset_index(drop=True)
+        
+        edge_matrix = torch.zeros(self.num_features , self.num_features)
+        expression_set = set([f"{idx}:{value}" for idx , value in enumerate(expression_values)])
+        for idx , row in df_ac_filtered.iterrows():
+            rule_set = set([x for x in row['antecedents'].split(',')])
+            
+            if rule_set.issubset(expression_set):
+                node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
+                vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
+                edge_matrix[vector_idx[:,0] , vector_idx[:,1]] += 1
+                edge_matrix[vector_idx[:,1] , vector_idx[:,0]] += 1
+        
+        return edge_matrix
+            
         
     def _generate_synthetic_graph(self , topk=50 , normalize=True , normalize_method='max'):
         # load ac filepath 
