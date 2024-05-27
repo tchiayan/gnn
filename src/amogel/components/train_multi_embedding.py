@@ -41,7 +41,7 @@ class MultiEmbeddingTrainer():
         
         # load sample label 
         label_filepath = os.path.join(self.config.data_preprocessing_dir , self.dataset , f"labels_tr.csv")
-        df_label = pd.read_csv(label_filepath , header=None , colums=['label'])
+        df_label = pd.read_csv(label_filepath , header=None , names=['label'])
         
         # create model & optimizer
         self.model = MODEL[config.model](ENCODER[config.model](1 , out_channels)) # GAE(GCNEncoder(1 , out_channels))
