@@ -86,7 +86,8 @@ class GraphPooling(torch.nn.Module):
         self.graph_conv1 = GraphConvolution(in_channels , hidden_channels , hidden_channels , **kwargs)
         
         # Graph Pooling 
-        self.pooling = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
+        #self.pooling = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
+        self.pooling = geom_nn.SAGPooling(in_channels=graph_conv_output , ratio=0.5)
         self.graph_norm1 = geom_nn.GraphNorm(graph_conv_output)
         # self.pooling = geom_nn.DMoNPooling(channels=hidden_channels*3 , k=100)
         
@@ -94,7 +95,8 @@ class GraphPooling(torch.nn.Module):
         self.graph_conv2 = GraphConvolution(graph_conv_output , hidden_channels , hidden_channels, **kwargs)
         
         # Graph Pooling 
-        self.pooling2 = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
+        #self.pooling2 = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
+        self.pooling2 = geom_nn.SAGPooling(in_channels=graph_conv_output , ratio=0.5)
         self.graph_norm2 = geom_nn.GraphNorm(graph_conv_output)
         
         self.mlp = torch.nn.Sequential(
