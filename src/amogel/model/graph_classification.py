@@ -738,6 +738,7 @@ class MultiGraphClassification(pl.LightningModule):
         acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         if paper_output is not None:
             paper_acc = self.paper_acc(torch.nn.functional.softmax(paper_output , dim=-1) , actual_class)
+            self.log('val_paper_acc' , paper_acc , on_step=False , prog_bar=True , batch_size=batch_shape)
         else:
             acc1 = self.acc_1(torch.nn.functional.softmax(output1 , dim=-1) , actual_class)
             acc2 = self.acc_2(torch.nn.functional.softmax(output2 , dim=-1) , actual_class)
@@ -774,7 +775,6 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("val_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
         self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
         self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
-        self.log('val_paper_acc' , paper_acc , on_step=False , prog_bar=True , batch_size=batch_shape)
     
     def on_validation_epoch_end(self) -> None: 
         

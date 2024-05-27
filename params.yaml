@@ -31,7 +31,7 @@ knowledge_graph:
 
 model_training: 
   dataset: 'discretized_multiedges_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
-  model: 'TripletLearning' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
+  model: 'MultiGraphClassification' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
   hidden_units: 32
   multihead: 1
   multihead_concat: false
