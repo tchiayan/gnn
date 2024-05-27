@@ -191,7 +191,7 @@ class MultiEmbeddingTrainer():
         prediction  = torch.stack(prediction).to(device)
         actual = torch.stack(actual).to(device)
         prediction = torch.argmax(prediction , dim=1)
-        report = classification_report(actual.numpy() , prediction.numpy())
+        report = classification_report(actual.cpu().numpy() , prediction.cpu().numpy())
         print(report)
         # acc = prediction.eq(actual).sum().item() / len(actual)
         #print(prediction)
