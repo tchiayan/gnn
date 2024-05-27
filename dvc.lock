@@ -31,8 +31,8 @@ stages:
     outs:
     - path: artifacts/ppi_data
       hash: md5
-      md5: 254634439ce0bbc824ffb7320c2a6493.dir
-      size: 722301045
+      md5: d9ce4114b19f6effca9e45700580182e.dir
+      size: 130385179
       nfiles: 4
   data_preprocessing:
     cmd: python src/amogel/pipeline/stage_data_preprocessing.py
@@ -84,8 +84,8 @@ stages:
       size: 1879
     - path: src/amogel/components/knowledge_graph.py
       hash: md5
-      md5: a5236ea4452ebceb2e1858c69098fb02
-      size: 65508
+      md5: cd36e733f3fddb873ccbf4e3b42c8e8a
+      size: 66415
     - path: src/amogel/pipeline/stage_knowledge_graph.py
       hash: md5
       md5: 920ab25491092ddd8b6c22d756bccaa8
@@ -99,12 +99,12 @@ stages:
           synthetic: true
           edge_threshold: 0.8
           discretized: true
-        model_training.dataset: binarylearning_multigraph
+        model_training.dataset: triplet_multigraph
     outs:
     - path: artifacts/knowledge_graph
       hash: md5
-      md5: 5c6e8e545205931d1983d888391ed1d3.dir
-      size: 22908668187
+      md5: 74c6f6c133531751a99b41d5b48756c7.dir
+      size: 37346386874
       nfiles: 15
   train_encoder:
     cmd: python src/amogel/pipeline/stage_06_train_encoder.py

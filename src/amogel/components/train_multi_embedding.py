@@ -183,8 +183,7 @@ class MultiEmbeddingTrainer():
                 encoder_loss = self.model.recon_loss(z, data.train_pos_edge_index)
                 loss = encoder_loss + class_loss
                 loss.backward()        
-                
-                prediction.append(output.argmax())
+                prediction.append(output)
                 actual.append(data.y)
                 pbar.update(1)
                    
