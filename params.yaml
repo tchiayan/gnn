@@ -16,7 +16,7 @@ embedding_training:
 
 train_encoder: 
   learning_rate: 0.001 
-  output_channel: 16 
+  output_channel: 8
   learning_epoch: 300 
   print_interval: 1
   model: 'GAE' # support GAE and VGAE

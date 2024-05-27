@@ -53,22 +53,22 @@ class MultiEmbeddingTrainer():
         df_ac.columns = ['class' , 'support', 'confidence' , 'antecedents', 'interestingness']
         
         # select top 1000 rules for each class with highest interestingness 
-        df_ac_filtered = df_ac.groupby(["class"]).apply(lambda x: x.nlargest(1000 , 'interestingness')).reset_index(drop=True) 
+        # df_ac_filtered = df_ac.groupby(["class"]).apply(lambda x: x.nlargest(1000 , 'interestingness')).reset_index(drop=True) 
         
         # build adjacency matrics
-        logger.info(f"Build adjacency matrix for omic type: {omic_type}")
-        adjacancy_matrix = torch.zeros((self.num_features , self.num_features))
-        with tqdm(total=df_ac_filtered.shape[0]) as pbar:
-            for index , row in df_ac_filtered.iterrows():
-                node_idx = [int(x.split(":")[0]) for x  in row['antecedents'].split(',')]
+        # logger.info(f"Build adjacency matrix for omic type: {omic_type}")
+        # adjacancy_matrix = torch.zeros((self.num_features , self.num_features))
+        # with tqdm(total=df_ac_filtered.shape[0]) as pbar:
+        #     for index , row in df_ac_filtered.iterrows():
+        #         node_idx = [int(x.split(":")[0]) for x  in row['antecedents'].split(',')]
                 
-                vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)]) # generate possible edges pair given the list of node index
-                adjacancy_matrix[vector_idx[:,0] , vector_idx[:,1]] += 1
-                adjacancy_matrix[vector_idx[:,1] , vector_idx[:,0]] += 1 # it is undirected graph
+        #         vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)]) # generate possible edges pair given the list of node index
+        #         adjacancy_matrix[vector_idx[:,0] , vector_idx[:,1]] += 1
+        #         adjacancy_matrix[vector_idx[:,1] , vector_idx[:,0]] += 1 # it is undirected graph
                 
-                pbar.update(1)
+        #         pbar.update(1)
         
-        synthetic_adjacancy_dict = self._generate_synthetic_graph()
+        synthetic_adjacancy_dict = self._generate_synthetic_graph(normalize_method='binary')
         # normalize adjacency matrix 
         # normalized_adjacancy_matrix = adjacancy_matrix / adjacancy_matrix.max() 
         
