@@ -14,7 +14,7 @@ class TrainEncoderPipeline():
         config = ConfigurationManager()
         encoder_trainer_config = config.get_encoder_training_config()
         
-        for i in [ 2 , 3 , 1]:
+        for i in [ 3 , 2 ,1]:
             # train omic embedding 2 
             embeddingTrainer = MultiEmbeddingTrainer(
                 out_channels=encoder_trainer_config.output_channel , 

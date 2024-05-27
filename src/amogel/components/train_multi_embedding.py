@@ -1,7 +1,7 @@
 from torch_geometric.nn import GAE , VGAE
 import torch
 from amogel import logger
-from amogel.model.graph_autoencoder import GCNEncoder , VariationalGCNEncoder
+from amogel.model.graph_autoencoder import GCNEncoder , VariationalGCNEncoder , Pooling
 from torch_geometric.utils import train_test_split_edges , to_undirected
 import pandas as pd
 from tqdm import tqdm
@@ -13,6 +13,8 @@ from amogel.entity.config_entity import EncoderTrainingConfig
 import os
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import KBinsDiscretizer
+from torchmetrics import Accuracy
 
 MODEL = {
     'GAE': GAE,
@@ -39,12 +41,17 @@ class MultiEmbeddingTrainer():
         self.num_features = df_data.shape[1]
         self.num_sample = df_data.shape[0]
         
+        # discretize the data
+        kbin = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
+        df_data = pd.DataFrame(kbin.fit_transform(df_data))
+        
         # load sample label 
         label_filepath = os.path.join(self.config.data_preprocessing_dir , self.dataset , f"labels_tr.csv")
         df_label = pd.read_csv(label_filepath , header=None , names=['label'])
         
         # create model & optimizer
         self.model = MODEL[config.model](ENCODER[config.model](1 , out_channels)) # GAE(GCNEncoder(1 , out_channels))
+        self.class_model = Pooling(out_channels , df_label['label'].nunique())
         self.optimizer = torch.optim.Adam(self.model.parameters() , lr = lr)
         
         # load ac filepath 
@@ -86,13 +93,14 @@ class MultiEmbeddingTrainer():
         
         # df_data.T => # number of node x number of feature (sample)
         self.graphs = []
+        
         for idx , row in df_data.iterrows():
             
             target_label = df_label.loc[idx].values[0]
             synthetic_adjacancy_matrix = synthetic_adjacancy_dict[target_label]
             
             edge_coo = self.symmetric_matrix_to_coo(synthetic_adjacancy_matrix , 0.5)
-            geom_data = self.coo_to_pyg_data(edge_coo , torch.tensor(row.values , dtype=torch.float32).unsqueeze(1))
+            geom_data = self.coo_to_pyg_data(edge_coo , torch.tensor(row.values , dtype=torch.float32 , device=device).unsqueeze(1) , y=torch.tensor(target_label , dtype=torch.long , device=device))
             
             # split data 
             geom_data.train_mask = geom_data.val_mask = geom_data.test_mask = None
@@ -103,6 +111,7 @@ class MultiEmbeddingTrainer():
             self.graphs.append(geom_data)
             
         self.model = self.model.to(device)
+        self.class_model = self.class_model.to(device)
         
     def _generate_synthetic_graph(self , topk=50 , normalize=True , normalize_method='max'):
         # load ac filepath 
@@ -150,8 +159,14 @@ class MultiEmbeddingTrainer():
     def train(self):
         
         self.model.train()
+        self.class_model.train()
         self.optimizer.zero_grad()
         
+        criteron = torch.nn.CrossEntropyLoss()
+        accuracy = Accuracy(task='multiclass' , num_classes=5)
+        
+        prediction = []
+        actual = []
         # with tqdm(total=len(self.graphs)) as pbar:
         #     pbar.set_description("Training")
         #     for data in self.graphs:
@@ -161,17 +176,29 @@ class MultiEmbeddingTrainer():
         #         pbar.update(1)
         for data in self.graphs:
             z = self.model.encode(data.x , data.train_pos_edge_index)
-            loss = self.model.recon_loss(z , data.train_pos_edge_index)
+            output = self.class_model(z)
+            class_loss = criteron(output , data.y)
+            encoder_loss = self.model.recon_loss(z, data.train_pos_edge_index)
+            loss = encoder_loss + class_loss
             loss.backward()        
             
+            prediction.append(output)
+            actual.append(data.y)
+        acc = accuracy(torch.stack(prediction) , torch.stack(actual))
+            
         self.optimizer.step()
-        return float(loss)
+        return float(loss) , float(acc)
     
     def test(self):
         self.model.eval()
+        self.class_model.eval()
         with torch.no_grad():
             total_auc = 0
             total_ap = 0
+            prediction = []
+            actual = []
+            
+            acc = Accuracy(task='multiclass' , num_classes=5)
             # with tqdm(total=len(self.graphs)) as pbar:
             #     pbar.set_description("Testing")
             #     for data in self.graphs:
@@ -182,33 +209,36 @@ class MultiEmbeddingTrainer():
             #         pbar.update(1)
             for data in self.graphs:
                 z = self.model.encode(data.x , data.train_pos_edge_index)
+                output = self.class_model(z)
+                prediction.append(output)
+                actual.append(data.y)
                 auc , ap = self.model.test(z , data.test_pos_edge_index , data.test_neg_edge_index)
                 total_auc += auc
                 total_ap += ap
             
-        return total_auc / len(self.graphs) , total_ap / len(self.graphs)
+        return total_auc / len(self.graphs) , total_ap / len(self.graphs) , acc(torch.stack(prediction) , torch.stack(actual))
     
     def run(self):
         logger.info(f"Learn multi embedding encoder for {self.omic_type} omic type")
         for epoch in range(self.epochs+1):
-            loss = self.train()
+            loss , train_acc = self.train()
             auc , ap = self.test()
             if epoch % self.config.print_interval == 0:
-                logger.info(f"Epoch: {epoch}\t| Loss: {loss}\t| AUC: {auc}\t| AP: {ap}")
+                logger.info(f"Epoch: {epoch}\t| Loss: {loss}\t| AUC: {auc}\t| AP: {ap}\t| Train Acc: {train_acc}")
                 
         self.loss = loss 
         self.auc = auc 
         self.ap = ap
     
     @staticmethod
-    def coo_to_pyg_data(coo_matrix , node_features):
+    def coo_to_pyg_data(coo_matrix , node_features , y):
         values = torch.FloatTensor(coo_matrix.data).unsqueeze(1)
         indices = torch.LongTensor(np.vstack((coo_matrix.row, coo_matrix.col)))
         size = torch.Size(coo_matrix.shape)
 
         indices , values = to_undirected(indices , values)
         
-        return Data(x=node_features, edge_index=indices, edge_attr=values, num_nodes=size[0])
+        return Data(x=node_features, edge_index=indices, edge_attr=values, y=y , num_nodes=size[0])
     
     @staticmethod 
     def symmetric_matrix_to_coo(matrix , threshold):
