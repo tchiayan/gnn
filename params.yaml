@@ -25,6 +25,7 @@ train_encoder:
 
 arm_classification:
   topk: [ 10 , 20 , 30 , 40 , 50 , 60 , 70 , 80 , 90 , 100 , 150 , 200 , 250]
+  metric: 'interestingness' 
   data_path: './artifact/data_preprocessing'
   dataset: 'BRCA'
   
