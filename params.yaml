@@ -2,7 +2,7 @@ data_preprocessing:
   filtering:
     mRNA: 
       variance: 0.1
-      annova: 1000 
+      annova: 1000
     DNA:
       variance: 0.001
       annova: 1000
@@ -24,7 +24,7 @@ train_encoder:
   model: 'GAE' # support GAE and VGAE
 
 arm_classification:
-  topk: [ 10 , 20 , 30 , 40 , 50 , 60 , 70 , 80 , 90 , 100 , 150 , 200 , 250]
+  topk: [ 1, 5, 10 , 20 , 30 , 40 , 50 , 60 , 70 , 80 , 90 , 100 , 150 , 200 , 250]
   metric: 'interestingness' 
   data_path: './artifact/data_preprocessing'
   dataset: 'BRCA'
