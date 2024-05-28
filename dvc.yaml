@@ -25,6 +25,14 @@ stages:
     outs:
     - artifacts/data_preprocessing
 
+  arm_classification:
+    cmd: python src/amogel/pipeline/stage_arm_classification.py
+    deps:
+    - src/amogel/components/arm_classification.py
+    - src/amogel/pipeline/stage_arm_classification.py
+    params:
+    - arm_classification
+
   # train_embedding:
   #   cmd: python src/amogel/pipeline/stage_train_embedding.py
   #   deps:
