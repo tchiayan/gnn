@@ -22,6 +22,8 @@ stages:
     - config/config.yaml
     - src/amogel/pipeline/stage_data_preprocessing.py
     - src/amogel/components/data_preprocessing.py
+    params:
+    - data_preprocessing
     outs:
     - artifacts/data_preprocessing
 
