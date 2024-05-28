@@ -299,7 +299,7 @@ class KnowledgeGraph():
             for idx , row in filtered.iterrows():
                 antecedents = row['antecedents'].split(",")
                 for antecedent in antecedents:
-                    if antecedents not in class_summary[label].keys():
+                    if antecedent not in class_summary[label].keys():
                         class_summary[label][antecedent] = 1 
                     else:
                         class_summary[label][antecedent] += 1
