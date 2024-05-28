@@ -18,7 +18,7 @@ class Stage_ARM_Classification():
             logger.info(f"Test ARM Classification topk: {topk}")
             summary = {'topk': topk}
             for i in range(1 , 4):
-                arm_class = ARM_Classification(arm_config.dataset , i , topk=topk)
+                arm_class = ARM_Classification(arm_config , arm_config.dataset , i , topk=topk)
                 accuracy = arm_class.test_arm()
                 summary[i] = round(accuracy*100,2)
                 

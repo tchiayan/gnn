@@ -3,6 +3,7 @@ import os
 import pickle
 import numpy as np
 from sklearn.metrics import classification_report 
+from amogel.entity.config_entity import ARMClassificationConfig
 from amogel import logger
 import warnings
 
@@ -10,11 +11,12 @@ warnings.filterwarnings("ignore")
 
 class ARM_Classification():
     
-    def __init__(self , dataset:str , omic_type: int , topk: int = 50) -> None:
+    def __init__(self , config:ARMClassificationConfig ,  dataset:str , omic_type: int , topk: int = 50) -> None:
         
         self.df_label = self._load_labels(dataset)
         self.df_test = self._load_test_data(dataset , omic_type)
         self.df_ac = self._load_arm(omic_type , dataset , topk)
+        self.config = config    
     
     
     def _load_arm(self , omic_type:int , dataset:str , topk=50 ) -> pd.DataFrame: 
@@ -32,9 +34,9 @@ class ARM_Classification():
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"File not found: {filepath}")
         
-        df = pd.read_csv(filepath , sep="\t" , header=None , names=["label" , "support" , "confidence" , "rules" , "interestingness"])
+        df = pd.read_csv(filepath , sep="\t" , header=None , names=["label" , "confidence" , "support" , "rules" , "interestingness"])
 
-        grouped_top_tr = df.groupby("label").apply(lambda x: x.nlargest(topk , "interestingness")).reset_index(drop=True)
+        grouped_top_tr = df.groupby("label").apply(lambda x: x.nlargest(topk , self.config.metric)).reset_index(drop=True)
         
         return grouped_top_tr
     

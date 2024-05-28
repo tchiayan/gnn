@@ -114,3 +114,4 @@ class ARMClassificationConfig:
     data_path: Path
     topk: List[int]
     dataset: str
+    metric: str

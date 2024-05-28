@@ -153,7 +153,8 @@ class ConfigurationManager:
         arm_classification_config = ARMClassificationConfig(
             data_path=params.data_path,
             topk=params.topk,
-            dataset=params.dataset
+            dataset=params.dataset, 
+            metric=params.metric
         )
         
         return arm_classification_config
