@@ -312,9 +312,9 @@ class KnowledgeGraph():
         testing_model = {}
         for key in class_summary_distinct_set.keys():
             distinct_set = class_summary_distinct_set[key]
-            for compared_key in class_summary_distinct_set.keys():
-                if key != compared_key:
-                    distinct_set = distinct_set.difference(class_summary_distinct_set[compared_key])
+            # for compared_key in class_summary_distinct_set.keys():
+            #     if key != compared_key:
+            #         distinct_set = distinct_set.difference(class_summary_distinct_set[compared_key])
                     
             testing_model[key] = [",".join(list(distinct_set))]
                 
