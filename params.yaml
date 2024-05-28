@@ -1,13 +1,15 @@
 data_preprocessing: 
-  mRNA: 
-    variance: 0.1
-    annova: 1000 
-  DNA:
-    variance: 0.001
-    annova: 1000
-  miRNA:
-    variance: 0
-    annova: 502
+  filtering:
+    mRNA: 
+      variance: 0.1
+      annova: 1000 
+    DNA:
+      variance: 0.001
+      annova: 1000
+    miRNA:
+      variance: 0
+      annova: 502
+  test_split: 0.3
 
 embedding_training: 
   learning_rate: 0.001
@@ -20,6 +22,11 @@ train_encoder:
   learning_epoch: 300 
   print_interval: 1
   model: 'GAE' # support GAE and VGAE
+
+arm_classification:
+  topk: [ 10 , 20 , 30 , 40 , 50 , 60 , 70 , 80 , 90 , 100 , 150 , 200 , 250]
+  data_path: './artifact/data_preprocessing'
+  dataset: 'BRCA'
   
 knowledge_graph: 
   ppi_combined_score: 300 

@@ -201,7 +201,8 @@ class DataPreprocessing:
         df_label.iloc[: , 0] = label
         
         # train test split 
-        X_train, X_test, y_train, y_test = train_test_split(df_label.index, df_label.iloc[: , 0:1], test_size=0.3, random_state=42)
+        logger.info(f"Train test split for dataset: {self.config.test_split}")
+        X_train, X_test, y_train, y_test = train_test_split(df_label.index, df_label.iloc[: , 0:1], test_size=self.config.test_split, random_state=42)
         
         df_miRNA.loc[X_train,:].to_csv(os.path.join(root_dir, dataset , "3_tr.csv") , index=False , header=False)
         df_miRNA.loc[X_test,:].to_csv(os.path.join(root_dir, dataset , "3_te.csv") , index=False , header=False)

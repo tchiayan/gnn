@@ -9,7 +9,8 @@ from amogel.entity.config_entity import (
     EmbeddingTrainerConfig , 
     KnowledgeGraphConfig , 
     ModelTrainingConfig , 
-    EncoderTrainingConfig
+    EncoderTrainingConfig , 
+    ARMClassificationConfig
 )
 
 class ConfigurationManager: 
@@ -63,7 +64,8 @@ class ConfigurationManager:
                     'DNA': config.KIPAN.DNA, 
                     'label': config.BRCA.label
                 }, 
-            preprocessing=params
+            preprocessing=params.filtering , 
+            test_split=params.test_split
         )   
         
         return data_preprocessing_config
@@ -144,3 +146,14 @@ class ConfigurationManager:
         )
         
         return model_training_config
+
+    def get_arm_classification_config(self) -> ARMClassificationConfig: 
+        params = self.params.arm_classification
+        
+        arm_classification_config = ARMClassificationConfig(
+            data_path=params.data_path,
+            topk=params.topk,
+            dataset=params.dataset
+        )
+        
+        return arm_classification_config

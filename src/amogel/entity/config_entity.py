@@ -50,6 +50,7 @@ class DataPreprocessingConfig:
     BRCA: OmicsRawDataPaths
     KIPAN: OmicsRawDataPaths
     preprocessing: OmicTypeWithFilteringConfig
+    test_split: float 
     
     def __getitem__(self, key):
         return getattr(self, key)
@@ -107,3 +108,9 @@ class EncoderTrainingConfig:
     learning_epoch: int
     print_interval: int
     model: str
+    
+@dataclass(frozen=True)
+class ARMClassificationConfig: 
+    data_path: Path
+    topk: List[int]
+    dataset: str
