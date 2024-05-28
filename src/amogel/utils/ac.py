@@ -79,7 +79,7 @@ def correlation(data, class_column):
     ordinal_encoder = OrdinalEncoder()
     data = ordinal_encoder.fit_transform(data)
     data = pd.DataFrame(data)
-    corr = data.corr()[class_column].values.tolist()   # obtain the correlation of attributes with the class label
+    corr = data.corr(method='spearman')[class_column].values.tolist()   # obtain the correlation of attributes with the class label
     # print("Correlation:" , corr)
     return corr
 

@@ -307,8 +307,18 @@ class KnowledgeGraph():
         class_summary_distinct_set = {}
         for key in class_summary.keys():
             class_summary_distinct_set[key] = [
-                ",".join(list(set([ k for k , v in class_summary[key].items() if v < self.config.topk*0.5])))
+                ",".join(list(set([ k for k , v in class_summary[key].items() if v == self.config.topk])))
             ]
+            
+        # find the distinct set compare with other class 
+        testing_model = {}
+        for key in class_summary_distinct_set.keys():
+            distinct_set = class_summary_distinct_set[key]
+            for compared_key in class_summary_distinct_set.keys():
+                if key != compared_key:
+                    distinct_set = distinct_set.difference(class_summary_distinct_set[compared_key])
+                    
+            testing_model[key] = [distinct_set]
                 
         # find the distinct set compare with other class
             
@@ -318,7 +328,7 @@ class KnowledgeGraph():
                 knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
                 
                 if distinct_set:
-                    _iterrows = enumerate(class_summary_distinct_set[label])
+                    _iterrows = enumerate(testing_model[label])
                     for idx , row in _iterrows:
                         node_idx = [int(x.split(":")[0]) for x in row.split(',')]
                         vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
