@@ -307,7 +307,7 @@ class KnowledgeGraph():
         class_summary_distinct_set = {}
         for key in class_summary.keys():
             class_summary_distinct_set[key] = [
-                ",".join(list(set([ k for k , v in class_summary[key].items() if v < self.topk*0.5])))
+                ",".join(list(set([ k for k , v in class_summary[key].items() if v < self.config.topk*0.5])))
             ]
                 
         # find the distinct set compare with other class
