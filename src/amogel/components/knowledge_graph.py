@@ -319,14 +319,20 @@ class KnowledgeGraph():
                 
                 if distinct_set:
                     _iterrows = enumerate(class_summary_distinct_set[label])
+                    for idx , row in _iterrows:
+                        node_idx = [int(x.split(":")[0]) for x in row.split(',')]
+                        vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
+                        knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
+                        knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+                        
                 else:
                     _iterrows = synthetic_df_filtered[synthetic_df_filtered['class'] == label].iterrows()
                 
-                for idx , row in _iterrows:
-                    node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
-                    vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
-                    knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
-                    knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+                    for idx , row in _iterrows:
+                        node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
+                        vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
+                        knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
+                        knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
                 
                 if normalize:
                     if normalize_method == 'max':
