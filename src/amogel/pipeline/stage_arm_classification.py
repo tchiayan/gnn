@@ -19,14 +19,14 @@ class Stage_ARM_Classification():
             summary = {'topk': topk}
             for i in range(1 , 4):
                 arm_class = ARM_Classification(arm_config , arm_config.dataset , i , topk=topk)
-                accuracy = arm_class.test_arm()
+                accuracy , info = arm_class.test_arm()
                 summary[i] = round(accuracy*100,2)
+                summary[f"{i}_info"] = info
                 
             summaries.append(summary)
         df = pd.DataFrame(summaries)
         # print without index 
         print(df.to_string(index=False))
-                
 
 if __name__ == "__main__":
     
