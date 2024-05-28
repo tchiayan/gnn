@@ -270,7 +270,7 @@ class KnowledgeGraph():
         
         return knowledge_tensor 
     
-    def __generate_synthetic_graph(self , topk = 50 , normalize=True , normalize_method='max'):
+    def __generate_synthetic_graph(self , topk = 50 , normalize=True , normalize_method='max' , distinct_set=True):
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0]
@@ -291,12 +291,38 @@ class KnowledgeGraph():
         synthetic_tensor = {}
         
         logger.info(f"Generating Synthetic Knowledge Tensor for {len(unique_class)} classes")
+        
+        class_summary = {}
+        for label in unique_class: 
+            filtered = synthetic_df_filtered[synthetic_df_filtered['class'] == label]
+            class_summary[label] = {}
+            for idx , row in filtered.iterrows():
+                antecedents = row['antecedents'].split(",")
+                for antecedent in antecedents:
+                    if antecedents not in class_summary[label].keys():
+                        class_summary[label][antecedent] = 1 
+                    else:
+                        class_summary[label][antecedent] += 1
+        
+        class_summary_distinct_set = {}
+        for key in class_summary.keys():
+            class_summary_distinct_set[key] = [
+                ",".join(list(set([ k for k , v in class_summary[key].items() if v < self.topk*0.5])))
+            ]
+                
+        # find the distinct set compare with other class
+            
         with tqdm(total=len(unique_class)) as pbar:
             for label in unique_class:
                 
                 knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
                 
-                for idx , row in synthetic_df_filtered[synthetic_df_filtered['class'] == label].iterrows():
+                if distinct_set:
+                    _iterrows = enumerate(class_summary_distinct_set[label])
+                else:
+                    _iterrows = synthetic_df_filtered[synthetic_df_filtered['class'] == label].iterrows()
+                
+                for idx , row in _iterrows:
                     node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
                     vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
                     knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
