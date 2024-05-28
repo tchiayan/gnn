@@ -8,6 +8,9 @@ from sklearn.feature_selection import VarianceThreshold , SelectKBest , f_classi
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.model_selection import train_test_split
 from pickle import dump
+import warnings
+
+warnings.filterwarnings("ignore")
 
 import os 
 
