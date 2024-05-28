@@ -328,8 +328,8 @@ class DataPreprocessing:
             dump(est , open(os.path.join(self.config.root_dir , dataset , f"kbins_{i}.joblib"), 'wb'))
             
         # generate ac rules for test data
-        label_path = os.path.join(self.config.root_dir , dataset , "labels_te.csv")
-        for i in range(1,4):
-            logger.info(f"Generate AC rules for dataset {dataset} | ac_rule_{i}_te.tsv")
-            data_filepath = os.path.join(self.config.root_dir , dataset , f"{i}_te.csv")
-            generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}_te.tsv") , min_rule=True , min_rule_per_class=500)
+        # label_path = os.path.join(self.config.root_dir , dataset , "labels_te.csv")
+        # for i in range(1,4):
+        #     logger.info(f"Generate AC rules for dataset {dataset} | ac_rule_{i}_te.tsv")
+        #     data_filepath = os.path.join(self.config.root_dir , dataset , f"{i}_te.csv")
+        #     generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}_te.tsv") , min_rule=True , min_rule_per_class=500)
