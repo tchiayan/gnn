@@ -9,7 +9,7 @@ data_preprocessing:
     miRNA:
       variance: 0
       annova: 502
-  test_split: 0.3
+  test_split: 0.5
 
 embedding_training: 
   learning_rate: 0.001
@@ -25,10 +25,10 @@ train_encoder:
 
 arm_classification:
   topk: [ 1 , 5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000  ]
-  metric: 'interestingness' 
+  metric: 'confidence' 
   data_path: './artifact/data_preprocessing'
   dataset: 'BRCA'
-  strategy: 'union' # support ['union', 'intersection', 'difference']
+  strategy: 'union' # support ['union', 'topk', 'difference']
 
 knowledge_graph: 
   ppi_combined_score: 300 
@@ -49,7 +49,7 @@ model_training:
   learning_epoch: 300
   drop_out: 0.1
   batch_size: 10
-  weight: null # [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ] 
+  weight: [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ] 
   enable_validation: true
   enable_testing: false
   enable_training: true

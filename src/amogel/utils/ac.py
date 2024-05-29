@@ -83,17 +83,14 @@ def correlation(data, class_column):
     return corr
 
 
-def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_support=0.9 , min_confidence=0.1 ,  min_rule=False , min_rule_per_class=1000 , custom_support=None , low_memory=False):
+def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_support=0.9 , min_confidence=0.0 ,  min_rule=False , min_rule_per_class=1000 , custom_support=None , low_memory=False):
     
     # Discretization
     df = pd.read_csv(data_file, header=None)
     est = preprocessing.KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='quantile')
     
     # Get discretized threshold
-    
-    est.fit(df)
-
-    df = pd.DataFrame(est.transform(df))
+    df = pd.DataFrame(est.fit_transform(df))
 
     # Read label
     df_label = pd.read_csv(label_file, names=['class'])
@@ -106,53 +103,53 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
 
     output = []
     rule_summary = []
+    
+    # build transaction 
+    transactions = {}
+    for label_idx , label in enumerate(class_labels):
+        subdf = df.loc[df_label[df_label['class'] == label].index]
+        transactions[label] = []
+        for idx , row in subdf.iterrows():
+            transaction = set([f"{idx}:{i}" for idx , i in enumerate(row.values)])
+            transactions[label].append(transaction)
+            
     with tqdm(total=len(class_labels)) as pbar:
         
         for label_idx , label in enumerate(class_labels):
-            #print("_______________________________________________________________________")
             subdf = df.loc[df_label[df_label['class'] == label].index]
-            #print(f"Generate FPTree per class: {label} | {subdf.shape}")
             arm_summary = {}
             
-            #print(f"Build transaction | Data shape: {subdf.shape}")
             arm_summary['data_shape'] = subdf.shape
-            transactions = []
-            for idx , row in subdf.iterrows():
-                transaction = [f"{idx}:{i}" for idx , i in enumerate(row.values)]
-                transactions.append(transaction)
-                
-            
-            if min_rule:
-                min_support = -(subdf.shape[0])
-                rule_count = 0
-                while rule_count < min_rule_per_class: 
-                    itemsets = ista(transactions , target='c' , supp=min_support , report='a')
-                    rule_count = len(itemsets)
-                    min_support += 1
-                #print(f"Len of frequent itemset: {len(itemsets)} | Optimised support: {-min_support} ({-min_support/subdf.shape[0]*100}%)")
-                arm_summary['itemset_length'] = len(itemsets)
-                arm_summary['support'] = -min_support
-                arm_summary['support_percentage'] = -min_support/subdf.shape[0]*100
-                    
-            elif custom_support is not None: 
-                min_support = -int(custom_support.split(",")[label_idx])
-                print(f"Generate Frequent Itemsets (Support: {min_support})")
-                itemsets = ista(transactions , target='c' , supp=min_support , report='a')
-                print(f"Len of frequent itemset: {len(itemsets)}")
-            else: 
-                min_support = min_support
-                
-                
-                print(f"Generate Frequent Itemsets (Support: {min_support})")
-                itemsets = ista(transactions , target='c' , supp=min_support , report='a')
-                print(f"Len of frequent itemset: {len(itemsets)}")
+            min_support = -(subdf.shape[0])
+            rule_count = 0
+            while rule_count < min_rule_per_class: 
+                itemsets = ista(transactions[label] , target='c' , supp=min_support , report='a')
+                rule_count = len(itemsets)
+                min_support += 1
+            #print(f"Len of frequent itemset: {len(itemsets)} | Optimised support: {-min_support} ({-min_support/subdf.shape[0]*100}%)")
+            arm_summary['itemset_length'] = len(itemsets)
+            arm_summary['support'] = -min_support
+            arm_summary['support_percentage'] = -min_support/subdf.shape[0]*100
             
             generated_cars = 0
             for itemset in itemsets:
                 antecedence , upper_support = itemset 
                 lower_support = subdf.shape[0]
-                confidence = float(upper_support) / lower_support 
-                support = upper_support/len(df)
+                # confidence = float(upper_support) / lower_support 
+                support = upper_support / lower_support
+                
+                # measure confidence 
+                match_transaction_within_class = 0 
+                match_transaction_outside_class = 0
+                for transaction_label , _transactions in transactions.items():
+                    if label == transaction_label:
+                        match_transaction_within_class += sum([ 1 for x in _transactions if set(antecedence).issubset(x)])
+                    else:
+                        match_transaction_outside_class += sum([ 1 for x in _transactions if set(antecedence).issubset(x)])
+                if match_transaction_within_class == 0:
+                    raise Exception("Error. Match transaction within class is 0.")
+                confidence = match_transaction_within_class / (match_transaction_within_class + match_transaction_outside_class)
+                    
                 
                 if confidence >= min_confidence:
                     generated_cars += 1
@@ -178,12 +175,14 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
     info_gain = information_gain(merged_df , class_column)
     for rule in output:
         items = rule[3].split(",")
+        support = rule[2]
+        confidence = rule[1]
         genes = [ int(x.split(":")[0]) for x in items ]
         avg_ig = sum([ info_gain[x] for x  in genes if x in info_gain.keys() ])/len(items)
         avg_corr = abs(sum([ corr[x] for x in genes if not math.isnan(corr[x]) ])/len(items)) + 0.0000001
         
         try:
-            interestingess = 1/(math.log2(avg_ig) + math.log2(avg_corr))
+            interestingess = 1/(math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(confidence)))
             if math.isnan(interestingess):
                 raise Exception("Error")
         except: 

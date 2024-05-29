@@ -117,14 +117,18 @@ class ARM_Classification():
                             
             class_summary_distinct_set = {}
             for key in class_summary.keys():
-                class_summary_distinct_set[key] = set([ k for k , v in class_summary[key].items() if v == self.topk])
-            
+                if self.config.strategy == 'topk':
+                    class_summary_distinct_set[key] = set([ k for k , v in class_summary[key].items() if v == self.topk])
+                else: 
+                    class_summary_distinct_set[key] = set(class_summary[key].keys())
+                    
             # find the distinct set compare with other class 
             for key in class_summary_distinct_set.keys():
                 distinct_set = class_summary_distinct_set[key]
-                for compared_key in class_summary_distinct_set.keys():
-                    if key != compared_key:
-                        distinct_set = distinct_set.difference(class_summary_distinct_set[compared_key])
+                if self.config.strategy == 'difference':
+                    for compared_key in class_summary_distinct_set.keys():
+                        if key != compared_key:
+                            distinct_set = distinct_set.difference(class_summary_distinct_set[compared_key])
                         
                 testing_model[key] = [distinct_set]
         

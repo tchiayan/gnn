@@ -210,7 +210,7 @@ class KnowledgeGraph():
             
         return df_filter_protein
 
-    def __generate_ppi_graph(self):
+    def __generate_ppi_graph(self , normalize_method='binary'):
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0] 
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
@@ -218,17 +218,22 @@ class KnowledgeGraph():
         logger.info("Generating PPI Knowledge Tensor")
         with tqdm(total=self.related_protein.shape[0]) as pbar: 
             for idx, row in self.related_protein.iterrows():
-                knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += 1
-                #knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += 1
+                knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += row['combined_score']
+                knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += row["combined_score"]
                 pbar.update(1)
-        
+                
+        if normalize_method == 'binary':
+            knowledge_tensor = (knowledge_tensor > 0).float()
+        elif normalize_method == 'max':
+            knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
+            
         # save the knowledge tensor
         logger.info("Saving PPI Knowledge Tensor")
         torch.save(knowledge_tensor , os.path.join(self.config.root_dir , self.dataset , f"knowledge_ppi_{self.omic_type}.pt"))
         
         return knowledge_tensor 
     
-    def __generate_kegg_go_graph(self):
+    def __generate_kegg_go_graph(self , normalize_method='binary'):
         
         annotation_filepath = os.path.join("artifacts/data_ingestion/unzip" , f"{self.dataset}_kegg_go" , "consol_anno_chart.tsv")
         if not os.path.exists(annotation_filepath):
@@ -261,8 +266,13 @@ class KnowledgeGraph():
                 #print(gene_numpy)
                 if gene_numpy.shape[0] > 0:
                     knowledge_tensor[gene_numpy[:,0] , gene_numpy[:,1]] += 1
-                
+                    
                 pbar.update(1)
+                
+        if normalize_method == 'binary':
+            knowledge_tensor = (knowledge_tensor > 0).float()
+        elif normalize_method == 'max':
+            knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
         
         # save the knowledge tensor
         logger.info("Saving KEGG Pathway and GO Knowledge Tensor")
@@ -991,19 +1001,20 @@ class KnowledgeGraph():
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0]
-        knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
+        topology_tensor_stack = []
         
         if ppi:
-            partial_knowledge_tensor = self.__generate_ppi_graph()
-            knowledge_tensor += partial_knowledge_tensor
+            ppi_tensor = self.__generate_ppi_graph(normalize_method='binary')
+            topology_tensor_stack.append(ppi_tensor)
         
         if kegg_go:
-            partial_knowledge_tensor = self.__generate_kegg_go_graph()
-            knowledge_tensor += partial_knowledge_tensor
+            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method='binary')
+            topology_tensor_stack.append(kegg_pathway_tensor)
         
         if synthetic:
             synthetic_tensor_dict = self.__generate_synthetic_graph(topk=self.config.topk , normalize_method='binary')
-            synthetic_tensor = torch.stack(list(synthetic_tensor_dict.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
+            #synthetic_tensor = torch.stack(list(synthetic_tensor_dict.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
+            topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
             #synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
         
         logger.info("Generate training discretized multiedges graph")
@@ -1020,14 +1031,7 @@ class KnowledgeGraph():
                 #sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
-                if synthetic: 
-                    label = int(self.train_label.iloc[idx].values.item())
-                    # print(synthetic_tensor_dict.keys())
-                    # print(label)
-                    # print(type(label))
-                    topology = synthetic_tensor # + knowledge_tensor
-                else: 
-                    topology = knowledge_tensor
+                topology = torch.stack(topology_tensor_stack , dim=-1)
                     
                 # coo_matrix = symmetric_matrix_to_coo(topology.numpy())
                 graph = symmetric_matrix_to_pyg(
@@ -1054,10 +1058,7 @@ class KnowledgeGraph():
                 #sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
-                if synthetic:
-                    topology = synthetic_tensor # + synthetic_tensor
-                else:
-                    topology = knowledge_tensor
+                topology = torch.stack(topology_tensor_stack , dim=-1)
                 #coo_matrix = symmetric_matrix_to_coo(topology.numpy())
                 graph = symmetric_matrix_to_pyg(
                     matrix=topology.numpy() , node_features=torch_sample , 
