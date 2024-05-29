@@ -119,7 +119,8 @@ class ConfigurationManager:
             dataset= self.params.model_training.dataset,
             edge_threshold=params.edge_threshold, 
             discretized=params.discretized, 
-            topk=params.topk
+            topk=params.topk, 
+            metric=self.params.arm_classification.metric
         )
         
         return knowledge_graph_config

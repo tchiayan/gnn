@@ -80,6 +80,7 @@ class KnowledgeGraphConfig:
     edge_threshold: float
     discretized: bool
     topk: int
+    metric: str
     
 @dataclass(frozen=True)
 class ModelTrainingConfig: 

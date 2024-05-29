@@ -67,6 +67,7 @@ stages:
     params: 
     - knowledge_graph 
     - model_training.dataset
+    - arm_classification.metric
     outs:
     - artifacts/knowledge_graph
   

@@ -293,9 +293,9 @@ class KnowledgeGraph():
             raise FileNotFoundError(f"Synthetic rules file not found at {synthetic_rules_filepath}")
         
         synthetic_df = pd.read_csv(synthetic_rules_filepath , sep='\t' , header=None)        
-        synthetic_df.columns = ['class' , 'support', 'confidence' , 'antecedents', 'interestingness']
+        synthetic_df.columns = ['class' , 'confidence', 'support' , 'antecedents', 'interestingness']
         
-        synthetic_df_filtered = synthetic_df.groupby(["class"]).apply(lambda x : x.nlargest(topk , 'interestingness')).reset_index(drop=True)
+        synthetic_df_filtered = synthetic_df.groupby(["class"]).apply(lambda x : x.nlargest(topk , self.config.metric)).reset_index(drop=True)
         
         # generate synthetic graph for each class 
         unique_class = synthetic_df['class'].unique()
