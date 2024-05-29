@@ -35,9 +35,9 @@ def information_gain(data, class_column):
     # print(features.values)
     
     # feature_values =  [ [ col.split(":")[1].strip() for col in row ] for row in features.values.tolist()]
-    ordinal_encoder = OrdinalEncoder()
-    features = ordinal_encoder.fit_transform(features)
-    features = pd.DataFrame(features)
+    # ordinal_encoder = OrdinalEncoder()
+    # features = ordinal_encoder.fit_transform(features)
+    # features = pd.DataFrame(features)
     
     #print(features.values[0:2 , :])
     #print(features.values)
@@ -76,10 +76,10 @@ def correlation(data, class_column):
     assert isinstance(class_column, int), "Class column provided is not of type int"
     assert class_column < len(data.columns) | class_column >= 0, "Invalid class column"
 
-    ordinal_encoder = OrdinalEncoder()
-    data = ordinal_encoder.fit_transform(data)
-    data = pd.DataFrame(data)
-    corr = data.corr(method='spearman')[class_column].values.tolist()   # obtain the correlation of attributes with the class label
+    # ordinal_encoder = OrdinalEncoder()
+    # data = ordinal_encoder.fit_transform(data)
+    # data = pd.DataFrame(data)
+    corr = data.corr()[class_column].values.tolist()   # obtain the correlation of attributes with the class label
     # print("Correlation:" , corr)
     return corr
 
@@ -164,18 +164,22 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
 
     corr = correlation(merged_df , class_column)
     info_gain = information_gain(merged_df , class_column)
-
     for rule in output:
         items = rule[3].split(",")
         genes = [ int(x.split(":")[0]) for x in items ]
         avg_ig = sum([ info_gain[x] for x  in genes if x in info_gain.keys() ])/len(items)
-        avg_corr = sum([ corr[x] for x in genes ])/len(items) 
+        avg_corr = abs(sum([ corr[x] for x in genes if not math.isnan(corr[x]) ])/len(items)) + 0.0000001
         
-        if avg_corr < 0:
-            interestingess = 1/(math.log2(avg_ig) - math.log2(-avg_corr))
-        else:
+        try:
             interestingess = 1/(math.log2(avg_ig) + math.log2(avg_corr))
-            
+            if math.isnan(interestingess):
+                raise Exception("Error")
+        except: 
+            print( [corr[x] for x in genes ])
+            print(f"Error: {avg_ig} | {avg_corr}")
+            raise Exception("Error")
+        
+        #print(f"IG: {avg_ig} | Corr: {avg_corr} | Interestingness: {interestingess}")
         rule.append(str(interestingess))
 
     # x[0] = class , x[1] = confidence , x[2] = support , x[3] = antecedence , x[4] = interestingness
