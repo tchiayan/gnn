@@ -29,14 +29,14 @@ arm_classification:
   data_path: './artifact/data_preprocessing'
   dataset: 'BRCA'
   strategy: 'union' # support ['union', 'intersection', 'difference']
-  
+
 knowledge_graph: 
   ppi_combined_score: 300 
   ppi: false
   kegg_go: false
   synthetic: true
   edge_threshold: 0.8
-  topk: 50 
+  topk: 500
   discretized: true 
 
 model_training: 
