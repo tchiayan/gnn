@@ -666,10 +666,12 @@ class KnowledgeGraph():
         logger.info("Generate training binary classifier multigraph")
         training_graphs = []
         labels = synthetic_tensor_dict.keys()
+            
         with tqdm(total=self.train_data.shape[0]) as pbar:
             
             if self.config.discretized: 
-                self.train_data = self.__load_kbin_model(self.train_data)
+                kbin = self.__load_kbin_model()
+                self.train_data = pd.DataFrame(kbin.transform(self.train_data))
                 
             for idx , sample in self.train_data.iterrows():
                 
@@ -698,7 +700,8 @@ class KnowledgeGraph():
         with tqdm(total=self.test_data.shape[0]) as pbar:
             
             if self.config.discretized:
-                self.test_data = self.__load_kbin_model(self.test_data)
+                kbin = self.__load_kbin_model()
+                self.test_data = pd.DataFrame(kbin.transform(self.test_data))
                 
             for idx , sample in self.test_data.iterrows():
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
