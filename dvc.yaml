@@ -68,6 +68,7 @@ stages:
     - knowledge_graph 
     - model_training.dataset
     - arm_classification.metric
+    - data_preprocessing.n_bins
     outs:
     - artifacts/knowledge_graph
   
