@@ -48,7 +48,7 @@ class MultiEmbeddingTrainer():
         self.num_sample = df_data.shape[0]
         
         # discretize the data
-        kbin = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
+        kbin = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='quantile')
         df_data = pd.DataFrame(kbin.fit_transform(df_data))
         
         # load sample label 

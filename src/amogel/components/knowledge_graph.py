@@ -78,7 +78,7 @@ class KnowledgeGraph():
         
         # return kbin_model
         
-        est = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
+        est = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='quantile')
         est.fit(self.train_data)
         
         transformed_result = est.transform(transform)
@@ -1002,7 +1002,7 @@ class KnowledgeGraph():
         
         # discretize the data
         if self.config.discretized: 
-            kbin = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
+            kbin = KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='quantile')
             self.train_data = pd.DataFrame(kbin.fit_transform(self.train_data))
             
         with tqdm(total=self.train_data.shape[0]) as pbar:
