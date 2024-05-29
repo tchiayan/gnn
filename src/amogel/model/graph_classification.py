@@ -752,6 +752,11 @@ class MultiGraphClassification(pl.LightningModule):
             acc2 = self.acc_2(torch.nn.functional.softmax(output2 , dim=-1) , actual_class)
             acc3 = self.acc_3(torch.nn.functional.softmax(output3 , dim=-1) , actual_class)
             
+            loss1 = self.loss(output1 , actual_class)
+            loss2 = self.loss(output2 , actual_class)
+            loss3 = self.loss(output3 , actual_class)
+            loss = loss + loss1 + loss2 + loss3
+            
             self.log("val_acc_omic1" , acc1 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch_shape)
             self.log("val_acc_omic2" , acc2 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch_shape)
             self.log("val_acc_omic3" , acc3 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch_shape)
@@ -811,6 +816,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.predictions_2 = []
         self.actuals_2 = []
         self.predictions_3 = []
+        self.actuals_3 = []
     
     def on_train_epoch_end(self) -> None:
         
