@@ -347,7 +347,10 @@ class ModelTraining():
             mlflow.log_params(self.config.__dict__)
             mlflow.pytorch.log_model(self.model , "model")
             
-            self.trainer = pl.Trainer(max_epochs=self.config.learning_epoch)
+            self.trainer = pl.Trainer(
+                max_epochs=self.config.learning_epoch , 
+                check_val_every_n_epoch=10 if self.config.dataset == "binarylearning_multigraph" else 1 ,
+            )
             if self.config.enable_validation:
                 self.trainer.fit(self.model , self.train_loader , self.test_loader)
             else: 
