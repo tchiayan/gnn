@@ -28,7 +28,7 @@ class KnowledgeGraph():
         self.test_data = self.__load_test_data()
         self.train_label = self.__load_train_label()
         self.test_label = self.__load_test_label()
-        self.related_protein = self.__load_ppi()
+        #self.related_protein = self.__load_ppi()
         
         # self.ppi_graph_tensor = self.__generate_ppi_graph()
         # self.kegg_go_graph_tensor = self.__generate_kegg_go_graph()
@@ -216,6 +216,7 @@ class KnowledgeGraph():
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         logger.info("Generating PPI Knowledge Tensor")
+        self.related_protein = self.__load_ppi()
         with tqdm(total=self.related_protein.shape[0]) as pbar: 
             for idx, row in self.related_protein.iterrows():
                 knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += row['combined_score']
