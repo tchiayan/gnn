@@ -88,7 +88,7 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
     
     # Discretization
     df = pd.read_csv(data_file, header=None)
-    est = preprocessing.KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='uniform')
+    est = preprocessing.KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='quantile')
     
     # Get discretized threshold
     
@@ -167,8 +167,9 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
 
     for rule in output:
         items = rule[3].split(",")
-        avg_ig = sum([ info_gain[int(x.split(":")[0])] for x  in items ])/len(items)
-        avg_corr = sum([ corr[int(x.split(":")[0])] for x  in items ])/len(items)
+        genes = [ int(x.split(":")[0]) for x in items ]
+        avg_ig = sum([ info_gain[x] for x  in genes if x in info_gain.keys() ])/len(items)
+        avg_corr = sum([ corr[x] for x in genes ])/len(items) 
         
         if avg_corr < 0:
             interestingess = 1/(math.log2(avg_ig) - math.log2(-avg_corr))

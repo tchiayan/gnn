@@ -161,7 +161,7 @@ class ARM_Classification():
     
     def test_arm(self) -> None: 
         
-        testing_model = self.get_testing_model(distinct=True)
+        testing_model = self.get_testing_model(distinct=False)
             
         classification_summary= []
         
