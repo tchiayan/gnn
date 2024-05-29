@@ -328,7 +328,8 @@ class ModelTraining():
             alpha=self.config.alpha , 
             binary=self.config.binary , 
             multihead=self.config.multihead, 
-            multihead_concat=self.config.multihead_concat
+            multihead_concat=self.config.multihead_concat, 
+            optimizer = self.config.optimizer
         )
         
         # clean multigraph_testing_logs.txt

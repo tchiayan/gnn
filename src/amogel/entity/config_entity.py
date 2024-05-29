@@ -96,6 +96,7 @@ class ModelTrainingConfig:
     binary: bool
     multihead: int
     multihead_concat: bool
+    optimizer: str
     weight: Optional[List[float]] = None
     
 

@@ -142,7 +142,8 @@ class ConfigurationManager:
             alpha=params.alpha,
             binary=params.binary, 
             multihead=params.multihead,
-            multihead_concat=params.multihead_concat
+            multihead_concat=params.multihead_concat, 
+            optimizer=params.optimizer
         )
         
         return model_training_config

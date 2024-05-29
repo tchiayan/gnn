@@ -55,3 +55,4 @@ model_training:
   enable_training: true
   alpha: 0.2
   binary: false
+  optimizer: 'Adam' # support ['adam' , 'sgd']

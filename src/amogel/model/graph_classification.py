@@ -612,6 +612,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.mlflow = mlflow
         self.multi_graph_testing = multi_graph_testing
         self.num_classes = num_classes
+        self.optim = kwargs.get('optimizer' , 'adam')
         
         self.graph1 = GraphPooling(in_channels , hidden_channels , **kwargs)
         self.graph2 = GraphPooling(in_channels , hidden_channels , **kwargs)
@@ -682,7 +683,10 @@ class MultiGraphClassification(pl.LightningModule):
         return output , output1 , output2 , output3
     
     def configure_optimizers(self) -> OptimizerLRScheduler:
-        return optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
+        if self.optim == 'adam':
+            return optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
+        else:
+            return optim.SGD(self.parameters() , lr=self.lr , weight_decay=0.0001)
     
     def training_step(self , batch):
         batch1 , batch2 , batch3 = batch
