@@ -626,9 +626,6 @@ class MultiGraphClassification(pl.LightningModule):
         self.graph2 = GraphPooling(in_channels , hidden_channels , **kwargs)
         self.graph3 = GraphPooling(in_channels , hidden_channels , **kwargs)
         
-        xavier_init(self.graph1)
-        xavier_init(self.graph2)
-        xavier_init(self.graph3)
         
         self.class_1 = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels*2 , hidden_channels), 
