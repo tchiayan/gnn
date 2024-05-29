@@ -120,7 +120,8 @@ class ConfigurationManager:
             edge_threshold=params.edge_threshold, 
             discretized=params.discretized, 
             topk=params.topk, 
-            metric=self.params.arm_classification.metric
+            metric=self.params.arm_classification.metric,
+            n_bins=self.params.data_preprocessing.n_bins
         )
         
         return knowledge_graph_config

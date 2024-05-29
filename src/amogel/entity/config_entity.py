@@ -81,6 +81,7 @@ class KnowledgeGraphConfig:
     discretized: bool
     topk: int
     metric: str
+    n_bins: int
     
 @dataclass(frozen=True)
 class ModelTrainingConfig: 

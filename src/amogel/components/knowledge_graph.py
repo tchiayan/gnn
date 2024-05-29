@@ -4,6 +4,7 @@ from amogel.entity.config_entity import KnowledgeGraphConfig
 import os
 from sklearn.preprocessing import KBinsDiscretizer
 import torch 
+from torch.nn.functional import one_hot
 import pandas as pd
 from tqdm import tqdm
 from amogel.utils.common import symmetric_matrix_to_coo , coo_to_pyg_data , symmetric_matrix_to_pyg
@@ -1031,6 +1032,8 @@ class KnowledgeGraph():
             for idx , sample in self.train_data.iterrows():
                 #sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
                 torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
+                if self.config.discretized:
+                    torch_sample = one_hot(torch_sample , num_classes=self.config.num_classes).squeeze(1)
                 
                 topology = torch.stack(topology_tensor_stack , dim=-1)
                     
