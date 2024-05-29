@@ -685,8 +685,12 @@ class MultiGraphClassification(pl.LightningModule):
     def configure_optimizers(self) -> OptimizerLRScheduler:
         if self.optim == 'adam':
             return optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
-        else:
-            return optim.SGD(self.parameters() , lr=self.lr , weight_decay=0.0001)
+        elif self.optim == 'sgd':
+            return optim.SGD(self.parameters() , lr=self.lr )
+        elif self.optim == 'adamw':
+            return optim.AdamW(self.parameters() , lr=self.lr)
+        elif self.optim == 'rms':
+            return optim.RMSprop(self.parameters() , lr=self.lr)
     
     def training_step(self , batch):
         batch1 , batch2 , batch3 = batch
