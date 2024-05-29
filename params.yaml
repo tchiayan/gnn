@@ -9,7 +9,7 @@ data_preprocessing:
     miRNA:
       variance: 0
       annova: 502
-  test_split: 0.4
+  test_split: 0.3
   n_bins: 2
   min_rules: 1000
 
