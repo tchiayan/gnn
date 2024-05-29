@@ -4,8 +4,7 @@ import pandas as pd
 import argparse
 import math
 from sklearn.feature_selection import mutual_info_classif
-#from mlxtend.frequent_patterns import apriori
-#from efficient_apriori import apriori
+from tqdm import tqdm
 from fim import ista
 from pathlib import Path 
 
@@ -106,53 +105,66 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
     print(f"Unique classes: {class_labels}")
 
     output = []
-    for label_idx , label in enumerate(class_labels):
-        print("_______________________________________________________________________")
-        subdf = df.loc[df_label[df_label['class'] == label].index]
-        print(f"Generate FPTree per class: {label} | {subdf.shape}")
+    rule_summary = []
+    with tqdm(total=len(class_labels)) as pbar:
         
-        
-        print(f"Build transaction | Data shape: {subdf.shape}")
-        transactions = []
-        for idx , row in subdf.iterrows():
-            transaction = [f"{idx}:{i}" for idx , i in enumerate(row.values)]
-            transactions.append(transaction)
+        for label_idx , label in enumerate(class_labels):
+            #print("_______________________________________________________________________")
+            subdf = df.loc[df_label[df_label['class'] == label].index]
+            #print(f"Generate FPTree per class: {label} | {subdf.shape}")
+            arm_summary = {}
             
-        
-        if min_rule:
-            min_support = -(subdf.shape[0])
-            rule_count = 0
-            while rule_count < min_rule_per_class: 
+            #print(f"Build transaction | Data shape: {subdf.shape}")
+            arm_summary['data_shape'] = subdf.shape
+            transactions = []
+            for idx , row in subdf.iterrows():
+                transaction = [f"{idx}:{i}" for idx , i in enumerate(row.values)]
+                transactions.append(transaction)
+                
+            
+            if min_rule:
+                min_support = -(subdf.shape[0])
+                rule_count = 0
+                while rule_count < min_rule_per_class: 
+                    itemsets = ista(transactions , target='c' , supp=min_support , report='a')
+                    rule_count = len(itemsets)
+                    min_support += 1
+                #print(f"Len of frequent itemset: {len(itemsets)} | Optimised support: {-min_support} ({-min_support/subdf.shape[0]*100}%)")
+                arm_summary['itemset_length'] = len(itemsets)
+                arm_summary['support'] = -min_support
+                arm_summary['support_percentage'] = -min_support/subdf.shape[0]*100
+                    
+            elif custom_support is not None: 
+                min_support = -int(custom_support.split(",")[label_idx])
+                print(f"Generate Frequent Itemsets (Support: {min_support})")
                 itemsets = ista(transactions , target='c' , supp=min_support , report='a')
-                rule_count = len(itemsets)
-                min_support += 1
-            print(f"Len of frequent itemset: {len(itemsets)} | Optimised support: {-min_support} ({-min_support/subdf.shape[0]*100}%)")
+                print(f"Len of frequent itemset: {len(itemsets)}")
+            else: 
+                min_support = min_support
                 
-        elif custom_support is not None: 
-            min_support = -int(custom_support.split(",")[label_idx])
-            print(f"Generate Frequent Itemsets (Support: {min_support})")
-            itemsets = ista(transactions , target='c' , supp=min_support , report='a')
-            print(f"Len of frequent itemset: {len(itemsets)}")
-        else: 
-            min_support = min_support
-            
-            
-            print(f"Generate Frequent Itemsets (Support: {min_support})")
-            itemsets = ista(transactions , target='c' , supp=min_support , report='a')
-            print(f"Len of frequent itemset: {len(itemsets)}")
-        
-        generated_cars = 0
-        for itemset in itemsets:
-            antecedence , upper_support = itemset 
-            lower_support = subdf.shape[0]
-            confidence = float(upper_support) / lower_support 
-            support = upper_support/len(df)
-            
-            if confidence >= min_confidence:
-                generated_cars += 1
-                output.append([str(label) , str(confidence), str(support) , ",".join(list(antecedence))])
                 
-        print(f"Len of generated CARs: {generated_cars}")
+                print(f"Generate Frequent Itemsets (Support: {min_support})")
+                itemsets = ista(transactions , target='c' , supp=min_support , report='a')
+                print(f"Len of frequent itemset: {len(itemsets)}")
+            
+            generated_cars = 0
+            for itemset in itemsets:
+                antecedence , upper_support = itemset 
+                lower_support = subdf.shape[0]
+                confidence = float(upper_support) / lower_support 
+                support = upper_support/len(df)
+                
+                if confidence >= min_confidence:
+                    generated_cars += 1
+                    if len(antecedence) > 1 :
+                        output.append([str(label) , str(confidence), str(support) , ",".join(list(antecedence))])
+                    
+            #print(f"Len of generated CARs: {generated_cars}")
+            arm_summary['cars_length'] = generated_cars
+            rule_summary.append(arm_summary)
+            pbar.update(1)
+    print("ARM summary")
+    print(pd.DataFrame(rule_summary))
         
 
     print("Calculate information gain and correlation")

@@ -270,7 +270,7 @@ class KnowledgeGraph():
         
         return knowledge_tensor 
     
-    def __generate_synthetic_graph(self , topk = 50 , normalize=True , normalize_method='max' , distinct_set=True):
+    def __generate_synthetic_graph(self , topk = 50 , normalize=True , normalize_method='max' , distinct_set=False):
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0]
@@ -328,19 +328,29 @@ class KnowledgeGraph():
                 if distinct_set:
                     _iterrows = enumerate(testing_model[label])
                     for idx , row in _iterrows:
-                        node_idx = [int(x.split(":")[0]) for x in row.split(',')]
-                        vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
-                        knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
-                        knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+                        try:
+                            node_idx = [int(x.split(":")[0]) for x in row.split(',')]
+                            vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
+                            knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
+                            knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+                        except:
+                            print(row , idx)
+                            raise Exception(f"Error at parsing row [{idx}]")
                         
                 else:
                     _iterrows = synthetic_df_filtered[synthetic_df_filtered['class'] == label].iterrows()
-                
-                    for idx , row in _iterrows:
-                        node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
-                        vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
-                        knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
-                        knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+
+                    try:
+                        for idx , row in _iterrows:
+                            node_idx = [int(x.split(":")[0]) for x in row['antecedents'].split(',')]
+                            vector_idx = np.array([x for x in itertools.combinations(node_idx , 2)])
+                            knowledge_tensor[vector_idx[:,0] , vector_idx[:,1]] += 1
+                            knowledge_tensor[vector_idx[:,1] , vector_idx[:,0]] += 1
+                    except:
+                        print(row['antecedents'])
+                        print(node_idx)
+                        print(vector_idx)
+                        raise Exception(f"Error at parsing row [{idx}]")
                 
                 if normalize:
                     if normalize_method == 'max':
