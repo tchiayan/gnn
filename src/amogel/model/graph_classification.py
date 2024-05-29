@@ -660,6 +660,12 @@ class MultiGraphClassification(pl.LightningModule):
         self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
         self.predictions = []
         self.actuals = []
+        self.predictions_1 = []
+        self.actuals_1 = []
+        self.predictions_2 = []
+        self.actuals_2 = []
+        self.predictions_3 = []
+        self.actuals_3 = []
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
         output1 , perm11 , perm12 , score11 , score12 , batch11 , batch12 , attr_score11 , attr_score12 = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx , log=True)
@@ -679,7 +685,7 @@ class MultiGraphClassification(pl.LightningModule):
         return optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
     
     def training_step(self , batch):
-        batch1 , batch2 , batch3 = batch 
+        batch1 , batch2 , batch3 = batch
         x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
         x2 , edge_index2 , edge_attr2 , batch2_idx ,  y2 = batch2.x , batch2.edge_index , batch2.edge_attr , batch2.batch ,  batch2.y
         x3 , edge_index3 , edge_attr3 , batch3_idx ,  y3 = batch3.x , batch3.edge_index , batch3.edge_attr , batch3.batch ,  batch3.y
@@ -757,19 +763,12 @@ class MultiGraphClassification(pl.LightningModule):
         self.test_confusion_matrix.update(output , actual_class)  
         self.predictions.extend(torch.argmax(torch.nn.functional.softmax(output , dim=-1) , dim=-1).cpu().numpy())
         self.actuals.extend(actual_class.cpu().numpy())
-        
-        # if self.current_epoch == self.trainer.max_epochs - 1:
-            
-        #     omic1_pool1 , omic1_pool2 = self.get_rank_genes(self.rank['omic1'] , batch1.extra_label , batch1.num_graphs , 1000)
-        #     omic2_pool1 , omic2_pool2 = self.get_rank_genes(self.rank['omic2'] , batch2.extra_label , batch2.num_graphs , 1000)
-        #     omic3_pool1 , omic3_pool2 = self.get_rank_genes(self.rank['omic3'] , batch3.extra_label , batch3.num_graphs , 503)
-            
-        #     self.genes['omic1_pool1'].extend(omic1_pool1)
-        #     self.genes['omic1_pool2'].extend(omic1_pool2)
-        #     self.genes['omic2_pool1'].extend(omic2_pool1)
-        #     self.genes['omic2_pool2'].extend(omic2_pool2)
-        #     self.genes['omic3_pool1'].extend(omic3_pool1)
-        #     self.genes['omic3_pool2'].extend(omic3_pool2)
+        self.predictions_1.extend(torch.argmax(torch.nn.functional.softmax(output1 , dim=-1) , dim=-1).cpu().numpy())
+        self.actuals_1.extend(actual_class.cpu().numpy())
+        self.predictions_2.extend(torch.argmax(torch.nn.functional.softmax(output2 , dim=-1) , dim=-1).cpu().numpy())
+        self.actuals_2.extend(actual_class.cpu().numpy())
+        self.predictions_3.extend(torch.argmax(torch.nn.functional.softmax(output3 , dim=-1) , dim=-1).cpu().numpy())
+        self.actuals_3.extend(actual_class.cpu().numpy())
             
         self.log("val_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch_shape)
         self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
@@ -795,9 +794,23 @@ class MultiGraphClassification(pl.LightningModule):
                 report = classification_report(self.actuals , self.predictions)
                 self.mlflow.log_text(report , "test_classification_report_epoch_{}.txt".format(self.current_epoch))
                 
+                report_1 = classification_report(self.actuals_1 , self.predictions_1)
+                self.mlflow.log_text(report_1 , "test_classification_report_omic1_epoch_{}.txt".format(self.current_epoch))
+                
+                report_2 = classification_report(self.actuals_2 , self.predictions_2)
+                self.mlflow.log_text(report_2 , "test_classification_report_omic2_epoch_{}.txt".format(self.current_epoch))
+                
+                report_3 = classification_report(self.actuals_3 , self.predictions_3)
+                self.mlflow.log_text(report_3 , "test_classification_report_omic3_epoch_{}.txt".format(self.current_epoch))
+                
         self.test_confusion_matrix.reset()
         self.predictions = []
         self.actuals = []
+        self.predictions_1 = []
+        self.actuals_1 = []
+        self.predictions_2 = []
+        self.actuals_2 = []
+        self.predictions_3 = []
     
     def on_train_epoch_end(self) -> None:
         

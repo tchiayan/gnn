@@ -80,7 +80,7 @@ class ARM_Classification():
         for key in class_summary.keys():
             print(f"Class: {key} has {len(class_summary[key])} uniques antecedents")
     
-    def get_testing_model(self , distinct=False) -> dict[str , list[set]]:
+    def get_testing_model(self) -> dict[str , list[set]]:
         """Get Testing Model
 
         Returns:
@@ -89,7 +89,7 @@ class ARM_Classification():
         
         testing_model = {}
         
-        if not distinct:
+        if self.config.strategy == "union":
             for label in self.df_ac['label'].unique():
                 filtered = self.df_ac[self.df_ac['label'] == label]
                 
@@ -161,7 +161,7 @@ class ARM_Classification():
     
     def test_arm(self) -> None: 
         
-        testing_model = self.get_testing_model(distinct=False)
+        testing_model = self.get_testing_model()
             
         classification_summary= []
         

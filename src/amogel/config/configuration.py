@@ -154,7 +154,8 @@ class ConfigurationManager:
             data_path=params.data_path,
             topk=params.topk,
             dataset=params.dataset, 
-            metric=params.metric
+            metric=params.metric, 
+            strategy=params.strategy
         )
         
         return arm_classification_config

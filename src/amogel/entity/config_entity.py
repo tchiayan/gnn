@@ -115,3 +115,4 @@ class ARMClassificationConfig:
     topk: List[int]
     dataset: str
     metric: str
+    strategy: str

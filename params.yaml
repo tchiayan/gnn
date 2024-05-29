@@ -28,6 +28,7 @@ arm_classification:
   metric: 'interestingness' 
   data_path: './artifact/data_preprocessing'
   dataset: 'BRCA'
+  strategy: 'union' # support ['union', 'intersection', 'difference']
   
 knowledge_graph: 
   ppi_combined_score: 300 

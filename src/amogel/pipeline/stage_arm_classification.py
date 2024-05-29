@@ -2,7 +2,7 @@ from amogel.components.arm_classification import ARM_Classification
 from amogel.config.configuration import ConfigurationManager
 import pandas as pd
 from amogel import logger
-
+import os
 class Stage_ARM_Classification():
     
     def __init__(self) -> None:
@@ -25,8 +25,11 @@ class Stage_ARM_Classification():
                 
             summaries.append(summary)
         df = pd.DataFrame(summaries)
-        # print without index 
+        df['avg'] = df[[1,2,3]].mean(axis=1)
         print(df.to_string(index=False))
+        
+        os.makedirs('./artifacts/arm_classification', exist_ok=True)
+        df.to_csv(f'./artifacts/arm_classification/report.csv', index=False)
 
 if __name__ == "__main__":
     

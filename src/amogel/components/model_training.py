@@ -188,7 +188,7 @@ class ModelTraining():
             
             self.test_loader = DataLoader(
                 PairDataset(test_omic_1_graphs , test_omic_2_graphs , test_omic_3_graphs) ,
-                batch_size=1 ,
+                batch_size=self.config.batch_size ,
                 shuffle=False ,
                 collate_fn=self.collate_multigraph
             )
