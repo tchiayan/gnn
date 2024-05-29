@@ -122,6 +122,7 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
             arm_summary['data_shape'] = subdf.shape
             min_support = -(subdf.shape[0])
             rule_count = 0
+            pbar.set_description("Generate frequent itemset for class {}".format(label))
             while rule_count < min_rule_per_class: 
                 itemsets = ista(transactions[label] , target='c' , supp=min_support , report='a')
                 rule_count = len(itemsets)
@@ -132,6 +133,7 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
             arm_summary['support_percentage'] = -min_support/subdf.shape[0]*100
             
             generated_cars = 0
+            pbar.set_description("Generate CARs for class {}".format(label))
             for itemset in itemsets:
                 antecedence , upper_support = itemset 
                 lower_support = subdf.shape[0]
