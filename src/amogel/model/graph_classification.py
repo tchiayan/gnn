@@ -10,7 +10,15 @@ from torch import optim
 from amogel import logger
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
+import math
 
+def xavier_init(model):
+    for name, param in model.named_parameters():
+        if name.endswith(".bias"):
+            param.data.fill_(0)
+        else:
+            bound = math.sqrt(6) / math.sqrt(param.shape[0] + param.shape[1])
+            param.data.uniform_(-bound, bound)
 class GraphConvolution(torch.nn.Module):
     def __init__(self , in_channels , hidden_channels , out_channels , jump = True, *args, **kwargs):
         super().__init__() 
@@ -617,6 +625,10 @@ class MultiGraphClassification(pl.LightningModule):
         self.graph1 = GraphPooling(in_channels , hidden_channels , **kwargs)
         self.graph2 = GraphPooling(in_channels , hidden_channels , **kwargs)
         self.graph3 = GraphPooling(in_channels , hidden_channels , **kwargs)
+        
+        xavier_init(self.graph1)
+        xavier_init(self.graph2)
+        xavier_init(self.graph3)
         
         self.class_1 = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels*2 , hidden_channels), 
