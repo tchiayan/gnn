@@ -15,6 +15,9 @@ import numpy as np
 from typing import List
 import random
 import pickle
+import warnings
+
+warnings.filterwarnings("ignore")
 
 class KnowledgeGraph():
     
