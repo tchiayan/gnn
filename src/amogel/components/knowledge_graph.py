@@ -1031,9 +1031,11 @@ class KnowledgeGraph():
         with tqdm(total=self.train_data.shape[0]) as pbar:
             for idx , sample in self.train_data.iterrows():
                 #sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
-                torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 if self.config.discretized:
+                    torch_sample = torch.tensor(sample.values, dtype=torch.int , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                     torch_sample = one_hot(torch_sample , num_classes=self.config.n_bins).squeeze(1)
+                else:
+                    torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
                 
                 topology = torch.stack(topology_tensor_stack , dim=-1)
                     
