@@ -65,7 +65,9 @@ class ConfigurationManager:
                     'label': config.BRCA.label
                 }, 
             preprocessing=params.filtering , 
-            test_split=params.test_split
+            test_split=params.test_split, 
+            n_bins=params.n_bins,
+            min_rules=params.min_rules
         )   
         
         return data_preprocessing_config

@@ -9,7 +9,9 @@ data_preprocessing:
     miRNA:
       variance: 0
       annova: 502
-  test_split: 0.5
+  test_split: 0.7
+  n_bins: 2
+  min_rules: 1000
 
 embedding_training: 
   learning_rate: 0.001
@@ -55,4 +57,4 @@ model_training:
   enable_training: true
   alpha: 0.2
   binary: false
-  optimizer: 'Adam' # support ['adam' , 'sgd']
+  optimizer: 'adam' # support ['adam' , 'sgd']

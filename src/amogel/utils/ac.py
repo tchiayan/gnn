@@ -83,11 +83,11 @@ def correlation(data, class_column):
     return corr
 
 
-def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_support=0.9 , min_confidence=0.0 ,  min_rule=False , min_rule_per_class=1000 , custom_support=None , low_memory=False):
+def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2):
     
     # Discretization
     df = pd.read_csv(data_file, header=None)
-    est = preprocessing.KBinsDiscretizer(n_bins=2 , encode='ordinal' , strategy='quantile')
+    est = preprocessing.KBinsDiscretizer(n_bins=n_bins , encode='ordinal' , strategy='quantile')
     
     # Get discretized threshold
     df = pd.DataFrame(est.fit_transform(df))
@@ -182,12 +182,12 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
         avg_corr = abs(sum([ corr[x] for x in genes if not math.isnan(corr[x]) ])/len(items)) + 0.0000001
         
         try:
-            interestingess = 1/(math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(confidence)))
+            interestingess = 1/math.log2(avg_ig) + 1/math.log2(avg_corr) + 1/math.log2(float(confidence)-0.00000001)
             if math.isnan(interestingess):
                 raise Exception("Error")
         except: 
             print( [corr[x] for x in genes ])
-            print(f"Error: {avg_ig} | {avg_corr}")
+            print(f"Error: {avg_ig} | {avg_corr} | {confidence}")
             raise Exception("Error")
         
         #print(f"IG: {avg_ig} | Corr: {avg_corr} | Interestingness: {interestingess}")
