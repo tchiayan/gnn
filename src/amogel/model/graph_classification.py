@@ -700,7 +700,7 @@ class MultiGraphClassification(pl.LightningModule):
         elif self.optim == 'rms':
             self.optimizer = optim.RMSprop(self.parameters() , lr=self.lr , weight_decay=self.weight_decay) 
             
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer , mode='min' , factor=0.1 , patience=10 , verbose=True , min_lr=1e-8)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer , mode='min' , factor=0.1 , patience=10 , verbose=True , min_lr=1e-6)
 
         return {
             'optimizer': self.optimizer,
