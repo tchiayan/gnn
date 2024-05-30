@@ -657,6 +657,7 @@ class MultiGraphClassification(pl.LightningModule):
             self.loss = torch.nn.CrossEntropyLoss()
         else: 
             self.loss = torch.nn.CrossEntropyLoss(weight=weight)
+            
         self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
         self.train_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
@@ -796,29 +797,34 @@ class MultiGraphClassification(pl.LightningModule):
     
     def on_validation_epoch_end(self) -> None: 
         
-        if self.current_epoch % 10 == 0:
+        if (self.current_epoch+1) % 10 == 0:
             
             if self.mlflow is not None:
-                logger.info("Logging confusion matrix for test epoch {}".format(self.current_epoch))
+                logger.info("Logging confusion matrix for test epoch {}".format(self.current_epoch+1))
                 # calculate confusion matrix
 
                 self.test_confusion_matrix.compute()
                 fig , ax = self.test_confusion_matrix.plot() 
-                self.mlflow.log_figure(fig , "test_confusion_matrix_epoch_{}.png".format(self.current_epoch))
+                self.mlflow.log_figure(fig , "confusion_matrix_epoch_{:03d}_test.png".format(self.current_epoch+1))
                 plt.close(fig)
                 
-                logger.info(f"Logging classification report for test epoch {self.current_epoch}")
-                report = classification_report(self.actuals , self.predictions)
-                self.mlflow.log_text(report , "test_classification_report_epoch_{}.txt".format(self.current_epoch))
+                logger.info(f"Logging classification report for test epoch {self.current_epoch+1}")
+                report = f"--------- Overall Test Report ---------\n"
+                report += classification_report(self.actuals , self.predictions)
+                #self.mlflow.log_text(report , "test_classification_report_epoch_{}.txt".format(self.current_epoch+1))
                 
-                report_1 = classification_report(self.actuals_1 , self.predictions_1)
-                self.mlflow.log_text(report_1 , "test_classification_report_omic1_epoch_{}.txt".format(self.current_epoch))
+                report += f"--------- Omic1 Test Report ---------\n"
+                report += classification_report(self.actuals_1 , self.predictions_1)
+                #self.mlflow.log_text(report_1 , "test_classification_report_omic1_epoch_{}.txt".format(self.current_epoch+1))
                 
-                report_2 = classification_report(self.actuals_2 , self.predictions_2)
-                self.mlflow.log_text(report_2 , "test_classification_report_omic2_epoch_{}.txt".format(self.current_epoch))
+                report += f"--------- Omic2 Test Report ---------\n"
+                report += classification_report(self.actuals_2 , self.predictions_2)
+                #self.mlflow.log_text(report_2 , "test_classification_report_omic2_epoch_{}.txt".format(self.current_epoch+1))
                 
-                report_3 = classification_report(self.actuals_3 , self.predictions_3)
-                self.mlflow.log_text(report_3 , "test_classification_report_omic3_epoch_{}.txt".format(self.current_epoch))
+                report += f"--------- Omic3 Test Report ---------\n"
+                report += classification_report(self.actuals_3 , self.predictions_3)
+                #self.mlflow.log_text(report_3 , "test_classification_report_omic3_epoch_{}.txt".format(self.current_epoch+1))
+                self.mlflow.log_text(report , "classification_report_epoch_{:3d}_test.txt".format(self.current_epoch+1))
                 
         self.test_confusion_matrix.reset()
         self.predictions = []
@@ -834,11 +840,11 @@ class MultiGraphClassification(pl.LightningModule):
         
         if self.current_epoch % 10 == 0:
             if self.mlflow is not None:
-                logger.info("Logging confusion matrix for training epoch {}".format(self.current_epoch))
+                logger.info("Logging confusion matrix for training epoch {}".format(self.current_epoch+1))
                 # calculate confusion matrix
                 self.train_confusion_matrix.compute()
                 fig , ax = self.train_confusion_matrix.plot() 
-                self.mlflow.log_figure(fig , "train_confusion_matrix_epoch_{}.png".format(self.current_epoch))
+                self.mlflow.log_figure(fig , "confusion_matrix_epoch_{:02d}_train.png".format(self.current_epoch+1))
                 plt.close(fig)
         
         self.train_confusion_matrix.reset()
