@@ -613,6 +613,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.mlflow = mlflow
         self.multi_graph_testing = multi_graph_testing
         self.num_classes = num_classes
+        self.drop_out = drop_out
         self.optim = kwargs.get('optimizer' , 'adam')
         
         self.graph1 = GraphPooling(in_channels , hidden_channels , **kwargs)
@@ -641,6 +642,7 @@ class MultiGraphClassification(pl.LightningModule):
         
         self.mlp = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels*3*2 , hidden_channels), # 3 omics with 2 * hidden_channels
+            torch.nn.Dropout1d(drop_out),
             torch.nn.ReLU(), 
             torch.nn.BatchNorm1d(hidden_channels),
             torch.nn.Linear(hidden_channels , num_classes),
@@ -692,7 +694,7 @@ class MultiGraphClassification(pl.LightningModule):
         elif self.optim == 'adamw':
             return optim.AdamW(self.parameters() , lr=self.lr)
         elif self.optim == 'rms':
-            return optim.RMSprop(self.parameters() , lr=self.lr)
+            return optim.RMSprop(self.parameters() , lr=self.lr , weight_decay=0.001)
     
     def training_step(self , batch):
         batch1 , batch2 , batch3 = batch
