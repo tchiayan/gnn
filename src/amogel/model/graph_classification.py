@@ -857,7 +857,7 @@ class MultiGraphClassification(pl.LightningModule):
     
     def on_train_epoch_end(self) -> None:
         
-        if self.current_epoch % 10 == 0:
+        if (self.current_epoch+1) % 10 == 0:
             if self.mlflow is not None:
                 logger.info("Logging confusion matrix for training epoch {}".format(self.current_epoch+1))
                 # calculate confusion matrix
