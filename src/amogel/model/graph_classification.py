@@ -615,6 +615,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.num_classes = num_classes
         self.drop_out = drop_out
         self.optim = kwargs.get('optimizer' , 'adam')
+        self.weight_decay = kwargs.get('decay' , 0.0001)
         
         self.graph1 = GraphPooling(in_channels , hidden_channels , **kwargs)
         self.graph2 = GraphPooling(in_channels , hidden_channels , **kwargs)
@@ -691,15 +692,15 @@ class MultiGraphClassification(pl.LightningModule):
     def configure_optimizers(self) -> OptimizerLRScheduler:
         
         if self.optim == 'adam':
-            self.optimizer =  optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
+            self.optimizer =  optim.Adam(self.parameters() , lr= self.lr , weight_decay=self.weight_decay)
         elif self.optim == 'sgd':
-            self.optimizer = optim.SGD(self.parameters() , lr=self.lr )
+            self.optimizer = optim.SGD(self.parameters() , lr=self.lr , weight_decay=self.weight_decay)
         elif self.optim == 'adamw':
-            self.optimizer = optim.AdamW(self.parameters() , lr=self.lr)
+            self.optimizer = optim.AdamW(self.parameters() , lr=self.lr , weight_decay=self.weight_decay)
         elif self.optim == 'rms':
-            self.optimizer = optim.RMSprop(self.parameters() , lr=self.lr , weight_decay=0.001) 
+            self.optimizer = optim.RMSprop(self.parameters() , lr=self.lr , weight_decay=self.weight_decay) 
             
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer , mode='min' , factor=0.1 , patience=10 , verbose=True , min_lr=1e-8)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer , mode='min' , factor=0.1 , patience=5 , verbose=True , min_lr=1e-8)
 
         return [self.optimizer] , [self.scheduler]
     def training_step(self , batch):

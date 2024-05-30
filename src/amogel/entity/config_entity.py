@@ -101,7 +101,8 @@ class ModelTrainingConfig:
     multihead: int
     multihead_concat: bool
     optimizer: str
-    weight: Optional[List[float]] = None
+    decay: float 
+    weight: Optional[List[float]] = None, 
     
 
 @dataclass(frozen=True)
