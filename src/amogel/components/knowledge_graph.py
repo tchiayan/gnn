@@ -1039,7 +1039,7 @@ class KnowledgeGraph():
                 #sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
                 if self.config.discretized:
                     torch_sample = torch.tensor(sample.values, dtype=torch.long , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
-                    torch_sample = one_hot(torch_sample.long(), num_classes=self.config.n_bins).squeeze(1).to(device)
+                    torch_sample = one_hot(torch_sample.long(), num_classes=int(self.config.n_bins*1.5)).squeeze(1).to(device)
                     torch_sample = torch_sample.float()
                 else:
                     torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
@@ -1071,7 +1071,7 @@ class KnowledgeGraph():
                 #sample_value = self.kbin_model.transform(sample.values.reshape(1, -1))[0]
                 if self.config.discretized:
                     torch_sample = torch.tensor(sample.values, dtype=torch.long , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)
-                    torch_sample = one_hot(torch_sample.long(), num_classes=self.config.n_bins).squeeze(1).to(device)
+                    torch_sample = one_hot(torch_sample.long(), num_classes=int(self.config.n_bins*1.5)).squeeze(1).to(device)
                     torch_sample = torch_sample.float()
                 else:
                     torch_sample = torch.tensor(sample.values, dtype=torch.float32 , device=device).unsqueeze(-1) # shape => number_of_node , 1 (gene expression)

@@ -27,7 +27,7 @@ train_encoder:
 
 arm_classification:
   topk: [ 1 , 5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000  ]
-  metric: 'confidence' 
+  metric: 'interestingness' 
   data_path: './artifact/data_preprocessing'
   dataset: 'BRCA'
   strategy: 'union' # support ['union', 'topk', 'difference']
@@ -48,7 +48,7 @@ model_training:
   multihead: 1
   multihead_concat: false
   learning_rate: 0.0001
-  learning_epoch: 300
+  learning_epoch: 600
   drop_out: 0.1
   batch_size: 10
   weight: [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ] 
@@ -57,4 +57,4 @@ model_training:
   enable_training: true
   alpha: 0.2
   binary: false
-  optimizer: 'adam' # support ['adam' , 'sgd']
+  optimizer: 'sgd' # support ['adam' , 'sgd']

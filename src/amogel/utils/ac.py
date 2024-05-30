@@ -7,6 +7,7 @@ from sklearn.feature_selection import mutual_info_classif
 from tqdm import tqdm
 from fim import ista
 from pathlib import Path 
+import numpy as np
 
 def information_gain(data, class_column):
     """
@@ -23,8 +24,9 @@ def information_gain(data, class_column):
     """
     assert class_column != None, "Class column is not provided"
     assert isinstance(data, pd.DataFrame), "Data in wrong format, it should be in pandas dataframe"
-    assert isinstance(class_column, int), "Class column provided is not of type int"
-    assert class_column < len(data.columns) | class_column >= 0, "Invalid class column"
+    assert isinstance(class_column, str), "Class column provided is not of type str"
+    assert class_column in data.columns.to_list(), f"Invalid class column [{class_column}]: {data.columns}"
+    #assert class_column < len(data.columns) | class_column >= 0, "Invalid class column"
 
     target = data[class_column]
     features = data.drop(columns=class_column, axis=1)
@@ -72,25 +74,29 @@ def correlation(data, class_column):
     """
     assert class_column != None, "Class column is not provided"
     assert isinstance(data, pd.DataFrame), "Data in wrong format, it should be in pandas dataframe"
-    assert isinstance(class_column, int), "Class column provided is not of type int"
-    assert class_column < len(data.columns) | class_column >= 0, "Invalid class column"
+    assert isinstance(class_column, str), "Class column provided is not of type str"
+    assert class_column in data.columns.to_list(), f"Invalid class column [{class_column}]: {data.columns}"
+    #assert class_column < len(data.columns) | class_column >= 0, "Invalid class column"
 
     # ordinal_encoder = OrdinalEncoder()
     # data = ordinal_encoder.fit_transform(data)
     # data = pd.DataFrame(data)
+    columns = data.columns.to_list()
     corr = data.corr()[class_column].values.tolist()   # obtain the correlation of attributes with the class label
     # print("Correlation:" , corr)
-    return corr
+    return { columns[idx]:_corr for idx , _corr in enumerate(corr)}
 
 
-def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2):
+def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2 , filter=[]):
     
     # Discretization
     df = pd.read_csv(data_file, header=None)
     est = preprocessing.KBinsDiscretizer(n_bins=n_bins , encode='ordinal' , strategy='quantile')
-    
     # Get discretized threshold
-    df = pd.DataFrame(est.fit_transform(df))
+    df = pd.DataFrame(est.fit_transform(df) , columns=df.columns)
+    # Filtering
+    if len(filter) > 0:
+        df = df[filter]
 
     # Read label
     df_label = pd.read_csv(label_file, names=['class'])
@@ -99,7 +105,6 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
 
     class_labels = df_label['class'].unique().tolist()
     class_labels.sort()
-    print(f"Unique classes: {class_labels}")
 
     output = []
     rule_summary = []
@@ -108,9 +113,10 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
     transactions = {}
     for label_idx , label in enumerate(class_labels):
         subdf = df.loc[df_label[df_label['class'] == label].index]
+        column_idx = subdf.columns.to_list()
         transactions[label] = []
         for idx , row in subdf.iterrows():
-            transaction = set([f"{idx}:{i}" for idx , i in enumerate(row.values)])
+            transaction = set([f"{column_idx[idx]}:{i}" for idx , i in enumerate(row.values)])
             transactions[label].append(transaction)
             
     with tqdm(total=len(class_labels)) as pbar:
@@ -134,6 +140,7 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
             
             generated_cars = 0
             pbar.set_description("Generate CARs for class {}".format(label))
+            avg_confidence = 0
             for itemset in itemsets:
                 antecedence , upper_support = itemset 
                 lower_support = subdf.shape[0]
@@ -151,7 +158,7 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
                 if match_transaction_within_class == 0:
                     raise Exception("Error. Match transaction within class is 0.")
                 confidence = match_transaction_within_class / (match_transaction_within_class + match_transaction_outside_class)
-                    
+                avg_confidence += confidence
                 
                 if confidence >= min_confidence:
                     generated_cars += 1
@@ -160,21 +167,21 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
                     
             #print(f"Len of generated CARs: {generated_cars}")
             arm_summary['cars_length'] = generated_cars
+            arm_summary['avg_confidence'] = avg_confidence / len(itemsets)
             rule_summary.append(arm_summary)
             pbar.update(1)
-    print("ARM summary")
+    print(f"------ ARM summary [Gene Filter: {len(filter)}]---------")
     print(pd.DataFrame(rule_summary))
         
 
-    print("Calculate information gain and correlation")
     merged_df = df.join(df_label)
     merged_df = merged_df.astype(str)
 
-    class_column = merged_df.columns.to_list().index('class')
-    merged_df.columns = [ x for x in range(len(merged_df.columns)) ]
-
-    corr = correlation(merged_df , class_column)
-    info_gain = information_gain(merged_df , class_column)
+    #class_column = merged_df.columns.to_list().index('class')
+    #merged_df.columns = [ x for x in range(len(merged_df.columns)) ]
+    corr = correlation(merged_df , 'class')
+    info_gain = information_gain(merged_df , 'class')
+    feature_selection = set([])
     for rule in output:
         items = rule[3].split(",")
         support = rule[2]
@@ -183,6 +190,7 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
         avg_ig = sum([ info_gain[x] for x  in genes if x in info_gain.keys() ])/len(items)
         avg_corr = abs(sum([ corr[x] for x in genes if not math.isnan(corr[x]) ])/len(items)) + 0.0000001
         
+        feature_selection = feature_selection.union(set(genes))
         try:
             interestingess = 1/math.log2(avg_ig) + 1/math.log2(avg_corr) + 1/math.log2(float(confidence)-0.00000001)
             if math.isnan(interestingess):
@@ -198,11 +206,15 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
     # x[0] = class , x[1] = confidence , x[2] = support , x[3] = antecedence , x[4] = interestingness
     output = sorted(output , key = lambda x : float(x[4]) , reverse=True) # sort by interestingness
 
+    #print(f"Before feature selection: {len(feature_selection)}")
+    #feature_selection = [ gene for gene in feature_selection if corr[gene] > 0.1]
+    print(f"Selected gene corr: {len(feature_selection)}")
+    
     with open(output_file , 'w') as ac_file:
         string_row = [ "\t".join(x) for x in output ]
         ac_file.write("\n".join(string_row))
-        
-    return est
+    
+    return est , list(feature_selection)
 
 
 if __name__ == "__main__":
