@@ -346,6 +346,7 @@ class ModelTraining():
         with mlflow.start_run():
             mlflow.log_params(self.config.__dict__)
             mlflow.pytorch.log_model(self.model , "model")
+            mlflow.log_artifact("./artifacts/arm_classification/report.csv")
             
             self.trainer = pl.Trainer(
                 max_epochs=self.config.learning_epoch , 
