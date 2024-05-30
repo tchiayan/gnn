@@ -58,3 +58,4 @@ model_training:
   alpha: 0.2
   binary: false
   optimizer: 'sgd' # support ['adam' , 'sgd']
+  decay: 0.0001
