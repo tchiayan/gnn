@@ -9,7 +9,7 @@ from lightning.pytorch.utilities.types import  OptimizerLRScheduler
 from torch import optim
 from amogel import logger
 import matplotlib.pyplot as plt
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report , roc_auc_score 
 import math
 
 class GraphConvolution(torch.nn.Module):
@@ -606,7 +606,7 @@ class TripletLearning(pl.LightningModule):
         self.test_confusion_matrix.reset()
 class MultiGraphClassification(pl.LightningModule):
     
-    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None, alpha=0.2 , binary = False , *args, **kwargs) -> None:
+    def __init__(self , in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None , multi_graph_testing=False , weight=None , *args, **kwargs) -> None:
         super().__init__() 
         
         self.lr = lr 
@@ -664,6 +664,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.test_confusion_matrix = MulticlassConfusionMatrix(num_classes=num_classes)
         self.specificity = Specificity(task="multiclass" , num_classes=num_classes)
         self.sensivity = Recall(task="multiclass" , num_classes=num_classes , average="macro")
+        self.softmax_prediction = []
         self.predictions = []
         self.actuals = []
         self.predictions_1 = []
@@ -709,6 +710,7 @@ class MultiGraphClassification(pl.LightningModule):
         loss1 = self.loss(output1 , y1)
         loss2 = self.loss(output2 , y2)
         loss3 = self.loss(output3 , y3)
+        total_loss = loss + loss1 + loss2 + loss3
         
         acc = self.acc(torch.nn.functional.softmax(output , dim=-1) , y1)
         acc1 = self.acc_1(torch.nn.functional.softmax(output1 , dim=-1) , y1)
@@ -716,12 +718,12 @@ class MultiGraphClassification(pl.LightningModule):
         acc3 = self.acc_3(torch.nn.functional.softmax(output3 , dim=-1) , y3)
         self.train_confusion_matrix.update(output , y1)  
         
-        self.log("train_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
+        self.log("train_loss" , total_loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
         self.log("train_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch1_idx.shape[0])
         self.log("train_acc_omic1" , acc1 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
         self.log("train_acc_omic2" , acc2 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
         self.log("train_acc_omic3" , acc3 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
-        return loss + loss1 + loss2 + loss3
+        return total_loss
     
     def get_rank_genes(self , pooling_info , batch_extra_label , batch_size , num_genes=1000):
         perm_1 , perm2 , score1 , score2 , pollbatch1 , poolbatch2 , _ , _ = pooling_info
@@ -751,8 +753,6 @@ class MultiGraphClassification(pl.LightningModule):
         return pool1 , pool2 
         
     def validation_step(self , batch):
-        
-        
         output , actual_class , batch_shape , paper_output , output1 , output2 , output3 = self.get_output(batch)
         
         loss = self.loss(output , actual_class)
@@ -775,10 +775,11 @@ class MultiGraphClassification(pl.LightningModule):
             self.log("val_acc_omic3" , acc3 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch_shape)
             
         f1 = self.f1(torch.nn.functional.softmax(output , dim=-1) , actual_class)
-        auroc = self.auc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
+        # auroc = self.auc(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         specificity = self.specificity(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         sensivity = self.sensivity(torch.nn.functional.softmax(output , dim=-1) , actual_class)
         self.test_confusion_matrix.update(output , actual_class)  
+        self.softmax_prediction.extend(torch.softmax(output , dim=-1).cpu().numpy())
         self.predictions.extend(torch.argmax(torch.nn.functional.softmax(output , dim=-1) , dim=-1).cpu().numpy())
         self.actuals.extend(actual_class.cpu().numpy())
         self.predictions_1.extend(torch.argmax(torch.nn.functional.softmax(output1 , dim=-1) , dim=-1).cpu().numpy())
@@ -791,7 +792,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("val_loss" , loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch_shape)
         self.log("val_acc" , acc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
         self.log("val_f1" , f1 , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
-        self.log("val_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
+        # self.log("val_auroc" , auroc , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
         self.log("val_spe" , specificity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
         self.log("val_sen" , sensivity , on_epoch=True, on_step=False , prog_bar=True ,  batch_size=batch_shape)
     
@@ -811,6 +812,14 @@ class MultiGraphClassification(pl.LightningModule):
                 logger.info(f"Logging classification report for test epoch {self.current_epoch+1}")
                 report = f"--------- Overall Test Report ---------\n"
                 report += classification_report(self.actuals , self.predictions)
+                
+                # calculate auroc 
+                auroc = roc_auc_score(self.actuals , self.softmax_prediction , multi_class="ovr" , average="macro")
+                report += f"AUC [macro] : {auroc}\n"
+                auroc = roc_auc_score(self.actuals , self.softmax_prediction , multi_class="ovr" , average="weighted")
+                report += f"AUC [weighted] : {auroc}\n"
+                auroc = roc_auc_score(self.actuals , self.softmax_prediction , multi_class="ovr" , average="micro")
+                report += f"AUC [micro] : {auroc}\n\n"
                 #self.mlflow.log_text(report , "test_classification_report_epoch_{}.txt".format(self.current_epoch+1))
                 
                 report += f"--------- Omic1 Test Report ---------\n"
@@ -827,6 +836,7 @@ class MultiGraphClassification(pl.LightningModule):
                 self.mlflow.log_text(report , "classification_report_epoch_{:3d}_test.txt".format(self.current_epoch+1))
                 
         self.test_confusion_matrix.reset()
+        self.softmax_prediction = []
         self.predictions = []
         self.actuals = []
         self.predictions_1 = []
