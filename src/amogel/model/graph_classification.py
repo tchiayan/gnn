@@ -702,7 +702,11 @@ class MultiGraphClassification(pl.LightningModule):
             
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer , mode='min' , factor=0.1 , patience=5 , verbose=True , min_lr=1e-8)
 
-        return [self.optimizer] , [self.scheduler]
+        return {
+            'optimizer': self.optimizer,
+            'lr_scheduler': self.scheduler,
+            'monitor': 'val_loss'
+        }
     def training_step(self , batch):
         batch1 , batch2 , batch3 = batch
         x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
