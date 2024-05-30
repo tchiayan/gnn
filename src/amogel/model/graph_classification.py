@@ -689,15 +689,19 @@ class MultiGraphClassification(pl.LightningModule):
         return output , output1 , output2 , output3
     
     def configure_optimizers(self) -> OptimizerLRScheduler:
+        
         if self.optim == 'adam':
-            return optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
+            self.optimizer =  optim.Adam(self.parameters() , lr= self.lr , weight_decay=0.0001)
         elif self.optim == 'sgd':
-            return optim.SGD(self.parameters() , lr=self.lr )
+            self.optimizer = optim.SGD(self.parameters() , lr=self.lr )
         elif self.optim == 'adamw':
-            return optim.AdamW(self.parameters() , lr=self.lr)
+            self.optimizer = optim.AdamW(self.parameters() , lr=self.lr)
         elif self.optim == 'rms':
-            return optim.RMSprop(self.parameters() , lr=self.lr , weight_decay=0.001)
-    
+            self.optimizer = optim.RMSprop(self.parameters() , lr=self.lr , weight_decay=0.001) 
+            
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer , mode='min' , factor=0.1 , patience=10 , verbose=True , min_lr=1e-8)
+
+        return [self.optimizer] , [self.scheduler]
     def training_step(self , batch):
         batch1 , batch2 , batch3 = batch
         x1 , edge_index1 , edge_attr1 , batch1_idx ,  y1 = batch1.x , batch1.edge_index , batch1.edge_attr , batch1.batch ,  batch1.y
