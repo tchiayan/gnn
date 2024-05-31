@@ -812,7 +812,7 @@ class MultiGraphClassification(pl.LightningModule):
         if (self.current_epoch+1) % 10 == 0:
             
             if self.mlflow is not None:
-                logger.info("Logging confusion matrix for test epoch {}".format(self.current_epoch+1))
+                # logger.info("Logging confusion matrix for test epoch {}".format(self.current_epoch+1))
                 # calculate confusion matrix
 
                 self.test_confusion_matrix.compute()
@@ -820,7 +820,7 @@ class MultiGraphClassification(pl.LightningModule):
                 self.mlflow.log_figure(fig , "confusion_matrix_epoch_{:03d}_test.png".format(self.current_epoch+1))
                 plt.close(fig)
                 
-                logger.info(f"Logging classification report for test epoch {self.current_epoch+1}")
+                # logger.info(f"Logging classification report for test epoch {self.current_epoch+1}")
                 report = f"--------- Overall Test Report ---------\n"
                 report += classification_report(self.actuals , self.predictions , zero_division=0)
                 
@@ -861,7 +861,7 @@ class MultiGraphClassification(pl.LightningModule):
         
         if (self.current_epoch+1) % 10 == 0:
             if self.mlflow is not None:
-                logger.info("Logging confusion matrix for training epoch {}".format(self.current_epoch+1))
+                # logger.info("Logging confusion matrix for training epoch {}".format(self.current_epoch+1))
                 # calculate confusion matrix
                 self.train_confusion_matrix.compute()
                 fig , ax = self.train_confusion_matrix.plot() 
