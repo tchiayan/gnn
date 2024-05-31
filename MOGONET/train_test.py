@@ -2,11 +2,12 @@
 """
 import os
 import numpy as np
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score , classification_report
 import torch
 import torch.nn.functional as F
 from models import init_model_dict, init_optim
 from utils import one_hot_tensor, cal_sample_weight, gen_adj_mat_tensor, gen_test_adj_mat_tensor, cal_adj_mat_parameter
+from tqdm import tqdm 
 
 cuda = True if torch.cuda.is_available() else False
 
@@ -106,14 +107,14 @@ def test_epoch(data_list, adj_list, te_idx, model_dict):
 
 def train_test(data_folder, view_list, num_class,
                lr_e_pretrain, lr_e, lr_c, 
-               num_epoch_pretrain, num_epoch):
+               num_epoch_pretrain, num_epoch , artifact_dir = "./artifacts/compare/mogonet"):
     test_inverval = 50
     num_view = len(view_list)
     dim_hvcdn = pow(num_class,num_view)
     if data_folder == 'ROSMAP':
         adj_parameter = 2
         dim_he_list = [200,200,100]
-    if data_folder == '../artifacts/data_preprocessing/BRCA':
+    if data_folder == './artifacts/data_preprocessing/BRCA':
         adj_parameter = 10
         dim_he_list = [400,400,200]
     data_tr_list, data_trte_list, trte_idx, labels_trte = prepare_trte_data(data_folder, view_list)
@@ -134,23 +135,41 @@ def train_test(data_folder, view_list, num_class,
     
     print("\nPretrain GCNs...")
     optim_dict = init_optim(num_view, model_dict, lr_e_pretrain, lr_c)
-    for epoch in range(num_epoch_pretrain):
-        train_epoch(data_tr_list, adj_tr_list, labels_tr_tensor, 
-                    onehot_labels_tr_tensor, sample_weight_tr, model_dict, optim_dict, train_VCDN=False)
+    with tqdm(total=num_epoch_pretrain) as pbar:
+        for epoch in range(num_epoch_pretrain):
+            train_epoch(data_tr_list, adj_tr_list, labels_tr_tensor, 
+                        onehot_labels_tr_tensor, sample_weight_tr, model_dict, optim_dict, train_VCDN=False)
+            pbar.update(1)
+            
     print("\nTraining...")
     optim_dict = init_optim(num_view, model_dict, lr_e, lr_c)
+    
+    os.makedirs(artifact_dir, exist_ok=True)
+    
     for epoch in range(num_epoch+1):
         train_epoch(data_tr_list, adj_tr_list, labels_tr_tensor, 
                     onehot_labels_tr_tensor, sample_weight_tr, model_dict, optim_dict)
         if epoch % test_inverval == 0:
             te_prob = test_epoch(data_trte_list, adj_te_list, trte_idx["te"], model_dict)
-            print("\nTest: Epoch {:d}".format(epoch))
-            if num_class == 2:
-                print("Test ACC: {:.3f}".format(accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))))
-                print("Test F1: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))))
-                print("Test AUC: {:.3f}".format(roc_auc_score(labels_trte[trte_idx["te"]], te_prob[:,1])))
-            else:
-                print("Test ACC: {:.3f}".format(accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))))
-                print("Test F1 weighted: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')))
-                print("Test F1 macro: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')))
-            print()
+            acc = accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))
+            f1_weighted = f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')
+            f1_macro = f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')
+            auc_macro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='macro' , multi_class='ovr')
+            auc_micro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='micro' , multi_class='ovr')
+            auc_weighted = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='weighted' , multi_class='ovr')
+            
+            print_log = f"Test: Epoch {epoch:04d} | Acc : {acc:.4f} | F1_weighted : {f1_weighted:.4f} | F1_macro : {f1_macro:.4f} | AUC_macro : {auc_macro:.4f} | AUC_micro : {auc_micro:.4f} | AUC_weighted : {auc_weighted:.4f}\n"
+            with open(os.path.join(artifact_dir, "log.txt"), "a") as f:
+                f.write(print_log)
+            print(print_log)
+            
+            # print("Test ACC: {:.3f}".format(accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))))
+            # print("Test F1 weighted: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')))
+            # print("Test F1 macro: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')))
+            if epoch == num_epoch:
+                with open(os.path.join(artifact_dir, "report.txt"), "w") as f:
+                    report  = classification_report(labels_trte[trte_idx["te"]], te_prob.argmax(1) , zero_division=0)
+                    report += f"AUC macro: {auc_macro}\n"
+                    report += f"AUC micro: {auc_micro}\n"
+                    report += f"AUC weighted: {auc_weighted}\n"
+                    f.write(report)

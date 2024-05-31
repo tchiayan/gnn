@@ -1,7 +1,7 @@
 
 import os
 import numpy as np
-from sklearn.metrics import accuracy_score, f1_score , roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score , roc_auc_score , classification_report
 import torch
 from param import parameter_parser
 import torch.nn.functional as F
@@ -140,12 +140,12 @@ def test_epoch(data_list, adj_list, model_dict, neta):
 
 def train_test(data_folder, view_list, num_class,
                lr_e_pretrain, lr_e, lr_c, 
-               num_epoch_pretrain, num_epoch, theta_smooth, theta_degree, theta_sparsity, neta, reg):
+               num_epoch_pretrain, num_epoch, theta_smooth, theta_degree, theta_sparsity, neta, reg , artifact_dir = "./artifacts/compare/moglam"):
 
     test_inverval = 50
     num_view = len(view_list)
 
-    if data_folder == '../artifacts/data_preprocessing/BRCA':
+    if data_folder == './artifacts/data_preprocessing/BRCA':
         adj_parameter = 8
         mode = 'weighted-cosine'
         featuresSelect_list = [400, 400, 400]
@@ -178,12 +178,14 @@ def train_test(data_folder, view_list, num_class,
             train_epoch(data_tr_list, adj_tr_list, labels_tr_tensor,
                         onehot_labels_tr_tensor, sample_weight_tr, model_dict, optim_dict, theta_smooth, theta_degree, theta_sparsity, neta, train_MOAM_OIRL=False)
             pbar.update(1)
-
+    os.makedirs(artifact_dir, exist_ok=True)
+    
     print("\nTraining...")
     optim_dict = init_optim(num_view, model_dict, lr_e, lr_c,reg)
     for epoch in range(num_epoch+1):
         train_epoch(data_tr_list, adj_tr_list, labels_tr_tensor,
                     onehot_labels_tr_tensor, sample_weight_tr, model_dict, optim_dict, theta_smooth, theta_degree, theta_sparsity, neta)
+        
         if epoch % test_inverval == 0:
             te_prob = test_epoch(data_te_list, adj_te_list, model_dict, neta)
             
@@ -194,9 +196,17 @@ def train_test(data_folder, view_list, num_class,
             auc_micro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='micro' , multi_class='ovr')
             auc_weighted = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='weighted' , multi_class='ovr')
             
-            
-            print(f"Test: Epoch {epoch:d} | Acc : {acc:.4f} | F1_weighted : {f1_weighted:.4f} | F1_macro : {f1_macro:.4f} | AUC_macro : {auc_macro:.4f} | AUC_micro : {auc_micro:.4f} | AUC_weighted : {auc_weighted:.4f}")
-           
+            print_log = f"Test: Epoch {epoch:04d} | Acc : {acc:.4f} | F1_weighted : {f1_weighted:.4f} | F1_macro : {f1_macro:.4f} | AUC_macro : {auc_macro:.4f} | AUC_micro : {auc_micro:.4f} | AUC_weighted : {auc_weighted:.4f}\n"
+            with open(os.path.join(artifact_dir, "log.txt"), "a") as f:
+                f.write(print_log)
+            print(print_log)
             # print("Test ACC: {:.3f}".format(accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))))
             # print("Test F1 weighted: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')))
             # print("Test F1 macro: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')))
+            if epoch == num_epoch:
+                with open(os.path.join(artifact_dir, "report.txt"), "w") as f:
+                    report  = classification_report(labels_trte[trte_idx["te"]], te_prob.argmax(1) , zero_division=0)
+                    report += f"AUC macro: {auc_macro}\n"
+                    report += f"AUC micro: {auc_micro}\n"
+                    report += f"AUC weighted: {auc_weighted}\n"
+                    f.write(report)
