@@ -737,9 +737,9 @@ class MultiGraphClassification(pl.LightningModule):
         self.actuals_3 = []
     
     def forward(self , x1 , edge_index1 , edge_attr1 , x2 , edge_index2 , edge_attr2 , x3 , edge_index3 , edge_attr3 , batch1_idx , batch2_idx , batch3_idx):
-        output1 , perm11 , perm12 , score11 , score12 , batch11 , batch12 , attr_score11 , attr_score12 = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx , log=True)
-        output2 , perm21 , perm22 , score21 , score22 , batch21 , batch22 , attr_score21 , attr_score22 = self.graph2(x2 , edge_index2 , edge_attr2 , batch2_idx)
-        output3 , perm31 , perm32 , score31 , score32 , batch31 , batch32 , attr_score31 , attr_score32 = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
+        output1 , perm1 , score1 , batch1 , attr_score11  = self.graph1(x1 , edge_index1 , edge_attr1 , batch1_idx , log=True)
+        output2 , perm2 , score2 , batch2 , attr_score21  = self.graph2(x2 , edge_index2 , edge_attr2 , batch2_idx)
+        output3 , perm3 , score3 , batch3 , attr_score31  = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
         
         output = torch.concat([output1 , output2 , output3] , dim=-1) # shape -> [ batch , hidden_dimension * 3 * 2 ]
         output = self.mlp(output)
