@@ -53,16 +53,9 @@ class GraphConvolution(torch.nn.Module):
         if edge_attr is not None:
             
             for gat_layer , batch_layer in self.layers:
-                print(len(self.layers))
-                print(gat_layer)
-                print(batch_layer)
-                print(x.device)
-                print(edge_index.device)
-                print(edge_attr.device)
-                print(x.shape)
-                print(edge_index.shape)
-                print(edge_attr.shape)
-                print(gat_layer(x , edge_index))
+                print(f"{gat_layer} - {batch_layer}")
+                print(f"{x.device} - {edge_index.device} - {edge_attr.device}")
+                print(f"{x.shape} - {edge_index.shape} - {edge_attr.shape}")
                 x , edge = gat_layer(x , edge_index , edge_attr , return_attention_weights=True)
                 print(x)
                 print(edge)
