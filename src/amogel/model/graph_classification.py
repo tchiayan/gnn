@@ -57,8 +57,6 @@ class GraphConvolution(torch.nn.Module):
                 print(f"{x.device} - {edge_index.device} - {edge_attr.device}")
                 print(f"{x.shape} - {edge_index.shape} - {edge_attr.shape}")
                 x , edge = gat_layer(x , edge_index , edge_attr , return_attention_weights=True)
-                print(x)
-                print(edge)
                 x = x.relu()
                 if batch_norm:
                     x = batch_layer(x)
