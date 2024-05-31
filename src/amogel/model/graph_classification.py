@@ -52,12 +52,12 @@ class GraphConvolution(torch.nn.Module):
         if edge_attr is not None:
             _x , _edges = [], []
             for gat_layer , batch_layer in self.layers:
-                x , edge_attr = gat_layer(x , edge_index , edge_attr , return_attention_weights=True)
+                x , edge = gat_layer(x , edge_index , edge_attr , return_attention_weights=True)
                 x = x.relu()
                 if batch_norm:
                     x = batch_layer(x)
                 _x.append(x)
-                _edges.append(edge_attr)
+                _edges.append(edge)
             # x1 , x1_edge_attr = self.graph_conv1(x , edge_index , edge_attr , return_attention_weights=True)
             # x1 = x1.relu() # batch
             # if batch_norm:
