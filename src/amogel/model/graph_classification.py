@@ -725,7 +725,7 @@ class MultiGraphClassification(pl.LightningModule):
         acc1 = self.acc_1(torch.nn.functional.softmax(output1 , dim=-1) , y1)
         acc2 = self.acc_2(torch.nn.functional.softmax(output2 , dim=-1) , y2)
         acc3 = self.acc_3(torch.nn.functional.softmax(output3 , dim=-1) , y3)
-        latest_lr = self.scheduler._last_lr
+        latest_lr = self.optimizer.param_groups[0]['lr']
         self.train_confusion_matrix.update(output , y1)  
         
         self.log("train_loss" , total_loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
