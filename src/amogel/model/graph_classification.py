@@ -700,7 +700,7 @@ class MultiGraphClassification(pl.LightningModule):
         elif self.optim == 'rms':
             self.optimizer = optim.RMSprop(self.parameters() , lr=self.lr , weight_decay=self.weight_decay) 
             
-        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer , mode='min' , factor=0.1 , patience=10 , verbose=True , min_lr=1e-5)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer , mode='min' , factor=0.1 , patience=10 , verbose=True , min_lr=1e-4)
 
         return {
             'optimizer': self.optimizer,
@@ -725,6 +725,7 @@ class MultiGraphClassification(pl.LightningModule):
         acc1 = self.acc_1(torch.nn.functional.softmax(output1 , dim=-1) , y1)
         acc2 = self.acc_2(torch.nn.functional.softmax(output2 , dim=-1) , y2)
         acc3 = self.acc_3(torch.nn.functional.softmax(output3 , dim=-1) , y3)
+        latest_lr = self.optimizer.get_last_lr()
         self.train_confusion_matrix.update(output , y1)  
         
         self.log("train_loss" , total_loss , on_epoch=True , on_step=False , prog_bar=True , batch_size=batch1_idx.shape[0])
@@ -732,6 +733,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.log("train_acc_omic1" , acc1 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
         self.log("train_acc_omic2" , acc2 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
         self.log("train_acc_omic3" , acc3 , on_epoch=True, on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
+        self.log("learning_rate" , latest_lr , on_epoch=True , on_step=False , prog_bar=False ,  batch_size=batch1_idx.shape[0])
         return total_loss
     
     def get_rank_genes(self , pooling_info , batch_extra_label , batch_size , num_genes=1000):
