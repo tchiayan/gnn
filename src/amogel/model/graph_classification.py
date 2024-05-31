@@ -104,13 +104,14 @@ class GraphPooling(torch.nn.Module):
         self.num_block = kwargs.get('num_block' , 2)
         pooling_rate = kwargs.get('pooling_rate' , 0.5)
         pooling = kwargs.get('pooling' , 'sag')
+        conv_layer = kwargs.get("num_layer" , 3)
         
         assert pooling in ['sag' , 'topk'] , "Invalid pooling method"
         
         if multihead > 1 and concat : 
-            graph_conv_output = hidden_channels * multihead * 3
+            graph_conv_output = hidden_channels * multihead * conv_layer
         else: 
-            graph_conv_output = hidden_channels * 3
+            graph_conv_output = hidden_channels * conv_layer
         
         self.block_layers = []
         for i in range(self.num_block):
