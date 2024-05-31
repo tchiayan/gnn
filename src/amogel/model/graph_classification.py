@@ -53,9 +53,9 @@ class GraphConvolution(torch.nn.Module):
         if edge_attr is not None:
             
             for gat_layer , batch_layer in self.layers:
-                print(f"{gat_layer} - {batch_layer}")
-                print(f"{x.device} - {edge_index.device} - {edge_attr.device}")
-                print(f"{x.shape} - {edge_index.shape} - {edge_attr.shape}")
+                # print(f"{gat_layer} - {batch_layer}")
+                # print(f"{x.device} - {edge_index.device} - {edge_attr.device}")
+                # print(f"{x.shape} - {edge_index.shape} - {edge_attr.shape}")
                 x , edge = gat_layer(x , edge_index , edge_attr , return_attention_weights=True)
                 x = x.relu()
                 if batch_norm:
@@ -162,23 +162,13 @@ class GraphPooling(torch.nn.Module):
         attrs = []
         for graph_conv , pooling , graph_norm in self.block_layers:
             x , learn_attrs = graph_conv(x , edge_index , edge_attr)
-            x , edge_index , _ , batch , perm , score = pooling(x , edge_index , edge_attr , batch)
+            x , edge_index , edge_attr , batch , perm , score = pooling(x , edge_index , edge_attr , batch)
             x = graph_norm(x , batch)
             
             attrs.append(learn_attrs)
             perms.append(perm)
             scores.append(score)
             batches.append(batch)
-        
-        # for i in range(self.num_block):
-        #     x , learn_attrs = getattr(self , f'graph_conv{i}')(x , edge_index , edge_attr)
-        #     x , edge_index , _ , batch , perm , score = getattr(self , f'pooling{i}')(x , edge_index , edge_attr , batch)
-        #     x = getattr(self , f'graph_norm{i}')(x , batch)
-            
-        #     attrs.append(learn_attrs)
-        #     perms.append(perm)
-        #     scores.append(score)
-        #     batches.append(batch)
             
         # # First layer graph convolution
         # x , gc1_k1_edge_attr , gc1_k2_edge_attr , gc1_k3_edge_attr = self.graph_conv1(x , edge_index , edge_attr)
