@@ -59,3 +59,8 @@ model_training:
   binary: false
   optimizer: 'sgd' # support ['adam' , 'sgd']
   decay: 0.0001
+  gat_dropout: 0.0 
+  num_layer: 3 
+  num_block: 2
+  pooling_rate: 0.5
+  pooling: 'sag' # support ['sag' , 'topk']

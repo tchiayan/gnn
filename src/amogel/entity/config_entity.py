@@ -102,6 +102,11 @@ class ModelTrainingConfig:
     multihead_concat: bool
     optimizer: str
     decay: float 
+    gat_dropout: float 
+    num_layer: int 
+    num_block: int 
+    pooling_rate: float 
+    pooling: str
     weight: Optional[List[float]] = None, 
     
 

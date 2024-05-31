@@ -329,7 +329,12 @@ class ModelTraining():
             binary=self.config.binary , 
             multihead=self.config.multihead, 
             multihead_concat=self.config.multihead_concat, 
-            optimizer = self.config.optimizer
+            optimizer = self.config.optimizer, 
+            gat_dropout=self.config.gat_dropout,
+            num_layer=self.config.num_layer,
+            num_block=self.config.num_block,
+            pooling_rate=self.config.pooling_rate,
+            pooling=self.config.pooling,
         )
         
         # clean multigraph_testing_logs.txt

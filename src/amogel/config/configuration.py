@@ -148,7 +148,12 @@ class ConfigurationManager:
             multihead=params.multihead,
             multihead_concat=params.multihead_concat, 
             optimizer=params.optimizer, 
-            decay=params.decay
+            decay=params.decay, 
+            gat_dropout=params.gat_dropout,
+            num_layer=params.num_layer,
+            num_block=params.num_block,
+            pooling_rate=params.pooling_rate,
+            pooling=params.pooling
         )
         
         return model_training_config

@@ -18,87 +18,118 @@ class GraphConvolution(torch.nn.Module):
         
         multihead = kwargs.get('multihead' , 1)
         concat = kwargs.get('multihead_concat' , False)
+        dropout = kwargs.get("gat_dropout" , .0)
+        num_layer = kwargs.get("num_layer" , 3)
         
         middle_channels = hidden_channels if not concat else hidden_channels * multihead
         mid_out_channels = out_channels if not concat else out_channels * multihead
         
+        self.layers = []
+        for i in range(num_layer):
+            self.layers.append(
+                (
+                    geom_nn.GATConv(
+                        in_channels=in_channels if i == 0 else middle_channels , 
+                        out_channels=hidden_channels if i != num_layer-1 else out_channels, 
+                        heads=multihead , 
+                        concat=concat , 
+                        dropout=dropout),
+                    geom_nn.BatchNorm(in_channels=middle_channels if i != num_layer-1 else mid_out_channels)
+                )
+            )
+            
         # Graph Convolution
-        self.graph_conv1 = geom_nn.GATConv(in_channels=in_channels , out_channels=hidden_channels, heads=multihead , concat=concat)
-        self.graph_conv2 = geom_nn.GATConv(in_channels=middle_channels , out_channels=hidden_channels, heads=multihead, concat=concat)
-        self.graph_conv3 = geom_nn.GATConv(in_channels=middle_channels , out_channels=out_channels, heads=multihead, concat=concat)
-        
-        
-        self.batch_norm1 = geom_nn.BatchNorm(in_channels=middle_channels)
-        self.batch_norm2 = geom_nn.BatchNorm(in_channels=middle_channels)
-        self.batch_norm3 = geom_nn.BatchNorm(in_channels=mid_out_channels)
+        # self.graph_conv1 = geom_nn.GATConv(in_channels=in_channels , out_channels=hidden_channels, heads=multihead , concat=concat , dropout=dropout)
+        # self.graph_conv2 = geom_nn.GATConv(in_channels=middle_channels , out_channels=hidden_channels, heads=multihead, concat=concat , dropout=dropout)
+        # self.graph_conv3 = geom_nn.GATConv(in_channels=middle_channels , out_channels=out_channels, heads=multihead, concat=concat , dropout=dropout)
+        # self.batch_norm1 = geom_nn.BatchNorm(in_channels=middle_channels)
+        # self.batch_norm2 = geom_nn.BatchNorm(in_channels=middle_channels)
+        # self.batch_norm3 = geom_nn.BatchNorm(in_channels=mid_out_channels)
         
         self.jump = jump
         
     def forward(self , x , edge_index , edge_attr = None , batch_norm = True ): 
         
         if edge_attr is not None:
-            x1 , x1_edge_attr = self.graph_conv1(x , edge_index , edge_attr , return_attention_weights=True)
-            x1 = x1.relu() # batch
-            if batch_norm:
-                x1 = self.batch_norm1(x1)
-            x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , edge_attr , return_attention_weights=True)
-            x2 - x2.relu()
-            if batch_norm:
-                x2 = self.batch_norm2(x2)
-            x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , edge_attr , return_attention_weights=True)
-            x3 = x3.relu()
-            if batch_norm:
-                x3 = self.batch_norm3(x3)
+            _x , _edges = [], []
+            for gat_layer , batch_layer in self.layers:
+                x , edge_attr = gat_layer(x , edge_index , edge_attr , return_attention_weights=True)
+                x = x.relu()
+                if batch_norm:
+                    x = batch_layer(x)
+                _x.append(x)
+                _edges.append(edge_attr)
+            # x1 , x1_edge_attr = self.graph_conv1(x , edge_index , edge_attr , return_attention_weights=True)
+            # x1 = x1.relu() # batch
+            # if batch_norm:
+            #     x1 = self.batch_norm1(x1)
+            # x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , edge_attr , return_attention_weights=True)
+            # x2 - x2.relu()
+            # if batch_norm:
+            #     x2 = self.batch_norm2(x2)
+            # x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , edge_attr , return_attention_weights=True)
+            # x3 = x3.relu()
+            # if batch_norm:
+            #     x3 = self.batch_norm3(x3)
         else: 
-            x1 , x1_edge_attr = self.graph_conv1(x , edge_index , return_attention_weights=True)
-            x1 = x1.relu() # batch
-            if batch_norm:
-                x1 = self.batch_norm1(x1)
-            x2 , x2_edge_attr = self.graph_conv2(x1 , edge_index , return_attention_weights=True)
-            x2 = x2.relu()
-            if batch_norm:
-                x2 = self.batch_norm2(x2)
-            x3 , x3_edge_attr = self.graph_conv3(x2 , edge_index , return_attention_weights=True)
-            x3 = x3.relu()
-            if batch_norm:
-                x3 = self.batch_norm3(x3)
+            for gat_layer , batch_layer in self.layers:
+                x , edge_attr = gat_layer(x , edge_index , return_attention_weights=True)
+                x = x.relu()
+                if batch_norm:
+                    x = batch_layer(x)
+                _x.append(x)
+                _edges.append(edge_attr)
             
         # Jumping knowledge 
         # x = torch.stack([x1 , x2 , x3], dim=-1).mean(dim=-1)
         if self.jump:
-            x = torch.concat([x1,x2,x3] , dim=-1)
-            return x , x1_edge_attr , x2_edge_attr , x3_edge_attr
+            x = torch.concat(_x , dim=-1)
+            return x , _edges
         else: 
-            return x3 , x1_edge_attr , x2_edge_attr , x3_edge_attr
+            return x[-1] , _edges # get only layer layer output
         
+POOL = {
+    "sag" : geom_nn.SAGPooling, 
+    "topk" : geom_nn.TopKPooling
+}
 class GraphPooling(torch.nn.Module):
     def __init__(self , in_channels , hidden_channels , *args, **kwargs) -> None: 
         super().__init__()
         
         multihead = kwargs.get('multihead' , 1)
         concat = kwargs.get('multihead_concat' , False)
+        self.num_block = kwargs.get('num_block' , 2)
+        pooling_rate = kwargs.get('pooling_rate' , 0.5)
+        pooling = kwargs.get('pooling' , 'sag')
+        
+        assert pooling in ['sag' , 'topk'] , "Invalid pooling method"
         
         if multihead > 1 and concat : 
             graph_conv_output = hidden_channels * multihead * 3
         else: 
             graph_conv_output = hidden_channels * 3
         
-        # Graph Convolution
-        self.graph_conv1 = GraphConvolution(in_channels , hidden_channels , hidden_channels , **kwargs)
+        for i in range(self.num_block):
+            setattr(self , f'graph_conv{i}' , GraphConvolution(in_channels if i == 0 else graph_conv_output , hidden_channels , hidden_channels , **kwargs))
+            setattr(self , f'pooling{i}' , POOL[pooling](in_channels=graph_conv_output , ratio=pooling_rate))
+            setattr(self , f'graph_norm{i}' , geom_nn.GraphNorm(graph_conv_output))
+            
+        # # Graph Convolution
+        # self.graph_conv1 = GraphConvolution(in_channels , hidden_channels , hidden_channels , **kwargs)
         
-        # Graph Pooling 
-        #self.pooling = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
-        self.pooling = geom_nn.SAGPooling(in_channels=graph_conv_output , ratio=0.5)
-        self.graph_norm1 = geom_nn.GraphNorm(graph_conv_output)
-        # self.pooling = geom_nn.DMoNPooling(channels=hidden_channels*3 , k=100)
+        # # Graph Pooling 
+        # #self.pooling = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
+        # self.pooling = geom_nn.SAGPooling(in_channels=graph_conv_output , ratio=0.5)
+        # self.graph_norm1 = geom_nn.GraphNorm(graph_conv_output)
+        # # self.pooling = geom_nn.DMoNPooling(channels=hidden_channels*3 , k=100)
         
-        # Graph Convolution
-        self.graph_conv2 = GraphConvolution(graph_conv_output , hidden_channels , hidden_channels, **kwargs)
+        # # Graph Convolution
+        # self.graph_conv2 = GraphConvolution(graph_conv_output , hidden_channels , hidden_channels, **kwargs)
         
-        # Graph Pooling 
-        #self.pooling2 = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
-        self.pooling2 = geom_nn.SAGPooling(in_channels=graph_conv_output , ratio=0.5)
-        self.graph_norm2 = geom_nn.GraphNorm(graph_conv_output)
+        # # Graph Pooling 
+        # #self.pooling2 = geom_nn.TopKPooling(in_channels=graph_conv_output , ratio=0.5) # TopK pooling much stable than SAGPooling
+        # self.pooling2 = geom_nn.SAGPooling(in_channels=graph_conv_output , ratio=0.5)
+        # self.graph_norm2 = geom_nn.GraphNorm(graph_conv_output)
         
         self.mlp = torch.nn.Sequential(
             torch.nn.Linear(graph_conv_output , hidden_channels*4), 
@@ -111,41 +142,52 @@ class GraphPooling(torch.nn.Module):
         
     def forward(self , x , edge_index , edge_attr , batch , batch_idx = None ,  log=False):
         
-        # First layer graph convolution
-        x , gc1_k1_edge_attr , gc1_k2_edge_attr , gc1_k3_edge_attr = self.graph_conv1(x , edge_index , edge_attr)
-        #print(x)
-        x , edge_index , _ , batch1 ,  perm_1 , score_1 = self.pooling(x , edge_index , edge_attr , batch)
+        input_batch = batch
+        perms = []
+        scores = []
+        batches = []
+        attrs = []
+        for i in range(self.num_block):
+            x , learn_attrs = getattr(self , f'graph_conv{i}')(x , edge_index , edge_attr)
+            x , edge_index , _ , batch , perm , score = getattr(self , f'pooling{i}')(x , edge_index , edge_attr , batch)
+            x = getattr(self , f'graph_norm{i}')(x , batch)
+            
+            attrs.append(learn_attrs)
+            perms.append(perm)
+            scores.append(score)
+            batches.append(batch)
+            
+        # # First layer graph convolution
+        # x , gc1_k1_edge_attr , gc1_k2_edge_attr , gc1_k3_edge_attr = self.graph_conv1(x , edge_index , edge_attr)
+        # x , edge_index , _ , batch1 ,  perm_1 , score_1 = self.pooling(x , edge_index , edge_attr , batch)
+        # x = self.graph_norm1(x , batch1)
         
-        x = self.graph_norm1(x , batch1)
+        # # Second layer graph convolution
+        # x , gc2_k1_edge_attr , gc2_k2_edge_attr , gc2_k3_edge_attr  = self.graph_conv2(x , edge_index)
+        # x , edge_index , _ , batch2 ,  perm_2 , score_2 = self.pooling2(x , edge_index , batch=batch1)
+        # x = self.graph_norm2(x , batch2)
         
-        # Second layer graph convolution
-        x , gc2_k1_edge_attr , gc2_k2_edge_attr , gc2_k3_edge_attr  = self.graph_conv2(x , edge_index)
-        x , edge_index , _ , batch2 ,  perm_2 , score_2 = self.pooling2(x , edge_index , batch=batch1)
-        x = self.graph_norm2(x , batch2)
-        
-        x = geom_nn.global_mean_pool(x , batch2)
-
-        
-         
-        gc1_k1_edge_attr_dense = geom_utils.to_dense_adj(gc1_k1_edge_attr[0] , batch  , edge_attr=gc1_k1_edge_attr[1])
-        gc1_k2_edge_attr_dense = geom_utils.to_dense_adj(gc1_k2_edge_attr[0] , batch  , edge_attr=gc1_k2_edge_attr[1])
-        gc1_k3_edge_attr_dense = geom_utils.to_dense_adj(gc1_k3_edge_attr[0] , batch  , edge_attr=gc1_k3_edge_attr[1])
-        gc1_dense = torch.stack([gc1_k1_edge_attr_dense , gc1_k2_edge_attr_dense , gc1_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
+        x = geom_nn.global_mean_pool(x , batch)
+        gc1_edge_attr_dense = [ geom_utils.to_dense_adj(gc_layer_attr[0] , input_batch , edge_attr=gc_layer_attr[1]) for gc_layer_attr in attrs[0] ]
+        gc1_dense = torch.stack(gc1_edge_attr_dense , dim=-1).mean(dim=-1)
         fea_attr_scr1 = gc1_dense.squeeze(dim=-1).mean(dim=0)
         
-        if log: 
-            pass
-            #print(gc1_dense.shape)
-            #print(fea_attr_scr1.shape)
-        gc2_k1_edge_attr_dense = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
-        gc2_k2_edge_attr_dense = geom_utils.to_dense_adj(gc2_k2_edge_attr[0] , batch1 , edge_attr=gc2_k2_edge_attr[1])
-        gc2_k3_edge_attr_dense = geom_utils.to_dense_adj(gc2_k3_edge_attr[0] , batch1 , edge_attr=gc2_k3_edge_attr[1])
-        gc2_dense = torch.stack([gc2_k1_edge_attr_dense , gc2_k2_edge_attr_dense , gc2_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
-        fea_attr_scr2 = gc2_dense.squeeze(dim=-1).mean(dim=0)
+        # # Get the summary of the edge attention score from first block of graph convolution 
+        # gc1_k1_edge_attr_dense = geom_utils.to_dense_adj(gc1_k1_edge_attr[0] , batch  , edge_attr=gc1_k1_edge_attr[1])
+        # gc1_k2_edge_attr_dense = geom_utils.to_dense_adj(gc1_k2_edge_attr[0] , batch  , edge_attr=gc1_k2_edge_attr[1])
+        # gc1_k3_edge_attr_dense = geom_utils.to_dense_adj(gc1_k3_edge_attr[0] , batch  , edge_attr=gc1_k3_edge_attr[1])
+        # gc1_dense = torch.stack([gc1_k1_edge_attr_dense , gc1_k2_edge_attr_dense , gc1_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
+        # fea_attr_scr1 = gc1_dense.squeeze(dim=-1).mean(dim=0)
+        
+        # gc2_k1_edge_attr_dense = geom_utils.to_dense_adj(gc2_k1_edge_attr[0] , batch1 , edge_attr=gc2_k1_edge_attr[1])
+        # gc2_k2_edge_attr_dense = geom_utils.to_dense_adj(gc2_k2_edge_attr[0] , batch1 , edge_attr=gc2_k2_edge_attr[1])
+        # gc2_k3_edge_attr_dense = geom_utils.to_dense_adj(gc2_k3_edge_attr[0] , batch1 , edge_attr=gc2_k3_edge_attr[1])
+        # gc2_dense = torch.stack([gc2_k1_edge_attr_dense , gc2_k2_edge_attr_dense , gc2_k3_edge_attr_dense] , dim=-1).mean(dim=-1)
+        # fea_attr_scr2 = gc2_dense.squeeze(dim=-1).mean(dim=0)
         
         x = self.mlp(x)
         
-        return x , perm_1 , perm_2 , score_1 , score_2 , batch1 , batch2 , fea_attr_scr1 , fea_attr_scr2
+        return x , perms , scores , batches , fea_attr_scr1 
     
 class GraphClassification(pl.LightningModule):
     def __init__(self, in_channels , hidden_channels , num_classes , lr=0.0001 , drop_out = 0.1 , mlflow:mlflow = None) -> None:
