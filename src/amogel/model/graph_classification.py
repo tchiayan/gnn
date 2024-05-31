@@ -27,7 +27,7 @@ class GraphConvolution(torch.nn.Module):
         self.layers = []
         for i in range(num_layer):
             self.layers.append(
-                (
+                torch.nn.ModuleList([
                     geom_nn.GATConv(
                         in_channels=in_channels if i == 0 else middle_channels , 
                         out_channels=hidden_channels if i != num_layer-1 else out_channels, 
@@ -35,9 +35,9 @@ class GraphConvolution(torch.nn.Module):
                         concat=concat , 
                         dropout=dropout),
                     geom_nn.BatchNorm(in_channels=middle_channels if i != num_layer-1 else mid_out_channels)
-                )
+                ])
             )
-            
+        self.layers = torch.nn.ModuleList(self.layers)
         # Graph Convolution
         # self.graph_conv1 = geom_nn.GATConv(in_channels=in_channels , out_channels=hidden_channels, heads=multihead , concat=concat , dropout=dropout)
         # self.graph_conv2 = geom_nn.GATConv(in_channels=middle_channels , out_channels=hidden_channels, heads=multihead, concat=concat , dropout=dropout)
@@ -49,7 +49,6 @@ class GraphConvolution(torch.nn.Module):
         self.jump = jump
         
     def forward(self , x , edge_index , edge_attr = None , batch_norm = True ): 
-        
         if edge_attr is not None:
             _x , _edges = [], []
             for gat_layer , batch_layer in self.layers:
@@ -109,10 +108,20 @@ class GraphPooling(torch.nn.Module):
         else: 
             graph_conv_output = hidden_channels * 3
         
+        self.block_layers = []
         for i in range(self.num_block):
-            setattr(self , f'graph_conv{i}' , GraphConvolution(in_channels if i == 0 else graph_conv_output , hidden_channels , hidden_channels , **kwargs))
-            setattr(self , f'pooling{i}' , POOL[pooling](in_channels=graph_conv_output , ratio=pooling_rate))
-            setattr(self , f'graph_norm{i}' , geom_nn.GraphNorm(graph_conv_output))
+            self.block_layers.append(
+                torch.nn.ModuleList([
+                    GraphConvolution(in_channels if i == 0 else graph_conv_output , hidden_channels , hidden_channels , **kwargs),
+                    POOL[pooling](in_channels=graph_conv_output , ratio=pooling_rate),
+                    geom_nn.GraphNorm(graph_conv_output)
+                ])
+            )
+        self.block_layers = torch.nn.ModuleList(self.block_layers)
+        # for i in range(self.num_block):
+        #     setattr(self , f'graph_conv{i}' , GraphConvolution(in_channels if i == 0 else graph_conv_output , hidden_channels , hidden_channels , **kwargs))
+        #     setattr(self , f'pooling{i}' , POOL[pooling](in_channels=graph_conv_output , ratio=pooling_rate))
+        #     setattr(self , f'graph_norm{i}' , geom_nn.GraphNorm(graph_conv_output))
             
         # # Graph Convolution
         # self.graph_conv1 = GraphConvolution(in_channels , hidden_channels , hidden_channels , **kwargs)
@@ -147,15 +156,25 @@ class GraphPooling(torch.nn.Module):
         scores = []
         batches = []
         attrs = []
-        for i in range(self.num_block):
-            x , learn_attrs = getattr(self , f'graph_conv{i}')(x , edge_index , edge_attr)
-            x , edge_index , _ , batch , perm , score = getattr(self , f'pooling{i}')(x , edge_index , edge_attr , batch)
-            x = getattr(self , f'graph_norm{i}')(x , batch)
+        for graph_conv , pooling , graph_norm in self.block_layers:
+            x , learn_attrs = graph_conv(x , edge_index , edge_attr)
+            x , edge_index , _ , batch , perm , score = pooling(x , edge_index , edge_attr , batch)
+            x = graph_norm(x , batch)
             
             attrs.append(learn_attrs)
             perms.append(perm)
             scores.append(score)
             batches.append(batch)
+        
+        # for i in range(self.num_block):
+        #     x , learn_attrs = getattr(self , f'graph_conv{i}')(x , edge_index , edge_attr)
+        #     x , edge_index , _ , batch , perm , score = getattr(self , f'pooling{i}')(x , edge_index , edge_attr , batch)
+        #     x = getattr(self , f'graph_norm{i}')(x , batch)
+            
+        #     attrs.append(learn_attrs)
+        #     perms.append(perm)
+        #     scores.append(score)
+        #     batches.append(batch)
             
         # # First layer graph convolution
         # x , gc1_k1_edge_attr , gc1_k2_edge_attr , gc1_k3_edge_attr = self.graph_conv1(x , edge_index , edge_attr)
