@@ -1,14 +1,14 @@
 
 import os
 import numpy as np
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score , roc_auc_score
 import torch
 from param import parameter_parser
 import torch.nn.functional as F
 from models import init_model_dict, init_optim
 from utils import one_hot_tensor, cal_sample_weight, gen_adj_mat_tensor, cal_adj_mat_parameter
 from utils import GraphConstructLoss, normalize_adj
-
+from tqdm import tqdm
 
 cuda = True if torch.cuda.is_available() else False
 
@@ -145,7 +145,7 @@ def train_test(data_folder, view_list, num_class,
     test_inverval = 50
     num_view = len(view_list)
 
-    if data_folder == './BRCA_split/BRCA':
+    if data_folder == '../artifacts/data_preprocessing/BRCA':
         adj_parameter = 8
         mode = 'weighted-cosine'
         featuresSelect_list = [400, 400, 400]
@@ -173,9 +173,11 @@ def train_test(data_folder, view_list, num_class,
     
     print("\nPretrain FSDGCNs...")
     optim_dict = init_optim(num_view, model_dict, lr_e_pretrain, lr_c, reg)
-    for epoch in range(num_epoch_pretrain):
-        train_epoch(data_tr_list, adj_tr_list, labels_tr_tensor,
-                    onehot_labels_tr_tensor, sample_weight_tr, model_dict, optim_dict, theta_smooth, theta_degree, theta_sparsity, neta, train_MOAM_OIRL=False)
+    with tqdm(total=num_epoch_pretrain) as pbar:
+        for epoch in range(num_epoch_pretrain):
+            train_epoch(data_tr_list, adj_tr_list, labels_tr_tensor,
+                        onehot_labels_tr_tensor, sample_weight_tr, model_dict, optim_dict, theta_smooth, theta_degree, theta_sparsity, neta, train_MOAM_OIRL=False)
+            pbar.update(1)
 
     print("\nTraining...")
     optim_dict = init_optim(num_view, model_dict, lr_e, lr_c,reg)
@@ -184,8 +186,17 @@ def train_test(data_folder, view_list, num_class,
                     onehot_labels_tr_tensor, sample_weight_tr, model_dict, optim_dict, theta_smooth, theta_degree, theta_sparsity, neta)
         if epoch % test_inverval == 0:
             te_prob = test_epoch(data_te_list, adj_te_list, model_dict, neta)
-            print("\nTest: Epoch {:d}".format(epoch))
+            
+            acc = accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))
+            f1_weighted = f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')
+            f1_macro = f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')
+            auc_macro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='macro' , multi_class='ovr')
+            auc_micro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='micro' , multi_class='ovr')
+            auc_weighted = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='weighted' , multi_class='ovr')
+            
+            
+            print(f"Test: Epoch {epoch:d} | Acc : {acc:.4f} | F1_weighted : {f1_weighted:.4f} | F1_macro : {f1_macro:.4f} | AUC_macro : {auc_macro:.4f} | AUC_micro : {auc_micro:.4f} | AUC_weighted : {auc_weighted:.4f}")
            
-            print("Test ACC: {:.3f}".format(accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))))
-            print("Test F1 weighted: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')))
-            print("Test F1 macro: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')))
+            # print("Test ACC: {:.3f}".format(accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))))
+            # print("Test F1 weighted: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')))
+            # print("Test F1 macro: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')))

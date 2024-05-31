@@ -4,7 +4,7 @@ from train_test import train_test
 
 if __name__ == "__main__":
 
-    data_folder = './BRCA_split/BRCA'
+    data_folder = '../artifacts/data_preprocessing/BRCA'
 
     view_list = [1,2,3]
     num_epoch_pretrain = 500
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     theta_sparsity = 0.5
 
 
-    if data_folder == './BRCA_split/BRCA':
+    if data_folder == '../artifacts/data_preprocessing/BRCA':
         num_class = 5
         lr_e_pretrain = 1e-4
         lr_e = 1e-5
