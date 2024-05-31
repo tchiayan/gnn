@@ -49,10 +49,23 @@ class GraphConvolution(torch.nn.Module):
         self.jump = jump
         
     def forward(self , x , edge_index , edge_attr = None , batch_norm = True ): 
+        _x , _edges = [], []
         if edge_attr is not None:
-            _x , _edges = [], []
+            
             for gat_layer , batch_layer in self.layers:
+                print(len(self.layers))
+                print(gat_layer)
+                print(batch_layer)
+                print(x.device)
+                print(edge_index.device)
+                print(edge_attr.device)
+                print(x.shape)
+                print(edge_index.shape)
+                print(edge_attr.shape)
+                print(gat_layer(x , edge_index))
                 x , edge = gat_layer(x , edge_index , edge_attr , return_attention_weights=True)
+                print(x)
+                print(edge)
                 x = x.relu()
                 if batch_norm:
                     x = batch_layer(x)
@@ -72,12 +85,12 @@ class GraphConvolution(torch.nn.Module):
             #     x3 = self.batch_norm3(x3)
         else: 
             for gat_layer , batch_layer in self.layers:
-                x , edge_attr = gat_layer(x , edge_index , return_attention_weights=True)
+                x , edge = gat_layer(x , edge_index , return_attention_weights=True)
                 x = x.relu()
                 if batch_norm:
                     x = batch_layer(x)
                 _x.append(x)
-                _edges.append(edge_attr)
+                _edges.append(edge)
             
         # Jumping knowledge 
         # x = torch.stack([x1 , x2 , x3], dim=-1).mean(dim=-1)
