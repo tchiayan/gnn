@@ -205,7 +205,7 @@ def train_test(data_folder, view_list, num_class,
             # print("Test F1 macro: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')))
             if epoch == num_epoch:
                 with open(os.path.join(artifact_dir, "report.txt"), "w") as f:
-                    report  = classification_report(labels_trte[trte_idx["te"]], te_prob.argmax(1) , zero_division=0)
+                    report  = classification_report(labels_trte[trte_idx["te"]], te_prob.argmax(1) , zero_division=0 , digits=4)
                     report += f"AUC macro: {auc_macro}\n"
                     report += f"AUC micro: {auc_micro}\n"
                     report += f"AUC weighted: {auc_weighted}\n"
