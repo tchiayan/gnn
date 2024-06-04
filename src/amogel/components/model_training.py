@@ -335,6 +335,7 @@ class ModelTraining():
             num_block=self.config.num_block,
             pooling_rate=self.config.pooling_rate,
             pooling=self.config.pooling,
+            momentum=self.config.momentum
         )
         
         # clean multigraph_testing_logs.txt

@@ -672,6 +672,7 @@ class MultiGraphClassification(pl.LightningModule):
         self.drop_out = drop_out
         self.optim = kwargs.get('optimizer' , 'adam')
         self.weight_decay = kwargs.get('decay' , 0.0001)
+        self.momentum = kwargs.get('momentum' , 0.9)
         
         self.graph1 = GraphPooling(in_channels , hidden_channels , **kwargs)
         self.graph2 = GraphPooling(in_channels , hidden_channels , **kwargs)
@@ -750,7 +751,7 @@ class MultiGraphClassification(pl.LightningModule):
         if self.optim == 'adam':
             self.optimizer =  optim.Adam(self.parameters() , lr= self.lr , weight_decay=self.weight_decay)
         elif self.optim == 'sgd':
-            self.optimizer = optim.SGD(self.parameters() , lr=self.lr , weight_decay=self.weight_decay)
+            self.optimizer = optim.SGD(self.parameters() , lr=self.lr , weight_decay=self.weight_decay , momentum=self.momentum)
         elif self.optim == 'adamw':
             self.optimizer = optim.AdamW(self.parameters() , lr=self.lr , weight_decay=self.weight_decay)
         elif self.optim == 'rms':

@@ -107,6 +107,7 @@ class ModelTrainingConfig:
     num_block: int 
     pooling_rate: float 
     pooling: str
+    momentum: float
     weight: Optional[List[float]] = None, 
     
 

@@ -153,7 +153,8 @@ class ConfigurationManager:
             num_layer=params.num_layer,
             num_block=params.num_block,
             pooling_rate=params.pooling_rate,
-            pooling=params.pooling
+            pooling=params.pooling, 
+            momentum=params.momentum
         )
         
         return model_training_config
