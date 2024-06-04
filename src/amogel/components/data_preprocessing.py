@@ -329,10 +329,10 @@ class DataPreprocessing:
             est , feature_selection = generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}.tsv") , 
                                       min_rule_per_class=self.config.min_rules , n_bins=self.config.n_bins , 
                                       min_confidence=0.0)
-            if i != 3:
-                est , _ = generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}.tsv") , 
-                                        min_rule_per_class=self.config.min_rules , n_bins=int(self.config.n_bins*2) , 
-                                        min_confidence=0.0 , filter=feature_selection)
+            
+            est , _ = generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}.tsv") , 
+                                    min_rule_per_class=self.config.min_rules , n_bins=int(self.config.n_bins*2) , 
+                                    min_confidence=0.0 , filter=feature_selection)
             
             
             logger.info(f"Store the KbinsDiscretizer for dataset {dataset} | kbins_{i}.joblib")
