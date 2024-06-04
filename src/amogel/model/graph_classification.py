@@ -878,7 +878,7 @@ class MultiGraphClassification(pl.LightningModule):
                 
                 # logger.info(f"Logging classification report for test epoch {self.current_epoch+1}")
                 report = f"--------- Overall Test Report ---------\n"
-                report += classification_report(self.actuals , self.predictions , zero_division=0)
+                report += classification_report(self.actuals , self.predictions , zero_division=0 , digits=4)
                 
                 # calculate auroc 
                 auroc = roc_auc_score(self.actuals , self.softmax_prediction , multi_class="ovr" , average="macro")
@@ -890,15 +890,15 @@ class MultiGraphClassification(pl.LightningModule):
                 #self.mlflow.log_text(report , "test_classification_report_epoch_{}.txt".format(self.current_epoch+1))
                 
                 report += f"--------- Omic1 Test Report ---------\n"
-                report += classification_report(self.actuals_1 , self.predictions_1 , zero_division=0)
+                report += classification_report(self.actuals_1 , self.predictions_1 , zero_division=0, digits=4)
                 #self.mlflow.log_text(report_1 , "test_classification_report_omic1_epoch_{}.txt".format(self.current_epoch+1))
                 
                 report += f"--------- Omic2 Test Report ---------\n"
-                report += classification_report(self.actuals_2 , self.predictions_2 , zero_division=0)
+                report += classification_report(self.actuals_2 , self.predictions_2 , zero_division=0, digits=4)
                 #self.mlflow.log_text(report_2 , "test_classification_report_omic2_epoch_{}.txt".format(self.current_epoch+1))
                 
                 report += f"--------- Omic3 Test Report ---------\n"
-                report += classification_report(self.actuals_3 , self.predictions_3 , zero_division=0)
+                report += classification_report(self.actuals_3 , self.predictions_3 , zero_division=0, digits=4)
                 #self.mlflow.log_text(report_3 , "test_classification_report_omic3_epoch_{}.txt".format(self.current_epoch+1))
                 self.mlflow.log_text(report , "classification_report_epoch_{:03d}_test.txt".format(self.current_epoch+1))
                 
