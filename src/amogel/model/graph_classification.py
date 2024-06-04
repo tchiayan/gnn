@@ -711,9 +711,9 @@ class MultiGraphClassification(pl.LightningModule):
         self.acc_3 = Accuracy(task='multiclass' , num_classes=num_classes)
         self.paper_acc = Accuracy(task='multiclass' , num_classes=num_classes)
         if weight is not None:
-            self.loss = torch.nn.CrossEntropyLoss()
-        else: 
             self.loss = torch.nn.CrossEntropyLoss(weight=weight)
+        else: 
+            self.loss = torch.nn.CrossEntropyLoss()
             
         self.auc = AUROC(task='multiclass' , num_classes=num_classes)
         self.f1 = F1Score(task='multiclass' , num_classes=num_classes , average='macro')
