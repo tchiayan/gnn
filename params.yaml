@@ -34,12 +34,13 @@ arm_classification:
 
 knowledge_graph: 
   ppi_combined_score: 300 
-  ppi: false
+  ppi: true
   kegg_go: false
   synthetic: true
   edge_threshold: 0.8
   topk: 500
-  discretized: true 
+  discretized: true
+  normalize: 'binary' # support ['max' , 'binary']
 
 model_training: 
   dataset: 'discretized_multiedges_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
@@ -48,7 +49,7 @@ model_training:
   multihead: 5
   multihead_concat: false
   learning_rate: 0.0001
-  learning_epoch: 400
+  learning_epoch: 900
   drop_out: 0.1
   batch_size: 10
   weight: [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ]
@@ -63,5 +64,5 @@ model_training:
   num_layer: 1
   num_block: 1
   pooling_rate: 0.5
-  momentum: 0.5
+  momentum: 0.2
   pooling: 'sag' # support ['sag' , 'topk']

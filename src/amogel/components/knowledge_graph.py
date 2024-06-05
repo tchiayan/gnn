@@ -1012,7 +1012,7 @@ class KnowledgeGraph():
         topology_tensor_stack = []
         
         if ppi:
-            ppi_tensor = self.__generate_ppi_graph(normalize_method='binary')
+            ppi_tensor = self.__generate_ppi_graph(normalize_method='max')
             topology_tensor_stack.append(ppi_tensor)
         
         if kegg_go:

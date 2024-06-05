@@ -192,7 +192,7 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
         
         feature_selection = feature_selection.union(set(genes))
         try:
-            interestingess = 1/math.log2(avg_ig) + 1/math.log2(avg_corr) + 1/math.log2(float(confidence)-0.00000001)
+            interestingess = math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(confidence)+0.0000001)
             if math.isnan(interestingess):
                 raise Exception("Error")
         except: 
