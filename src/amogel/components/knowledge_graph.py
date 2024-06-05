@@ -1020,11 +1020,11 @@ class KnowledgeGraph():
                 topology_tensor_stack.append(ppi_tensor)
         
         if kegg_go:
-            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method='binary')
+            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method='max')
             topology_tensor_stack.append(kegg_pathway_tensor)
         
         if synthetic:
-            synthetic_tensor_dict = self.__generate_synthetic_graph(topk=self.config.topk , normalize_method='binary')
+            synthetic_tensor_dict = self.__generate_synthetic_graph(topk=self.config.topk , normalize_method='max')
             #synthetic_tensor = torch.stack(list(synthetic_tensor_dict.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
             topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
             #synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
