@@ -226,12 +226,15 @@ class KnowledgeGraph():
                 knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += row['combined_score']
                 knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += row["combined_score"]
                 pbar.update(1)
-                
+        
         if normalize_method == 'binary':
             knowledge_tensor = (knowledge_tensor > 0).float()
         elif normalize_method == 'max':
             knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
-            
+        
+        # change nan to 0
+        knowledge_tensor[torch.isnan(knowledge_tensor)] = 0
+        
         # save the knowledge tensor
         logger.info("Saving PPI Knowledge Tensor")
         torch.save(knowledge_tensor , os.path.join(self.config.root_dir , self.dataset , f"knowledge_ppi_{self.omic_type}.pt"))
@@ -1013,7 +1016,8 @@ class KnowledgeGraph():
         
         if ppi:
             ppi_tensor = self.__generate_ppi_graph(normalize_method='max')
-            topology_tensor_stack.append(ppi_tensor)
+            if ppi_tensor.sum() > 0:
+                topology_tensor_stack.append(ppi_tensor)
         
         if kegg_go:
             kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method='binary')
