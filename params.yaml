@@ -33,14 +33,18 @@ arm_classification:
   strategy: 'union' # support ['union', 'topk', 'difference']
 
 knowledge_graph: 
-  ppi_combined_score: 300 
+  ppi_combined_score: 500
   ppi: true
   kegg_go: true
   synthetic: true
-  edge_threshold: 0.5
+  edge_threshold: 0.2
   topk: 500
   discretized: true
-  normalize: 'binary' # support ['max' , 'binary']
+  ppi_normalize: 'max_score' # support ['max' , 'binary' , "max_score"]
+  kegg_normalize: 'binary' # support ['max' , 'binary']
+  kegg_sort: "PValue" # ["PValue","Fold Enrichment","Bonferroni","Benjamini","FDR"]
+  kegg_topk: 500
+  ac_normalize: "max" # support ['max' , 'binary']
 
 model_training: 
   dataset: 'discretized_multiedges_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]

@@ -121,7 +121,12 @@ class ConfigurationManager:
             discretized=params.discretized, 
             topk=params.topk, 
             metric=self.params.arm_classification.metric,
-            n_bins=self.params.data_preprocessing.n_bins
+            n_bins=self.params.data_preprocessing.n_bins, 
+            ppi_normalize=params.ppi_normalize,
+            kegg_normalize=params.kegg_normalize,
+            kegg_sort=params.kegg_sort,
+            kegg_topk=params.kegg_topk,
+            ac_normalize=params.ac_normalize
         )
         
         return knowledge_graph_config

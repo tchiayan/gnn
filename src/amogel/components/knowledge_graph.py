@@ -220,6 +220,8 @@ class KnowledgeGraph():
         no_of_genes = self.feature_names.shape[0] 
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
+        assert normalize_method in ['binary' , 'max', 'max_score'] , "Invalid normalize method"
+        
         logger.info("Generating PPI Knowledge Tensor")
         self.related_protein = self.__load_ppi()
         with tqdm(total=self.related_protein.shape[0]) as pbar: 
@@ -227,11 +229,13 @@ class KnowledgeGraph():
                 knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += row['combined_score']
                 knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += row["combined_score"]
                 pbar.update(1)
-        
+                
         if normalize_method == 'binary':
             knowledge_tensor = (knowledge_tensor > 0).float()
         elif normalize_method == 'max':
             knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
+        elif normalize_method == 'max_score':
+            knowledge_tensor = knowledge_tensor / self.related_protein['combined_score'].max()
         
         # change nan to 0
         knowledge_tensor[torch.isnan(knowledge_tensor)] = 0
@@ -242,7 +246,7 @@ class KnowledgeGraph():
         
         return knowledge_tensor 
     
-    def __generate_kegg_go_graph(self , normalize_method='binary'):
+    def __generate_kegg_go_graph(self , normalize_method='binary', topk=1000, sort="PValue"):
         
         annotation_filepath = os.path.join("artifacts/data_ingestion/unzip" , f"{self.dataset}_kegg_go" , "consol_anno_chart.tsv")
         if not os.path.exists(annotation_filepath):
@@ -251,6 +255,9 @@ class KnowledgeGraph():
         logger.info(f"Loading annotation data (KEGG pathway and GO) : {annotation_filepath}")
         annotation_df = pd.read_csv(annotation_filepath , sep="\t")[['Genes' , 'PValue']]
         annotation_df['Genes'] = annotation_df['Genes'].apply(lambda x: [float(n) for n in x.split(",")])
+        
+        # sort the annotation and select topk 
+        annotation_df = annotation_df.sort_values(by=sort , ascending=True).head(topk)
         
         feature_conversion_filepath = os.path.join("artifacts/data_ingestion/unzip" , f"{self.dataset}_kegg_go" , f"{self.omic_type}_featname_conversion.csv")
         if not os.path.exists(feature_conversion_filepath):
@@ -1019,16 +1026,16 @@ class KnowledgeGraph():
         topology_tensor_stack = []
         
         if ppi:
-            ppi_tensor = self.__generate_ppi_graph(normalize_method='max')
+            ppi_tensor = self.__generate_ppi_graph(normalize_method=self.config.ppi_normalize)
             if ppi_tensor.sum() > 0:
                 topology_tensor_stack.append(ppi_tensor)
         
         if kegg_go:
-            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method='max')
+            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method=self.config.ac_normalize , topk=self.config.kegg_topk , sort=self.config.kegg_sort)
             topology_tensor_stack.append(kegg_pathway_tensor)
         
         if synthetic:
-            synthetic_tensor_dict = self.__generate_synthetic_graph(topk=self.config.topk , normalize_method='max')
+            synthetic_tensor_dict = self.__generate_synthetic_graph(topk=self.config.topk , normalize_method=self.config.ac_normalize)
             #synthetic_tensor = torch.stack(list(synthetic_tensor_dict.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
             topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
             #synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph

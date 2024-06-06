@@ -82,6 +82,12 @@ class KnowledgeGraphConfig:
     topk: int
     metric: str
     n_bins: int
+    ppi_normalize: str 
+    kegg_normalize: str
+    kegg_sort: str 
+    kegg_topk: int
+    ac_normalize: str 
+    
     
 @dataclass(frozen=True)
 class ModelTrainingConfig: 
