@@ -194,7 +194,8 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
         try:
             interestingness_1 = math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(confidence)+0.0000001)
             interestingness_2 = 1/math.log2(avg_ig) + 1/math.log2(avg_corr) + 1/(float(confidence)+0.0000001)
-            if math.isnan(interestingness_1) or math.isnan(interestingness_2):
+            interestingness_3 = math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(support)*float(confidence)+0.0000001)
+            if math.isnan(interestingness_1) or math.isnan(interestingness_2) or math.isnan(interestingness_3):
                 raise Exception("Error")
         except: 
             print( [corr[x] for x in genes ])
@@ -204,6 +205,7 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
         #print(f"IG: {avg_ig} | Corr: {avg_corr} | Interestingness: {interestingess}")
         rule.append(str(interestingness_1))
         rule.append(str(interestingness_2))
+        rule.append(str(interestingness_3))
 
     # x[0] = class , x[1] = confidence , x[2] = support , x[3] = antecedence , x[4] = interestingness_1 , x[5] = interestingness_2
     output = sorted(output , key = lambda x : float(x[4]) , reverse=True) # sort by interestingness_1

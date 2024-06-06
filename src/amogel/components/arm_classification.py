@@ -36,7 +36,7 @@ class ARM_Classification():
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"File not found: {filepath}")
         
-        df = pd.read_csv(filepath , sep="\t" , header=None , names=["label" , "confidence" , "support" , "rules" , "interestingness_1" , "interestingness_2"])
+        df = pd.read_csv(filepath , sep="\t" , header=None , names=["label" , "confidence" , "support" , "rules" , "interestingness_1" , "interestingness_2" , "interestingness_3"])
 
         grouped_top_tr = df.groupby("label").apply(lambda x: x.nlargest(topk , self.config.metric)).reset_index(drop=True)
         
