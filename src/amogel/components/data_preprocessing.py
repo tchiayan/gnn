@@ -8,6 +8,7 @@ from sklearn.feature_selection import VarianceThreshold , SelectKBest , f_classi
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.model_selection import train_test_split
 from pickle import dump
+import numpy as np
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -106,20 +107,18 @@ class DataPreprocessing:
             Tuple[pd.DataFrame , pd.DataFrame , pd.DataFrame]: _description_
         """
         
-        # remove duplicate sample
-        logger.info("Removing duplicate samples")
-        df_miRNA = self.remove_duplicate_sample(df_miRNA)
-        df_mRNA = self.remove_duplicate_sample(df_mRNA)
-        df_DNA = self.remove_duplicate_sample(df_DNA)
-        logger.info(f"Duplicate sample removal | Shape of miRNA: {df_miRNA.shape} | Shape of mRNA: {df_mRNA.shape} | Shape of DNA: {df_DNA.shape}")
-        
-        
         # convert data type to float 
         df_miRNA = df_miRNA.astype(float)
         df_mRNA = df_mRNA.astype(float)
         df_DNA = df_DNA.astype(float)
         
-        
+        # remove duplicate sample
+        logger.info("Original data shape | miRNA: {} | mRNA: {} | DNA: {}".format(df_miRNA.T.shape , df_mRNA.T.shape , df_DNA.T.shape))
+        logger.info("Removing duplicate samples")
+        df_miRNA = self.remove_duplicate_sample(df_miRNA , drop=False)
+        df_mRNA = self.remove_duplicate_sample(df_mRNA , drop=False)
+        df_DNA = self.remove_duplicate_sample(df_DNA , drop=False)
+        logger.info(f"Duplicate sample removal | Shape of miRNA: {df_miRNA.shape} | Shape of mRNA: {df_mRNA.shape} | Shape of DNA: {df_DNA.shape}")
         
         # filter common samples
         logger.info("Selecting only common samples")
@@ -150,7 +149,7 @@ class DataPreprocessing:
         df_common_mRNA = self.filtering_missing_values(df_common_mRNA)
         df_common_DNA = self.filtering_missing_values(df_common_DNA)
         
-        # Sorting the data by index 
+        # Sorting the data by index [samples] match all the data with same sample
         df_common_miRNA.sort_index(inplace=True)
         df_common_mRNA.sort_index(inplace=True)
         df_common_DNA.sort_index(inplace=True)
@@ -167,6 +166,12 @@ class DataPreprocessing:
         df_common_miRNA = self.annovaf_filtering(df_common_miRNA , df_label , target=target , threshold=self.config.preprocessing.miRNA.annova)
         df_common_mRNA = self.annovaf_filtering(df_common_mRNA , df_label , target=target , threshold=self.config.preprocessing.mRNA.annova)
         df_common_DNA = self.annovaf_filtering(df_common_DNA , df_label , target=target , threshold=self.config.preprocessing.DNA.annova)
+        
+        # convert to log2
+        # logger.info("Converting to log2")
+        # df_common_miRNA = df_common_miRNA.applymap(lambda x: 0 if x == 0 else np.log2(x))
+        # df_common_mRNA = df_common_mRNA.applymap(lambda x: 0 if x == 0 else np.log2(x))
+        # df_common_DNA = df_common_DNA.applymap(lambda x: 0 if x == 0 else np.log2(x))
         
         # scale the data to 0-1
         logger.info("Scaling the data")
@@ -222,7 +227,7 @@ class DataPreprocessing:
         y_train.to_csv(os.path.join(root_dir, dataset , "labels_tr.csv") , index=False , header=False)
         y_test.to_csv(os.path.join(root_dir, dataset , "labels_te.csv") , index=False , header=False)
         
-    def remove_duplicate_sample(self , df:pd.DataFrame):
+    def remove_duplicate_sample(self , df:pd.DataFrame , drop=True):
         """Remove duplicate sample
         1. Remove duplicated samples
         2. Transpose the dataframe (genes as columns and samples as rows)
@@ -238,10 +243,20 @@ class DataPreprocessing:
         rename_columns_name = {x:"-".join(x.split("-")[0:3]) for x in columns_name}
         df = df.rename(columns=rename_columns_name)
         
-        # filter out duplicated columns 
-        df = df.loc[:,~df.columns.duplicated()] # rows as genes and columns as samples
-        
-        return df.T
+        if drop:
+            # filter out duplicated columns 
+            df = df.loc[:,~df.columns.duplicated()] # rows as genes and columns as samples
+            return df.T
+        else: 
+            # average the duplicated columns
+            df = df.groupby(df.columns , axis=1).mean().reset_index()
+            df.set_index("gene" , inplace=True)
+
+            # average the duplicate
+            df = df.T 
+            df = df.groupby(df.columns , axis=1).mean().reset_index()
+            df.set_index("index" , inplace=True)
+            return df
     
     def correlate_samples(self , dfs: List[pd.DataFrame]):
         
