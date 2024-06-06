@@ -16,6 +16,7 @@ from typing import List
 import random
 import pickle
 import warnings
+import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
@@ -281,6 +282,9 @@ class KnowledgeGraph():
             knowledge_tensor = (knowledge_tensor > 0).float()
         elif normalize_method == 'max':
             knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
+        
+        # change nan to 0
+        knowledge_tensor[torch.isnan(knowledge_tensor)] = 0
         
         # save the knowledge tensor
         logger.info("Saving KEGG Pathway and GO Knowledge Tensor")
