@@ -27,7 +27,7 @@ train_encoder:
 
 arm_classification:
   topk: [ 1 , 5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]
-  metric: 'interestingness' 
+  metric: 'interestingness_1' 
   data_path: './artifact/data_preprocessing'
   dataset: 'BRCA'
   strategy: 'union' # support ['union', 'topk', 'difference']
@@ -35,9 +35,9 @@ arm_classification:
 knowledge_graph: 
   ppi_combined_score: 300 
   ppi: true
-  kegg_go: false
+  kegg_go: true
   synthetic: true
-  edge_threshold: 0.8
+  edge_threshold: 0.5
   topk: 500
   discretized: true
   normalize: 'binary' # support ['max' , 'binary']

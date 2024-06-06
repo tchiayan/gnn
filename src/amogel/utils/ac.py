@@ -192,8 +192,9 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
         
         feature_selection = feature_selection.union(set(genes))
         try:
-            interestingess = math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(confidence)+0.0000001)
-            if math.isnan(interestingess):
+            interestingness_1 = math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(confidence)+0.0000001)
+            interestingness_2 = 1/math.log2(avg_ig) + 1/math.log2(avg_corr) + 1/(float(confidence)+0.0000001)
+            if math.isnan(interestingness_1) or math.isnan(interestingness_2):
                 raise Exception("Error")
         except: 
             print( [corr[x] for x in genes ])
@@ -201,10 +202,11 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
             raise Exception("Error")
         
         #print(f"IG: {avg_ig} | Corr: {avg_corr} | Interestingness: {interestingess}")
-        rule.append(str(interestingess))
+        rule.append(str(interestingness_1))
+        rule.append(str(interestingness_2))
 
-    # x[0] = class , x[1] = confidence , x[2] = support , x[3] = antecedence , x[4] = interestingness
-    output = sorted(output , key = lambda x : float(x[4]) , reverse=True) # sort by interestingness
+    # x[0] = class , x[1] = confidence , x[2] = support , x[3] = antecedence , x[4] = interestingness_1 , x[5] = interestingness_2
+    output = sorted(output , key = lambda x : float(x[4]) , reverse=True) # sort by interestingness_1
 
     #print(f"Before feature selection: {len(feature_selection)}")
     #feature_selection = [ gene for gene in feature_selection if corr[gene] > 0.1]
