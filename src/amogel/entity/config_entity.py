@@ -53,6 +53,7 @@ class DataPreprocessingConfig:
     test_split: float 
     n_bins: int 
     min_rules: int
+    random_state: None | int
     
     def __getitem__(self, key):
         return getattr(self, key)

@@ -12,6 +12,7 @@ data_preprocessing:
   test_split: 0.3
   n_bins: 2
   min_rules: 1000
+  random_state: 42
 
 embedding_training: 
   learning_rate: 0.001
@@ -50,10 +51,10 @@ model_training:
   dataset: 'discretized_multiedges_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
   model: 'MultiGraphClassification' # support ['MultiGraphClassification' , 'BinaryLearning' , 'ContrastiveLearning' , 'TripletLearning']
   hidden_units: 32
-  multihead: 5
+  multihead: 1
   multihead_concat: false
   learning_rate: 0.0001
-  learning_epoch: 900
+  learning_epoch: 1500
   drop_out: 0.1
   batch_size: 10
   weight: [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ]
@@ -63,7 +64,7 @@ model_training:
   alpha: 0.2
   binary: false
   optimizer: 'sgd' # support ['adam' , 'sgd']
-  decay: 0.0001
+  decay: 0.0
   gat_dropout: 0.0 
   num_layer: 1
   num_block: 1

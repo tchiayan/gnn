@@ -67,7 +67,8 @@ class ConfigurationManager:
             preprocessing=params.filtering , 
             test_split=params.test_split, 
             n_bins=params.n_bins,
-            min_rules=params.min_rules
+            min_rules=params.min_rules, 
+            random_state=params.random_state
         )   
         
         return data_preprocessing_config
