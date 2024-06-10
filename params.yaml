@@ -45,6 +45,7 @@ knowledge_graph:
   kegg_normalize: 'binary' # support ['max' , 'binary']
   kegg_sort: "PValue" # ["PValue","Fold Enrichment","Bonferroni","Benjamini","FDR"]
   kegg_topk: 500
+  corr_filter: 0.6
   ac_normalize: "max" # support ['max' , 'binary']
 
 model_training: 
@@ -54,7 +55,7 @@ model_training:
   multihead: 1
   multihead_concat: false
   learning_rate: 0.0001
-  learning_epoch: 1500
+  learning_epoch: 800
   drop_out: 0.1
   batch_size: 10
   weight: [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ]
@@ -63,7 +64,7 @@ model_training:
   enable_training: true
   alpha: 0.2
   binary: false
-  optimizer: 'sgd' # support ['adam' , 'sgd']
+  optimizer: 'adam' # support ['adam' , 'sgd']
   decay: 0.0
   gat_dropout: 0.0 
   num_layer: 1

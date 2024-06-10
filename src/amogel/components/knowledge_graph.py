@@ -122,7 +122,7 @@ class KnowledgeGraph():
             raise FileNotFoundError(f"Data file not found at {train_label_path}")
         
         logger.info(f"Loading label data : {train_label_path}")
-        df_label = pd.read_csv(train_label_path , header=None)
+        df_label = pd.read_csv(train_label_path , header=None , names=['label'])
         
         return df_label
     
@@ -456,6 +456,27 @@ class KnowledgeGraph():
         
         return synthetic_tensor
     
+    def __generate_corr_graph(self , filter=0.5):
+        
+        # merged the train data and label by index
+        # merged_df = pd.merge(self.train_data , self.train_label , left_index=True , right_index=True)
+        # corr = merged_df.corr()["label"] # shape of (no of genes x no of genes)
+        corr = self.train_data.corr()
+        
+        # filter the correlation matrix
+        corr = corr[corr >= filter]
+        
+        # convert to tensor
+        corr_tensor = torch.tensor(corr.values , dtype=torch.float32)
+        
+        # fill nan with 0 
+        corr_tensor[torch.isnan(corr_tensor)] = 0.0
+        
+        logger.info(f"Correlation tensor shape : {corr_tensor.shape}")
+        
+        return corr_tensor
+        
+        
     def __measure_graph(self , graph_tensor: torch.Tensor):
         """measure graph matrix 
         
@@ -1018,7 +1039,7 @@ class KnowledgeGraph():
         logger.info("Saving Testing Graphs")
         torch.save(testing_graphs , os.path.join(self.config.root_dir , self.dataset , f"testing_multiedges_multigraphs_omic_{self.omic_type}.pt"))
     
-    def generate_discretized_multiedges_graph(self , ppi=True , kegg_go=False , synthetic=True):
+    def generate_discretized_multiedges_graph(self , ppi=True , kegg_go=False , synthetic=True , corr = True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         # feature dimension (no of genes)
@@ -1037,7 +1058,23 @@ class KnowledgeGraph():
         if synthetic:
             synthetic_tensor_dict = self.__generate_synthetic_graph(topk=self.config.topk , normalize_method=self.config.ac_normalize)
             #synthetic_tensor = torch.stack(list(synthetic_tensor_dict.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
-            topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
+            synthetic_tensor = torch.zeros_like(list(synthetic_tensor_dict.values())[0])
+            for label in synthetic_tensor_dict.keys():
+                # merged the synthetic graph
+                synthetic_tensor += synthetic_tensor_dict[label]
+            
+            if self.config.ac_normalize == 'binary':
+                synthetic_tensor = (synthetic_tensor > 0).float()
+            else: 
+                synthetic_tensor = synthetic_tensor / synthetic_tensor.max()
+                
+            # topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
+            topology_tensor_stack.append(synthetic_tensor)
+            
+        if corr: 
+            corr_tensor = self.__generate_corr_graph()
+            topology_tensor_stack.append(corr_tensor)
+            
             #synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
         
         logger.info("Generate training discretized multiedges graph")
