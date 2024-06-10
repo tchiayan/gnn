@@ -127,7 +127,9 @@ class ConfigurationManager:
             kegg_normalize=params.kegg_normalize,
             kegg_sort=params.kegg_sort,
             kegg_topk=params.kegg_topk,
-            ac_normalize=params.ac_normalize
+            ac_normalize=params.ac_normalize, 
+            corr=params.corr,
+            corr_filter=params.corr_filter
         )
         
         return knowledge_graph_config

@@ -1072,7 +1072,7 @@ class KnowledgeGraph():
             topology_tensor_stack.append(synthetic_tensor)
             
         if corr: 
-            corr_tensor = self.__generate_corr_graph()
+            corr_tensor = self.__generate_corr_graph(filter=self.config.corr_filter)
             topology_tensor_stack.append(corr_tensor)
             
             #synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph

@@ -38,6 +38,7 @@ knowledge_graph:
   ppi: true
   kegg_go: true
   synthetic: true
+  corr: true
   edge_threshold: 0.2
   topk: 500
   discretized: true
@@ -55,8 +56,8 @@ model_training:
   multihead: 1
   multihead_concat: false
   learning_rate: 0.0001
-  learning_epoch: 800
-  drop_out: 0.1
+  learning_epoch: 500
+  drop_out: 0.0
   batch_size: 10
   weight: [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ]
   enable_validation: true

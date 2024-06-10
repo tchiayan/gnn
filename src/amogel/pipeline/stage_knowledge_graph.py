@@ -34,7 +34,7 @@ class KnowledgeGraphPipeline():
             elif knowledge_graph_config.dataset == 'discretized_common_multigraph':
                 knowledge_graph.generate_discretized_common_graph( ppi=knowledge_graph_config.ppi , kegg_go=knowledge_graph_config.kegg_go , synthetic=knowledge_graph_config.synthetic )
             elif knowledge_graph_config.dataset == 'discretized_multiedges_multigraph':
-                knowledge_graph.generate_discretized_multiedges_graph( ppi=knowledge_graph_config.ppi , kegg_go=knowledge_graph_config.kegg_go , synthetic=knowledge_graph_config.synthetic )
+                knowledge_graph.generate_discretized_multiedges_graph( ppi=knowledge_graph_config.ppi , kegg_go=knowledge_graph_config.kegg_go , synthetic=knowledge_graph_config.synthetic, corr=knowledge_graph_config.corr )
             else:
                 raise ValueError("Invalid dataset")
             # knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )

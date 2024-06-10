@@ -88,6 +88,8 @@ class KnowledgeGraphConfig:
     kegg_sort: str 
     kegg_topk: int
     ac_normalize: str 
+    corr: bool
+    corr_filter: float
     
     
 @dataclass(frozen=True)
