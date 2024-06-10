@@ -699,7 +699,7 @@ class MultiGraphClassification(pl.LightningModule):
         
         
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels*3*2 , hidden_channels), # 3 omics with 2 * hidden_channels
+            torch.nn.Linear(hidden_channels*2 , hidden_channels), # 3 omics with 2 * hidden_channels
             torch.nn.Dropout1d(drop_out),
             torch.nn.ReLU(), 
             torch.nn.BatchNorm1d(hidden_channels),
@@ -737,7 +737,8 @@ class MultiGraphClassification(pl.LightningModule):
         output2 , perm2 , score2 , batch2 , attr_score21  = self.graph2(x2 , edge_index2 , edge_attr2 , batch2_idx)
         output3 , perm3 , score3 , batch3 , attr_score31  = self.graph3(x3 , edge_index3 , edge_attr3 , batch3_idx)
         
-        output = torch.concat([output1 , output2 , output3] , dim=-1) # shape -> [ batch , hidden_dimension * 3 * 2 ]
+        #output = torch.concat([output1 , output2 , output3] , dim=-1) # shape -> [ batch , hidden_dimension * 3 * 2 ]
+        output = output1 * output2 * output3 # element wise multiplication
         output = self.mlp(output)
         
         output1 = self.class_1(output1)
