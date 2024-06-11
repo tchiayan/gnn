@@ -8,6 +8,7 @@ from torch.nn.functional import one_hot
 import pandas as pd
 from tqdm import tqdm
 from amogel.utils.common import symmetric_matrix_to_coo , coo_to_pyg_data , symmetric_matrix_to_pyg
+from amogel.utils.ac import information_gain , correlation
 import itertools
 from torch_geometric.data import Data
 from torch_geometric.utils import is_undirected , remove_isolated_nodes
@@ -385,7 +386,8 @@ class KnowledgeGraph():
                     if normalize_method == 'max':
                         # normalize the numpy [0, 1]
                         knowledge_tensor = knowledge_tensor / knowledge_tensor.max()
-                    elif normalize_method == 'binary':
+
+                    elif normalize_method == 'binary' or normalize_method == 'information':
                         knowledge_tensor = (knowledge_tensor > 0).float()
                 
                 # change nan to 0
@@ -1055,7 +1057,7 @@ class KnowledgeGraph():
                 topology_tensor_stack.append(ppi_tensor)
         
         if kegg_go:
-            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method=self.config.ac_normalize , topk=self.config.kegg_topk , sort=self.config.kegg_sort)
+            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method=self.config.kegg_normalize , topk=self.config.kegg_topk , sort=self.config.kegg_sort)
             no_edge , max_value , isolated_node  = self.__measure_graph(kegg_pathway_tensor)
             logger.info(f"KEGG Pathway Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
             topology_tensor_stack.append(kegg_pathway_tensor)
@@ -1070,6 +1072,19 @@ class KnowledgeGraph():
             
             if self.config.ac_normalize == 'binary':
                 synthetic_tensor = (synthetic_tensor > 0).float()
+            elif self.config.ac_normalize == 'information':
+                merged_df = self.train_data.merge(self.train_label , left_index=True , right_index=True)
+                corr_dict = correlation(merged_df , "label")
+                infogain_dict = information_gain(merged_df , "label")
+                corr_array = torch.tensor([corr_dict[x] if x in corr_dict.keys() else 0 for x in range(0 , no_of_genes)] , dtype=torch.float32)
+                infogain_array = torch.tensor([infogain_dict[x] if x in infogain_dict.keys() else 0 for x in range(0 , no_of_genes)] , dtype=torch.float32)
+                
+                # replace nan with 0
+                corr_array = torch.nan_to_num(corr_array)
+                infogain_array = torch.nan_to_num(infogain_array)
+                
+                nonzero_index = torch.nonzero(synthetic_tensor)
+                synthetic_tensor[nonzero_index[:,0] , nonzero_index[:,1]] = (corr_array[nonzero_index[:,0]] + infogain_array[nonzero_index[:,1]])/2
             else: 
                 synthetic_tensor = synthetic_tensor / synthetic_tensor.max()
                 

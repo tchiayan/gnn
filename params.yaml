@@ -12,7 +12,7 @@ data_preprocessing:
   test_split: 0.3
   n_bins: 2
   min_rules: 1000
-  random_state: 42
+  random_state: 41
 
 embedding_training: 
   learning_rate: 0.001
@@ -43,11 +43,11 @@ knowledge_graph:
   topk: 500
   discretized: true
   ppi_normalize: 'max_score' # support ['max' , 'binary' , "max_score"]
-  kegg_normalize: 'binary' # support ['max' , 'binary']
+  kegg_normalize: 'max' # support ['max' , 'binary']
   kegg_sort: "PValue" # ["PValue","Fold Enrichment","Bonferroni","Benjamini","FDR"]
   kegg_topk: 500
   corr_filter: 0.75
-  ac_normalize: "max" # support ['max' , 'binary']
+  ac_normalize: "information" # support ['max' , 'binary' , 'information']
 
 model_training: 
   dataset: 'discretized_multiedges_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]
