@@ -10,7 +10,7 @@ from tqdm import tqdm
 from amogel.utils.common import symmetric_matrix_to_coo , coo_to_pyg_data , symmetric_matrix_to_pyg
 import itertools
 from torch_geometric.data import Data
-from torch_geometric.utils import is_undirected
+from torch_geometric.utils import is_undirected , remove_isolated_nodes
 import numpy as np
 from typing import List
 import random
@@ -227,7 +227,7 @@ class KnowledgeGraph():
         with tqdm(total=self.related_protein.shape[0]) as pbar: 
             for idx, row in self.related_protein.iterrows():
                 knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += row['combined_score']
-                knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += row["combined_score"]
+                #knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += row["combined_score"]
                 pbar.update(1)
                 
         if normalize_method == 'binary':
@@ -492,8 +492,9 @@ class KnowledgeGraph():
         assert graph_tensor.dim() == 2 , "Graph tensor should be 2D"
         
         avg_no_of_edges = graph_tensor.count_nonzero(dim=1).float().mean().item()
-        
-        return avg_no_of_edges
+        max_value = graph_tensor.max().item()
+        isolated_nodes = (graph_tensor.sum(dim=1) == 0).sum().item()
+        return avg_no_of_edges , max_value , isolated_nodes
     
     def __measure_graph_from_data(self , data_list:List[Data] , name:str):
         """_summary_
@@ -1049,10 +1050,14 @@ class KnowledgeGraph():
         if ppi:
             ppi_tensor = self.__generate_ppi_graph(normalize_method=self.config.ppi_normalize)
             if ppi_tensor.sum() > 0:
+                no_edge , max_value , isolated_node  = self.__measure_graph(ppi_tensor)
+                logger.info(f"PPi Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
                 topology_tensor_stack.append(ppi_tensor)
         
         if kegg_go:
             kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method=self.config.ac_normalize , topk=self.config.kegg_topk , sort=self.config.kegg_sort)
+            no_edge , max_value , isolated_node  = self.__measure_graph(kegg_pathway_tensor)
+            logger.info(f"KEGG Pathway Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
             topology_tensor_stack.append(kegg_pathway_tensor)
         
         if synthetic:
@@ -1068,11 +1073,15 @@ class KnowledgeGraph():
             else: 
                 synthetic_tensor = synthetic_tensor / synthetic_tensor.max()
                 
+            no_edge , max_value , isolated_node  = self.__measure_graph(synthetic_tensor)
+            logger.info(f"Synthetic Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
             # topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
             topology_tensor_stack.append(synthetic_tensor)
             
         if corr: 
             corr_tensor = self.__generate_corr_graph(filter=self.config.corr_filter)
+            no_edge , max_value , isolated_node  = self.__measure_graph(corr_tensor)
+            logger.info(f"Correlation Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
             topology_tensor_stack.append(corr_tensor)
             
             #synthetic_tensor = torch.stack(list(self.synthetic_graph.values()) , dim=-1) # shape => no_of_genes , no_of_genes , no_of_synthetic_graph
@@ -1110,7 +1119,9 @@ class KnowledgeGraph():
         # calculate average no of edges and std deviation
         avg_no_of_edges = np.mean(num_edges)
         std_no_of_edges = np.std(num_edges)
-        logger.info(f"Average no of edges in testing graph: {avg_no_of_edges} +- {std_no_of_edges}")
+        _ , _  , mask = remove_isolated_nodes(training_graphs[0].edge_index)
+        logger.info(f"Average no of edges in testing graph: {avg_no_of_edges} +- {std_no_of_edges} | Isolated nodes : {mask.sum()}")
+        logger.info(f"Max value for edges : {torch.max(training_graphs[0].edge_attr , dim=0).values}")
                 
         logger.info("Generate testing discretized multiedges graph")
         testing_graphs = []
