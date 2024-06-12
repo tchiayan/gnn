@@ -216,17 +216,23 @@ class KnowledgeGraph():
             
         return df_filter_protein
 
-    def __generate_ppi_graph(self , normalize_method='binary'):
+    def __generate_ppi_graph(self , normalize_method='binary' , filter=None):
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0] 
         knowledge_tensor = torch.zeros(no_of_genes, no_of_genes)
         
         assert normalize_method in ['binary' , 'max', 'max_score'] , "Invalid normalize method"
         
+        if filter is not None: 
+            unique_genes = self.__get_synthetic_genes(self.config.topk)
+            
         logger.info("Generating PPI Knowledge Tensor")
         self.related_protein = self.__load_ppi()
         with tqdm(total=self.related_protein.shape[0]) as pbar: 
             for idx, row in self.related_protein.iterrows():
+                if filter is not None: 
+                    if len(set([row['gene1_idx'] , row['gene2_idx']]).intersection(unique_genes)) == 0:
+                        continue
                 knowledge_tensor[int(row['gene1_idx']) , int(row['gene2_idx'])] += row['combined_score']
                 #knowledge_tensor[int(row['gene2_idx']) , int(row['gene1_idx'])] += row["combined_score"]
                 pbar.update(1)
@@ -255,19 +261,24 @@ class KnowledgeGraph():
         
         logger.info(f"Loading annotation data (KEGG pathway and GO) : {annotation_filepath}")
         annotation_df = pd.read_csv(annotation_filepath , sep="\t")[['Genes' , 'PValue']]
+        annotation_df['Genes'] = annotation_df['Genes'].apply(lambda x: [float(n) for n in x.split(",")])
         
         if filter == 'topk':
-            annotation_df['Genes'] = annotation_df['Genes'].apply(lambda x: [float(n) for n in x.split(",")])
+            # sort the annotation and select topk 
+            annotation_df = annotation_df.sort_values(by=sort , ascending=True).head(topk)
+        elif filter == 'synthetic':
+            # get only the kegg go where the genes are exist in the synthetic rules
+            unique_genes = self.__get_synthetic_genes(self.config.topk)
+            
         
-        # sort the annotation and select topk 
-        annotation_df = annotation_df.sort_values(by=sort , ascending=True).head(topk)
+        
         
         feature_conversion_filepath = os.path.join("artifacts/data_ingestion/unzip" , f"{self.dataset}_kegg_go" , f"{self.omic_type}_featname_conversion.csv")
         if not os.path.exists(feature_conversion_filepath):
             raise FileNotFoundError(f"Feature conversion file not found at {feature_conversion_filepath}")
         
         logger.info(f"Loading feature conversion data : {feature_conversion_filepath}")
-        feature_df = pd.read_csv(feature_conversion_filepath)
+        feature_df = pd.read_csv(feature_conversion_filepath) # gene symbol and gene id
         
         # feature dimension (no of genes)
         no_of_genes = self.feature_names.shape[0] 
@@ -279,7 +290,10 @@ class KnowledgeGraph():
                 #print(feature_1['gene id'])
                 #print(gene_ids)
                 #print(feature_1['gene id'].isin(gene_ids))
-                gene_idx = feature_df[feature_df['gene id'].isin(gene_ids) ].index.to_list()
+                gene_idx = feature_df[feature_df['gene id'].isin(gene_ids) ].index.to_list() # G1 , G2 , G3
+                if filter == 'synthetic':
+                    if len(set(gene_idx).intersection(unique_genes)) == 0:
+                        continue
                 #print(gene_idx)
                 gene_numpy = np.array(list(itertools.product(gene_idx , gene_idx))) # number of edges , 2 (source and target)
                 #print(gene_numpy)
@@ -302,6 +316,25 @@ class KnowledgeGraph():
         
         return knowledge_tensor 
     
+    def __get_synthetic_genes(self , topk = 50  ):
+        synthetic_rules_filepath = os.path.join(self.config.data_dir , self.dataset , f"ac_rule_{self.omic_type}.tsv" )
+        
+        if not os.path.exists(synthetic_rules_filepath):
+            raise FileNotFoundError(f"Synthetic rules file not found at {synthetic_rules_filepath}")
+        
+        synthetic_df = pd.read_csv(synthetic_rules_filepath , sep='\t' , header=None)        
+        synthetic_df.columns = ['class' , 'confidence', 'support' , 'antecedents', 'interestingness_1' , 'interestingness_2' , "interestingness_3"]
+        
+        synthetic_df_filtered = synthetic_df.groupby(["class"]).apply(lambda x : x.nlargest(topk , self.config.metric)).reset_index(drop=True)
+        
+        # Get the unique genes 
+        unique_genes = set()
+        for idx , row in synthetic_df_filtered.iterrows():
+            genes = [int(x.split(":")[0]) for x in  row['antecedents'].split(",")]
+            unique_genes.update(genes)
+            
+        return unique_genes
+        
     def __generate_synthetic_graph(self , topk = 50 , normalize=True , normalize_method='max' , distinct_set=False):
         
         # feature dimension (no of genes)
@@ -1052,14 +1085,14 @@ class KnowledgeGraph():
         topology_tensor_stack = []
         
         if ppi:
-            ppi_tensor = self.__generate_ppi_graph(normalize_method=self.config.ppi_normalize)
+            ppi_tensor = self.__generate_ppi_graph(normalize_method=self.config.ppi_normalize, filter=self.config.ppi_filter)
             if ppi_tensor.sum() > 0:
                 no_edge , max_value , isolated_node  = self.__measure_graph(ppi_tensor)
                 logger.info(f"PPi Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
                 topology_tensor_stack.append(ppi_tensor)
         
         if kegg_go:
-            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method=self.config.kegg_normalize , topk=self.config.kegg_topk , sort=self.config.kegg_sort)
+            kegg_pathway_tensor = self.__generate_kegg_go_graph(normalize_method=self.config.kegg_normalize , topk=self.config.kegg_topk , sort=self.config.kegg_sort , filter=self.config.kegg_filter)
             no_edge , max_value , isolated_node  = self.__measure_graph(kegg_pathway_tensor)
             logger.info(f"KEGG Pathway Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
             topology_tensor_stack.append(kegg_pathway_tensor)

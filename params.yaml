@@ -46,8 +46,10 @@ knowledge_graph:
   kegg_normalize: 'max' # support ['max' , 'binary']
   kegg_sort: "PValue" # ["PValue","Fold Enrichment","Bonferroni","Benjamini","FDR"]
   kegg_topk: 500
+  kegg_filter: 'synthetic' # support [ "syntheic" , "topk" ]
+  ppi_filter: "synthetic" # support [ "syntheic" , null ]
   corr_filter: 0.75
-  ac_normalize: "information" # support ['max' , 'binary' , 'information']
+  ac_normalize: "information" # support ['max' , 'binary' , 'information']'
 
 model_training: 
   dataset: 'discretized_multiedges_multigraph' # support ['discretized_multiedges_multigraph', 'multiedges_multigraph', 'discretized_common_multigraph', 'unified' , 'correlation' , 'embedding' , 'unified_multigraph' , 'contrastive_multigraph' , 'triplet_multigraph' , 'triplet_multigraph' , 'binarylearning_multigraph' , 'common_multigraph]

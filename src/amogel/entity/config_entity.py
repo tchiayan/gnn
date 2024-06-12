@@ -90,7 +90,8 @@ class KnowledgeGraphConfig:
     ac_normalize: str 
     corr: bool
     corr_filter: float
-    
+    kegg_filter: str
+    ppi_filter: Optional[str] = None
     
 @dataclass(frozen=True)
 class ModelTrainingConfig: 

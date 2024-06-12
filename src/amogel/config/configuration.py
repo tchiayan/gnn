@@ -129,7 +129,9 @@ class ConfigurationManager:
             kegg_topk=params.kegg_topk,
             ac_normalize=params.ac_normalize, 
             corr=params.corr,
-            corr_filter=params.corr_filter
+            corr_filter=params.corr_filter, 
+            ppi_filter=params.ppi_filter,
+            kegg_filter=params.kegg_filter
         )
         
         return knowledge_graph_config
