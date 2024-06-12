@@ -247,7 +247,7 @@ class KnowledgeGraph():
         
         return knowledge_tensor 
     
-    def __generate_kegg_go_graph(self , normalize_method='binary', topk=1000, sort="PValue"):
+    def __generate_kegg_go_graph(self , normalize_method='binary', topk=1000, sort="PValue" , filter="topk"):
         
         annotation_filepath = os.path.join("artifacts/data_ingestion/unzip" , f"{self.dataset}_kegg_go" , "consol_anno_chart.tsv")
         if not os.path.exists(annotation_filepath):
@@ -255,7 +255,9 @@ class KnowledgeGraph():
         
         logger.info(f"Loading annotation data (KEGG pathway and GO) : {annotation_filepath}")
         annotation_df = pd.read_csv(annotation_filepath , sep="\t")[['Genes' , 'PValue']]
-        annotation_df['Genes'] = annotation_df['Genes'].apply(lambda x: [float(n) for n in x.split(",")])
+        
+        if filter == 'topk':
+            annotation_df['Genes'] = annotation_df['Genes'].apply(lambda x: [float(n) for n in x.split(",")])
         
         # sort the annotation and select topk 
         annotation_df = annotation_df.sort_values(by=sort , ascending=True).head(topk)
@@ -1076,7 +1078,7 @@ class KnowledgeGraph():
                 merged_df = self.train_data.merge(self.train_label , left_index=True , right_index=True)
                 corr_dict = correlation(merged_df , "label")
                 infogain_dict = information_gain(merged_df , "label")
-                corr_array = torch.tensor([corr_dict[x] if x in corr_dict.keys() else 0 for x in range(0 , no_of_genes)] , dtype=torch.float32)
+                corr_array = torch.tensor([abs(corr_dict[x]) if x in corr_dict.keys() else 0 for x in range(0 , no_of_genes)] , dtype=torch.float32)
                 infogain_array = torch.tensor([infogain_dict[x] if x in infogain_dict.keys() else 0 for x in range(0 , no_of_genes)] , dtype=torch.float32)
                 
                 # replace nan with 0
