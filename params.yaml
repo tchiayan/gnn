@@ -38,7 +38,7 @@ knowledge_graph:
   ppi: true
   kegg_go: true
   synthetic: true
-  corr: true
+  corr: false
   edge_threshold: 0.2
   topk: 500
   discretized: true

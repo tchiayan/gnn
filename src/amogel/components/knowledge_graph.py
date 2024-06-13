@@ -1107,6 +1107,11 @@ class KnowledgeGraph():
             
             if self.config.ac_normalize == 'binary':
                 synthetic_tensor = (synthetic_tensor > 0).float()
+                
+                no_edge , max_value , isolated_node  = self.__measure_graph(synthetic_tensor)
+                logger.info(f"Synthetic Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
+                # topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
+                topology_tensor_stack.append(synthetic_tensor)
             elif self.config.ac_normalize == 'information':
                 merged_df = self.train_data.merge(self.train_label , left_index=True , right_index=True)
                 corr_dict = correlation(merged_df , "label")
@@ -1119,14 +1124,22 @@ class KnowledgeGraph():
                 infogain_array = torch.nan_to_num(infogain_array)
                 
                 nonzero_index = torch.nonzero(synthetic_tensor)
-                synthetic_tensor[nonzero_index[:,0] , nonzero_index[:,1]] = (corr_array[nonzero_index[:,0]] + infogain_array[nonzero_index[:,1]])/2
+                # copy the synthetic tensor
+                synthetic_tensor_info = synthetic_tensor.clone()
+                synthetic_tensor_corr = synthetic_tensor.clone()
+                synthetic_tensor_info[nonzero_index[:,0] , nonzero_index[:,1]] = (infogain_array[nonzero_index[:,0]] + infogain_array[nonzero_index[:,1]])/2
+                synthetic_tensor_corr[nonzero_index[:,0] , nonzero_index[:,1]] = (corr_array[nonzero_index[:,0]] + corr_array[nonzero_index[:,1]])/2
+                
+                no_edge , max_value , isolated_node  = self.__measure_graph(synthetic_tensor_info)
+                logger.info(f"Synthetic Graph (Information/Gain) : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
+                topology_tensor_stack.extend([ synthetic_tensor_corr , synthetic_tensor_info ])
             else: 
                 synthetic_tensor = synthetic_tensor / synthetic_tensor.max()
                 
-            no_edge , max_value , isolated_node  = self.__measure_graph(synthetic_tensor)
-            logger.info(f"Synthetic Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
-            # topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
-            topology_tensor_stack.append(synthetic_tensor)
+                no_edge , max_value , isolated_node  = self.__measure_graph(synthetic_tensor)
+                logger.info(f"Synthetic Graph : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
+                # topology_tensor_stack.extend(list(synthetic_tensor_dict.values()))
+                topology_tensor_stack.append(synthetic_tensor)
             
         if corr: 
             corr_tensor = self.__generate_corr_graph(filter=self.config.corr_filter)
