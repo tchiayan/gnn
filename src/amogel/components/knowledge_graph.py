@@ -1125,14 +1125,15 @@ class KnowledgeGraph():
                 
                 nonzero_index = torch.nonzero(synthetic_tensor)
                 # copy the synthetic tensor
-                synthetic_tensor_info = synthetic_tensor.clone()
-                synthetic_tensor_corr = synthetic_tensor.clone()
-                synthetic_tensor_info[nonzero_index[:,0] , nonzero_index[:,1]] = (infogain_array[nonzero_index[:,0]] + infogain_array[nonzero_index[:,1]])/2
-                synthetic_tensor_corr[nonzero_index[:,0] , nonzero_index[:,1]] = (corr_array[nonzero_index[:,0]] + corr_array[nonzero_index[:,1]])/2
+                # synthetic_tensor_info = synthetic_tensor.clone()
+                # synthetic_tensor_corr = synthetic_tensor.clone()
+                # synthetic_tensor_info[nonzero_index[:,0] , nonzero_index[:,1]] = (infogain_array[nonzero_index[:,0]] + infogain_array[nonzero_index[:,1]])/2
+                # synthetic_tensor_corr[nonzero_index[:,0] , nonzero_index[:,1]] = (corr_array[nonzero_index[:,0]] + corr_array[nonzero_index[:,1]])/2
+                synthetic_tensor[nonzero_index[:,0] , nonzero_index[:,1]] = (infogain_array[nonzero_index[:,0]] + infogain_array[nonzero_index[:,1]] + corr_array[nonzero_index[:,0]] + corr_array[nonzero_index[:,1]])/4
                 
-                no_edge , max_value , isolated_node  = self.__measure_graph(synthetic_tensor_info)
+                no_edge , max_value , isolated_node  = self.__measure_graph(synthetic_tensor)
                 logger.info(f"Synthetic Graph (Information/Gain) : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
-                topology_tensor_stack.extend([ synthetic_tensor_corr , synthetic_tensor_info ])
+                topology_tensor_stack.append(synthetic_tensor)
             else: 
                 synthetic_tensor = synthetic_tensor / synthetic_tensor.max()
                 
