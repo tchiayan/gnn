@@ -12,7 +12,7 @@ data_preprocessing:
   test_split: 0.3
   n_bins: 2
   min_rules: 1000
-  random_state: 41
+  random_state: 44
 
 embedding_training: 
   learning_rate: 0.001
@@ -48,7 +48,7 @@ knowledge_graph:
   kegg_topk: 500
   kegg_filter: 'synthetic' # support [ "syntheic" , "topk" ]
   ppi_filter: "synthetic" # support [ "syntheic" , null ]
-  corr_filter: 0.75
+  corr_filter: 0.8
   ac_normalize: "information" # support ['max' , 'binary' , 'information']'
 
 model_training: 

@@ -509,9 +509,16 @@ class KnowledgeGraph():
         # fill nan with 0 
         corr_tensor[torch.isnan(corr_tensor)] = 0.0
         
-        logger.info(f"Correlation tensor shape : {corr_tensor.shape}")
+        unique_genes = list(self.__get_synthetic_genes(self.config.topk))
+        filter_corr_tensor = torch.zeros_like(corr_tensor)
+        filter_corr_tensor[ unique_genes , : ] = corr_tensor[ unique_genes , : ]
+        filter_corr_tensor[ : , unique_genes ] = corr_tensor[ : , unique_genes ]
+        logger.info(f"Correlation tensor shape : {filter_corr_tensor.shape}")
+        # random check 
+        random_idx = random.choice(unique_genes)
+        assert filter_corr_tensor[random_idx].sum() == filter_corr_tensor[: , random_idx].sum() , "Correlation matrix is not symmetric"
         
-        return corr_tensor
+        return filter_corr_tensor
         
         
     def __measure_graph(self , graph_tensor: torch.Tensor):
