@@ -50,7 +50,13 @@ stages:
     - MOGLAM/main_MOGLAM.py
     outs:
     - artifacts/compare/moglam
-    
+  
+  compare_other: 
+    cmd: python src/amogel/pipeline/stage_other_classification.py
+    deps: 
+    - src/amogel/pipeline/stage_other_classification.py
+    outs: 
+    - artifacts/compare/traditional
   # train_embedding:
   #   cmd: python src/amogel/pipeline/stage_train_embedding.py
   #   deps:

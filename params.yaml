@@ -12,7 +12,7 @@ data_preprocessing:
   test_split: 0.3
   n_bins: 2
   min_rules: 1000
-  random_state: 44
+  random_state: 41
 
 embedding_training: 
   learning_rate: 0.001
@@ -38,7 +38,7 @@ knowledge_graph:
   ppi: true
   kegg_go: true
   synthetic: true
-  corr: false
+  corr: true
   edge_threshold: 0.2
   topk: 500
   discretized: true
@@ -48,7 +48,7 @@ knowledge_graph:
   kegg_topk: 500
   kegg_filter: 'synthetic' # support [ "syntheic" , "topk" ]
   ppi_filter: "synthetic" # support [ "syntheic" , null ]
-  corr_filter: 0.8
+  corr_filter: 0.9
   ac_normalize: "information" # support ['max' , 'binary' , 'information']'
 
 model_training: 
@@ -58,10 +58,10 @@ model_training:
   multihead: 1
   multihead_concat: false
   learning_rate: 0.0001
-  learning_epoch: 500
+  learning_epoch: 200
   drop_out: 0.0
   batch_size: 10
-  weight: [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ]
+  weight:  [ 5.96 , 14.97 , 1.83 , 5.73 , 21.93 ]
   enable_validation: true
   enable_testing: false
   enable_training: true
