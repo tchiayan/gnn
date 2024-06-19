@@ -68,7 +68,9 @@ class ConfigurationManager:
             test_split=params.test_split, 
             n_bins=params.n_bins,
             min_rules=params.min_rules, 
-            random_state=params.random_state
+            random_state=params.random_state, 
+            fold_change=params.fold_change, 
+            discretize_level=params.discretize_level
         )   
         
         return data_preprocessing_config
@@ -122,7 +124,7 @@ class ConfigurationManager:
             discretized=params.discretized, 
             topk=params.topk, 
             metric=self.params.arm_classification.metric,
-            n_bins=self.params.data_preprocessing.n_bins, 
+            n_bins=self.params.data_preprocessing.n_bins * self.params.data_preprocessing.discretize_level, 
             ppi_normalize=params.ppi_normalize,
             kegg_normalize=params.kegg_normalize,
             kegg_sort=params.kegg_sort,

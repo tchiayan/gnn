@@ -12,6 +12,8 @@ data_preprocessing:
   test_split: 0.3
   n_bins: 2
   min_rules: 1000
+  fold_change: false
+  discretize_level: 2 
   random_state: 41
 
 embedding_training: 

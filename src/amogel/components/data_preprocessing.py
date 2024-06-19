@@ -10,6 +10,8 @@ from sklearn.model_selection import train_test_split
 from pickle import dump
 import numpy as np
 import warnings
+import itertools
+import math
 
 warnings.filterwarnings("ignore")
 
@@ -320,9 +322,32 @@ class DataPreprocessing:
         
         assert isinstance(df , pd.DataFrame) , "Invalid input"
         assert isinstance(df_label , pd.DataFrame) , "Invalid input"
-        assert target in df_label.columns , f"Invalid target column name, not found in the label dataframe | {df_label.columns.tolist()}" 
-        default_shape = df.shape
+        assert target in df_label.columns , f"Invalid target column name, not found in the label dataframe | {df_label.columns.tolist()}"
         
+        default_shape = df.shape
+        if self.config.fold_change:
+            df_merged = pd.concat([df , df_label[target]] , axis=1)
+            df_merged_mean = df_merged.groupby(target).mean()
+            combination = list(itertools.permutations(df_merged_mean.index , 2))
+            selected_genes = []
+            for idx , gene in enumerate(df_merged.columns[:-1]): 
+                # calculate fold-change for each gene to different groups
+                # generate possible groups 
+                try:
+                    fold_change = [
+                        math.log2(df_merged_mean.loc[group1,gene]/df_merged_mean.loc[group2 , gene]) for group1 , group2 in combination
+                    ]
+                    
+                    # check if the fold change is greater than the threshold
+                    if any(x > 1 for x in fold_change):
+                        selected_genes.append(gene)
+                except Exception as e:
+                    pass
+                    #selected_genes.append(gene)
+                
+            logger.info(f"Selected genes: {len(selected_genes)} , {selected_genes[:5]}...")
+            df = df[selected_genes]
+            
         sel = SelectKBest(score_func=f_classif, k=threshold)
         df_filtered = pd.DataFrame(sel.fit_transform(df, df_label[target]), index=df.index , columns=df.columns[sel.get_support()])
         
@@ -345,9 +370,10 @@ class DataPreprocessing:
                                       min_rule_per_class=self.config.min_rules , n_bins=self.config.n_bins , 
                                       min_confidence=0.0)
             
-            est , _ = generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}.tsv") , 
-                                    min_rule_per_class=self.config.min_rules , n_bins=int(self.config.n_bins*2) , 
-                                    min_confidence=0.0 , filter=feature_selection)
+            if self.config.discretize_level == 2:
+                est , _ = generate_ac_to_file(data_filepath , label_path , os.path.join(self.config.root_dir , dataset , f"ac_rule_{i}.tsv") , 
+                                        min_rule_per_class=self.config.min_rules , n_bins=int(self.config.n_bins*2) , 
+                                        min_confidence=0.0 , filter=feature_selection)
             
             
             logger.info(f"Store the KbinsDiscretizer for dataset {dataset} | kbins_{i}.joblib")

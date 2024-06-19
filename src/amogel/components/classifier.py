@@ -23,7 +23,7 @@ class OtherClassifier:
         train_data_omic_2 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"2_tr.csv"), header=None)
         train_data_omic_3 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"3_tr.csv"), header=None)
         
-        self.train_data = pd.concat([train_data_omic_1 , train_data_omic_2 , train_data_omic_3] , axis=1)
+        self.train_data = pd.concat([train_data_omic_1 ] , axis=1)
         
         # load train label 
         self.train_label = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , "labels_tr.csv") , header=None , names=["label"])
@@ -35,7 +35,7 @@ class OtherClassifier:
         test_data_omic_2 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"2_te.csv"), header=None)
         test_data_omic_3 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"3_te.csv"), header=None)
         
-        self.test_data = pd.concat([test_data_omic_1 , test_data_omic_2 , test_data_omic_3] , axis=1)
+        self.test_data = pd.concat([test_data_omic_1 ] , axis=1)
         
         # load test label
         self.test_label = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , "labels_te.csv") , header=None , names=["label"])
@@ -109,5 +109,5 @@ class OtherClassifier:
         
         model = DNN(input_dimension=self.train_data.shape[1] , num_classes=self.num_classes)
         
-        trainer = Trainer(max_epochs=50)
+        trainer = Trainer(max_epochs=100)
         trainer.fit(model , train_loader , test_loader)
