@@ -1,20 +1,20 @@
 stages:
-  data_preparation:
-    cmd: python src/amogel/pipeline/stage_data_preparation.py
-    deps:
-    - src/amogel/pipeline/stage_data_preparation.py
-    - config/config.yaml
-    outs:
-    - artifacts/data_ingestion
+  # data_preparation:
+  #   cmd: python src/amogel/pipeline/stage_data_preparation.py
+  #   deps:
+  #   - src/amogel/pipeline/stage_data_preparation.py
+  #   - config/config.yaml
+  #   outs:
+  #   - artifacts/data_ingestion
 
-  ppi_data_prepration:
-    cmd: python src/amogel/pipeline/stage_ppi_preparation.py
-    deps:
-    - src/amogel/pipeline/stage_ppi_preparation.py
-    - src/amogel/components/ppi_preparation.py
-    - config/config.yaml
-    outs:
-    - artifacts/ppi_data
+  # ppi_data_prepration:
+  #   cmd: python src/amogel/pipeline/stage_ppi_preparation.py
+  #   deps:
+  #   - src/amogel/pipeline/stage_ppi_preparation.py
+  #   - src/amogel/components/ppi_preparation.py
+  #   - config/config.yaml
+  #   outs:
+  #   - artifacts/ppi_data
 
   data_preprocessing:
     cmd: python src/amogel/pipeline/stage_data_preprocessing.py
@@ -57,6 +57,7 @@ stages:
     - src/amogel/pipeline/stage_other_classification.py
     outs: 
     - artifacts/compare/traditional
+    
   # train_embedding:
   #   cmd: python src/amogel/pipeline/stage_train_embedding.py
   #   deps:
