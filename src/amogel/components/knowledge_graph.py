@@ -1141,6 +1141,9 @@ class KnowledgeGraph():
                 no_edge , max_value , isolated_node  = self.__measure_graph(synthetic_tensor)
                 logger.info(f"Synthetic Graph (Information/Gain) : No of edges : {no_edge} , Max value : {max_value} , Isolated node : {isolated_node}")
                 topology_tensor_stack.append(synthetic_tensor)
+            elif self.config.ac_normalize == 'multilink':
+                synthetic_tensor = None 
+                # TO-DO
             else: 
                 synthetic_tensor = synthetic_tensor / synthetic_tensor.max()
                 

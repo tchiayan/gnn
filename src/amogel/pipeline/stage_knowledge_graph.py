@@ -18,7 +18,7 @@ class KnowledgeGraphPipeline():
             knowledge_graph = KnowledgeGraph(
                 config=knowledge_graph_config , 
                 omic_type=i , 
-                dataset="BRCA"
+                dataset=config.get_dataset()
             )
             
             if knowledge_graph_config.dataset == 'triplet_multigraph':
@@ -36,7 +36,7 @@ class KnowledgeGraphPipeline():
             elif knowledge_graph_config.dataset == 'discretized_multiedges_multigraph':
                 knowledge_graph.generate_discretized_multiedges_graph( ppi=knowledge_graph_config.ppi , kegg_go=knowledge_graph_config.kegg_go , synthetic=knowledge_graph_config.synthetic, corr=knowledge_graph_config.corr )
             else:
-                raise ValueError("Invalid dataset")
+                raise ValueError(f"Invalid dataset : {knowledge_graph_config.dataset}")
             # knowledge_graph.generate_knowledge_graph( ppi=True  , kegg_go=True )
             # knowledge_graph.generate_unified_graph( ppi=True , kegg_go=True , synthetic=True)
             # knowledge_graph.generate_unified_multigraph( ppi=True , kegg_go=True , synthetic=True)

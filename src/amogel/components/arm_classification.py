@@ -14,9 +14,9 @@ class ARM_Classification():
     def __init__(self , config:ARMClassificationConfig ,  dataset:str , omic_type: int , topk: int = 50) -> None:
         
         self.config = config
-        self.df_label = self._load_labels(dataset)
-        self.df_test = self._load_test_data(dataset , omic_type)
-        self.df_ac = self._load_arm(omic_type , dataset , topk)
+        self.df_label = self._load_labels(self.config.dataset)
+        self.df_test = self._load_test_data(self.config.dataset , omic_type)
+        self.df_ac = self._load_arm(omic_type , self.config.dataset , topk)
         self.topk = topk
             
     

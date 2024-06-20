@@ -18,20 +18,21 @@ MODEL = {
 
 class ModelTraining():
     
-    def __init__(self  , config: ModelTrainingConfig): 
+    def __init__(self  , config: ModelTrainingConfig , dataset:str): 
         
         
         self.config = config
+        self.dataset = dataset
         
         logger.info(f"Loading dataset [{self.config.dataset}] for model [{self.config.model}] ")
         if self.config.dataset == "unified":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_graphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_graphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_graphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_graphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -49,13 +50,13 @@ class ModelTraining():
                 collate_fn=self.collate
             )
         elif self.config.dataset == "embedding": 
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_embedding_graphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_embedding_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_embedding_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_embedding_graphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_embedding_graphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_embedding_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_embedding_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_embedding_graphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -73,13 +74,13 @@ class ModelTraining():
                 collate_fn=self.collate
             )
         elif self.config.dataset == "correlation":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_corr_graphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_corr_graphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_corr_graphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_corr_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_corr_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_corr_graphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_corr_graphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_corr_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_corr_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_corr_graphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -97,13 +98,13 @@ class ModelTraining():
                 collate_fn=self.collate
             )
         elif self.config.dataset == "unified_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_multigraphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_multigraphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -121,13 +122,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "unified_multigraph_test":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_test_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_test_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_unified_test_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_test_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_test_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_unified_test_multigraphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_test_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_test_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_unified_test_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_test_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_test_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_unified_test_multigraphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -145,13 +146,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "multiedges_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_multiedges_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_multiedges_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_multiedges_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_multiedges_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_multiedges_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_multiedges_multigraphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_multiedges_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_multiedges_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_multiedges_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_multiedges_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_multiedges_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_multiedges_multigraphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -169,13 +170,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "discretized_multiedges_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_multiedges_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_multiedges_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_multiedges_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_discretized_multiedges_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_discretized_multiedges_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_discretized_multiedges_multigraphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_multiedges_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_multiedges_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_multiedges_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_discretized_multiedges_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_discretized_multiedges_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_discretized_multiedges_multigraphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -193,13 +194,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "common_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_graphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_graphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_common_graphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_common_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_common_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_common_graphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_graphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_graphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_common_graphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_common_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_common_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_common_graphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -217,13 +218,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "discretized_common_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_common_graphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_common_graphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_discretized_common_graphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_discretized_common_graphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_discretized_common_graphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_discretized_common_graphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_common_graphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_common_graphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_discretized_common_graphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_discretized_common_graphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_discretized_common_graphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_discretized_common_graphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -242,13 +243,13 @@ class ModelTraining():
             )
          
         elif self.config.dataset == "binarylearning_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_binaryclassifier_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_binaryclassifier_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_binaryclassifier_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_binaryclassifier_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_binaryclassifier_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_binaryclassifier_multigraphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_binaryclassifier_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_binaryclassifier_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_binaryclassifier_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_binaryclassifier_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_binaryclassifier_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_binaryclassifier_multigraphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0].x.size(1)
             
@@ -266,13 +267,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "contrastive_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_contrastive_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_contrastive_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_contrastive_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_contrastive_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_contrastive_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_contrastive_multigraphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_constrastive_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_constrastive_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_constrastive_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_constrastive_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_constrastive_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_constrastive_multigraphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0][0].x.size(1)
             
@@ -290,13 +291,13 @@ class ModelTraining():
                 collate_fn=self.collate_multigraph
             )
         elif self.config.dataset == "triplet_multigraph":
-            train_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_triplet_multigraphs_omic_1.pt")
-            train_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_triplet_multigraphs_omic_2.pt")
-            train_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/training_triplet_multigraphs_omic_3.pt")
+            train_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_triplet_multigraphs_omic_1.pt")
+            train_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_triplet_multigraphs_omic_2.pt")
+            train_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/training_triplet_multigraphs_omic_3.pt")
             
-            test_omic_1_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_triplet_multigraphs_omic_1.pt")
-            test_omic_2_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_triplet_multigraphs_omic_2.pt")
-            test_omic_3_graphs = torch.load(r"artifacts/knowledge_graph/BRCA/testing_triplet_multigraphs_omic_3.pt")
+            test_omic_1_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_triplet_multigraphs_omic_1.pt")
+            test_omic_2_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_triplet_multigraphs_omic_2.pt")
+            test_omic_3_graphs = torch.load(f"artifacts/knowledge_graph/{self.dataset}/testing_triplet_multigraphs_omic_3.pt")
             
             self.in_channels = train_omic_1_graphs[0][0].x.size(1)
             

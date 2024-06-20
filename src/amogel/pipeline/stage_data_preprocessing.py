@@ -15,12 +15,14 @@ class DataPreprocessingPipeline:
         data_preprocessing = DataPreprocessing(data_preprocessing_config)
         
         # load BRCA dataset
-        miRNA , mRNA , DNA , label = data_preprocessing.load_data("BRCA")
-        miRNA , mRNA , DNA , label = data_preprocessing.data_cleaning(miRNA , mRNA , DNA , label, target="BRCA_Subtype_PAM50")
+        miRNA , mRNA , DNA , label = data_preprocessing.load_data(dataset=data_preprocessing_config.dataset)
+        if data_preprocessing_config.dataset == "BRCA":
+            miRNA , mRNA , DNA , label = data_preprocessing.data_cleaning(miRNA , mRNA , DNA , label, target="BRCA_Subtype_PAM50")
+        else:
+            miRNA , mRNA , DNA , label = data_preprocessing.data_cleaning(miRNA , mRNA , DNA , label, target="histological_type")
         
-        data_preprocessing.save_data(miRNA , mRNA , DNA , label , "BRCA")
-        data_preprocessing.generate_ac("BRCA")
-        
+        data_preprocessing.save_data(miRNA , mRNA , DNA , label , data_preprocessing_config.dataset)
+        data_preprocessing.generate_ac(data_preprocessing_config.dataset)
         
 
 if __name__ == "__main__":

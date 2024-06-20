@@ -13,7 +13,6 @@ class OtherClassifier:
     def __init__(self, dataset="BRCA"):
         
         self.dataset = dataset 
-        
         os.makedirs("./artifacts/compare/traditional" , exist_ok=True)
 
     def load_data(self):

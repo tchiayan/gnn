@@ -12,8 +12,8 @@ class ModelTrainingPipeline():
     def run(self):
         config = ConfigurationManager()
         training_config = config.get_model_training_config()
-        
-        model_training = ModelTraining(training_config)
+        dataset = config.get_dataset()
+        model_training = ModelTraining(training_config , dataset)
         
         if training_config.enable_training:
             model_training.training()

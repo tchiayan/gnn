@@ -55,6 +55,7 @@ class DataPreprocessingConfig:
     min_rules: int
     fold_change: bool
     discretize_level: int
+    dataset: str
     random_state: Optional[int] = None 
     
     def __getitem__(self, key):

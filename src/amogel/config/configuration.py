@@ -22,6 +22,9 @@ class ConfigurationManager:
         self.config = read_yaml(config_filepath)
         self.params = read_yaml(param_filepath)
     
+    def get_dataset(self) -> str: 
+        return self.params.dataset
+    
     def get_data_ingestion_config(self) -> DataPreparationConfig:
         config = self.config.data_preparation 
         
@@ -62,7 +65,7 @@ class ConfigurationManager:
                     'miRNA': config.KIPAN.miRNA,
                     'mRNA': config.KIPAN.mRNA,
                     'DNA': config.KIPAN.DNA, 
-                    'label': config.BRCA.label
+                    'label': config.KIPAN.label
                 }, 
             preprocessing=params.filtering , 
             test_split=params.test_split, 
@@ -70,7 +73,8 @@ class ConfigurationManager:
             min_rules=params.min_rules, 
             random_state=params.random_state, 
             fold_change=params.fold_change, 
-            discretize_level=params.discretize_level
+            discretize_level=params.discretize_level,
+            dataset=self.params.dataset
         )   
         
         return data_preprocessing_config
@@ -177,9 +181,9 @@ class ConfigurationManager:
         arm_classification_config = ARMClassificationConfig(
             data_path=params.data_path,
             topk=params.topk,
-            dataset=params.dataset, 
+            dataset=self.params.dataset, 
             metric=params.metric, 
-            strategy=params.strategy
+            strategy=params.strategy, 
         )
         
         return arm_classification_config

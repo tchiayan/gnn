@@ -145,12 +145,13 @@ def train_test(data_folder, view_list, num_class,
     test_inverval = 50
     num_view = len(view_list)
 
-    if data_folder == './artifacts/data_preprocessing/BRCA':
+    if data_folder == './artifacts/data_preprocessing/BRCA' or data_folder == './artifacts/data_preprocessing/KIPAN':
         adj_parameter = 8
         mode = 'weighted-cosine'
         featuresSelect_list = [400, 400, 400]
         dim_he_list = [400,400]
         input_data_dim = [dim_he_list[-1], dim_he_list[-1], dim_he_list[-1]]
+    
 
     args = parameter_parser()
 
@@ -196,9 +197,9 @@ def train_test(data_folder, view_list, num_class,
             auc_micro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='micro' , multi_class='ovr')
             auc_weighted = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='weighted' , multi_class='ovr')
             
-            print_log = f"Test: Epoch {epoch:04d} | Acc : {acc:.4f} | F1_weighted : {f1_weighted:.4f} | F1_macro : {f1_macro:.4f} | AUC_macro : {auc_macro:.4f} | AUC_micro : {auc_micro:.4f} | AUC_weighted : {auc_weighted:.4f}\n"
+            print_log = f"Test: Epoch {epoch:04d} | Acc : {acc:.4f} | F1_weighted : {f1_weighted:.4f} | F1_macro : {f1_macro:.4f} | AUC_macro : {auc_macro:.4f} | AUC_micro : {auc_micro:.4f} | AUC_weighted : {auc_weighted:.4f}"
             with open(os.path.join(artifact_dir, "log.txt"), "a") as f:
-                f.write(print_log)
+                f.write(print_log + "\n")
             print(print_log)
             # print("Test ACC: {:.3f}".format(accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))))
             # print("Test F1 weighted: {:.3f}".format(f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')))

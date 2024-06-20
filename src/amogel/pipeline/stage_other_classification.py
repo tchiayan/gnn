@@ -1,13 +1,14 @@
 from amogel.components.classifier import OtherClassifier
+from amogel.config.configuration import ConfigurationManager
 from amogel import logger 
 
 class OtherClassificationPipeline:
     
     def __init__(self):
-        pass 
+        self.dataset = ConfigurationManager().get_dataset()
     
     def run(self):
-        classifier = OtherClassifier()
+        classifier = OtherClassifier(dataset=self.dataset)
         logger.info("Loading datasets")
         classifier.load_data()
         logger.info("Training and evaluating KNN model")

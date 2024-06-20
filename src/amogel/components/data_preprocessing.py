@@ -59,6 +59,7 @@ class DataPreprocessing:
         return  df_miRNA , df_mRNA , df_DNA , df_label
     
     def load_label(self , label_path: Path):
+        logger.info(f"Loading label from {label_path}")
         df_label = pd.read_csv(label_path , sep="\t")
         df_label = df_label.T 
         
