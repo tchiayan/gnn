@@ -317,10 +317,16 @@ class ModelTraining():
         else: 
             raise ValueError("Invalid parameters for dataset")
         
+        if self.dataset == 'BRCA':
+            num_classes = 5 
+        elif self.dataset == 'KIPAN':
+            num_classes = 3
+        else:
+            num_classes = 2
         self.model = MODEL[self.config.model](
             in_channels=self.in_channels,
             hidden_channels=self.config.hidden_units,
-            num_classes=5,
+            num_classes=num_classes,
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
             mlflow=mlflow, 

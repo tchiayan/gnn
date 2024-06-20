@@ -211,3 +211,5 @@ def train_test(data_folder, view_list, num_class,
                     report += f"AUC micro: {auc_micro}\n"
                     report += f"AUC weighted: {auc_weighted}\n"
                     f.write(report)
+                    
+                print(report)
