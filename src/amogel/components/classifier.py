@@ -237,7 +237,7 @@ class OtherClassifier:
         torch.save(train_graph , "./artifacts/compare/traditional/train_graph.pt")
         torch.save(test_graph , "./artifacts/compare/traditional/test_graph.pt")
         
-        mlflow.pytorch.auto_log()
+        mlflow.pytorch.autolog()
         experiment_id = mlflow.create_experiment("Graph Feature Selection")
         
         train_graph = torch.load("./artifacts/compare/traditional/train_graph.pt")
