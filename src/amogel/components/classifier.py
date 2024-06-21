@@ -15,16 +15,18 @@ import warnings
 import torch
 from tqdm import tqdm
 import mlflow
+from amogel.entity.config_entity import CompareOtherConfig
 warnings.filterwarnings("ignore")
 
 class OtherClassifier:
     
-    def __init__(self, dataset="BRCA"):
+    def __init__(self, config:CompareOtherConfig ,  dataset="BRCA"):
         
+        self.config = config
         self.dataset = dataset 
         os.makedirs("./artifacts/compare/traditional" , exist_ok=True)
 
-    def load_data(self):
+    def load_data(self , select_k="auto"):
         
         # load train data 
         train_data_omic_1 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"1_tr.csv"), header=None)
@@ -57,7 +59,10 @@ class OtherClassifier:
         self.test_label = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , "labels_te.csv") , header=None , names=["label"])
         
         
-        est , selected_gene  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "")
+        if select_k == "auto":
+            est , selected_gene  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "")
+        else:
+            est , selected_gene  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "" , fixed_k=select_k)
         logger.info(f"Selected gene: {len(selected_gene)}")
         selection = {0:0,1:0,2:0}
         for gene in selected_gene: 
@@ -189,7 +194,7 @@ class OtherClassifier:
         
     def train_and_evaluate_graph_feature_selection_ac(self):
         
-        threshold = 0.7
+        threshold = self.config.corr_threshold
         # generate graph data
         corr = self.train_data_ac.corr()
         
@@ -238,7 +243,7 @@ class OtherClassifier:
         torch.save(test_graph , "./artifacts/compare/traditional/test_graph.pt")
         
         mlflow.pytorch.autolog()
-        experiment_id = mlflow.create_experiment("Graph Feature Selection")
+        mlflow.set_experiment("Graph Feature Selection")
         
         train_graph = torch.load("./artifacts/compare/traditional/train_graph.pt")
         test_graph = torch.load("./artifacts/compare/traditional/test_graph.pt")
@@ -248,10 +253,12 @@ class OtherClassifier:
         
         model = GCN(
             in_channels=1,
-            hidden_channels=16,
+            hidden_channels=self.config.hidden_units,
             num_classes=5, 
+            lr=self.config.learning_rate,
+            drop_out=self.config.drop_out
         )
         
-        with mlflow.start_run(experiment_id=experiment_id):
-            trainer = Trainer(max_epochs=100)
+        with mlflow.start_run():
+            trainer = Trainer(max_epochs=self.config.epochs)
             trainer.fit(model , train_loader , test_loader)

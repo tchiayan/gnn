@@ -141,3 +141,12 @@ class ARMClassificationConfig:
     dataset: str
     metric: str
     strategy: str
+    
+@dataclass(frozen=True)
+class CompareOtherConfig:
+    corr_threshold: float
+    epochs: int 
+    hidden_units: int 
+    learning_rate: float
+    batch_size: int 
+    drop_out: float

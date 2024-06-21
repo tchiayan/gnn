@@ -229,7 +229,7 @@ def generate_ac_to_file(data_file, label_file , output_file , min_support=0.9 , 
     return est , list(feature_selection)
 
 
-def generate_ac_feature_selection(data_file, label_file , output_file  , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2 , filter=[]):
+def generate_ac_feature_selection(data_file, label_file , output_file  , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2 , filter=[] , fixed_k=None):
     
     # Discretization
     if isinstance(data_file , Path) or isinstance(data_file , str):
@@ -367,7 +367,10 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
     df_ac['interestingness_3'] = df_ac['interestingness_3'].astype(float)
     
     
-    test_k = [ 1 , 5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]
+    if fixed_k is None:
+        test_k = [ 1 , 5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]
+    else: 
+        test_k  = [ fixed_k ]
     selected_k = 1 
     best_acc = 0
     selected_gene = []

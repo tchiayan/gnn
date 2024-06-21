@@ -8,9 +8,10 @@ class OtherClassificationPipeline:
         self.dataset = ConfigurationManager().get_dataset()
     
     def run(self):
-        classifier = OtherClassifier(dataset=self.dataset)
+        config = ConfigurationManager().get_compare_other_configurations()
+        classifier = OtherClassifier(config=config , dataset=self.dataset)
         logger.info("Loading datasets")
-        classifier.load_data()
+        classifier.load_data(select_k=1000)
         # logger.info("Training and evaluating KNN model")
         # classifier.train_and_evaluate_knn()
         # logger.info("Training and evaluating SVM model")
@@ -25,7 +26,6 @@ class OtherClassificationPipeline:
         # classifier.train_and_evaluate_dnn_feature_selection_ac()
         logger.info("Training and evaluating with Graph feature selection model")
         classifier.train_and_evaluate_graph_feature_selection_ac()
-        classifier.train_and_test()
         
 if __name__ == "__main__":
     pipeline = OtherClassificationPipeline()

@@ -10,7 +10,8 @@ from amogel.entity.config_entity import (
     KnowledgeGraphConfig , 
     ModelTrainingConfig , 
     EncoderTrainingConfig , 
-    ARMClassificationConfig
+    ARMClassificationConfig , 
+    CompareOtherConfig
 )
 
 class ConfigurationManager: 
@@ -187,3 +188,17 @@ class ConfigurationManager:
         )
         
         return arm_classification_config
+    
+    def get_compare_other_configurations(self) -> dict: 
+        params = self.params.compare_other
+        
+        compare_other_config = CompareOtherConfig(
+            corr_threshold=params.corr_threshold, 
+            epochs=params.epochs,
+            hidden_units=params.hidden_units,
+            learning_rate=params.learning_rate,
+            batch_size=params.batch_size,
+            drop_out=params.drop_out
+        )
+        
+        return compare_other_config

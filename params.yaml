@@ -35,6 +35,14 @@ arm_classification:
   data_path: './artifact/data_preprocessing'
   strategy: 'union' # support ['union', 'topk', 'difference']
 
+compare_other: 
+  corr_threshold: 0.8
+  epochs: 100
+  hidden_units: 32 
+  learning_rate: 0.0001
+  batch_size: 10 
+  drop_out: 0.0
+
 knowledge_graph: 
   ppi_combined_score: 500
   ppi: true
