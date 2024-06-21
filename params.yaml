@@ -43,6 +43,7 @@ compare_other:
   batch_size: 10 
   drop_out: 0.0
   negative_corr: true
+  pooling_ratio: 0.9
 
 knowledge_graph: 
   ppi_combined_score: 500

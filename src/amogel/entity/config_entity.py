@@ -151,3 +151,4 @@ class CompareOtherConfig:
     batch_size: int 
     drop_out: float
     negative_corr: bool
+    pooling_ratio: float

@@ -11,17 +11,18 @@ import mlflow
 from sklearn.metrics import classification_report
 
 class GCN(pl.LightningModule):
-    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, mlflow:mlflow = None):
+    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         super(GCN, self).__init__()
+        self.pooling_ratio = pooling_ratio
         self.conv1 = GATConv(in_channels, hidden_channels)
         self.bn1 = BatchNorm(hidden_channels)
         self.conv2 = GATConv(hidden_channels, hidden_channels)
         self.bn2 = BatchNorm(hidden_channels)
         self.conv3 = GATConv(hidden_channels, hidden_channels)
         self.lin_hidden = Linear(hidden_channels, hidden_channels)
-        self.pooling = SAGPooling(hidden_channels, ratio=0.5)
+        self.pooling = SAGPooling(hidden_channels, ratio=self.pooling_ratio)
         self.lin = Linear(hidden_channels, num_classes)
         self.mlp = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels, hidden_channels),
@@ -66,7 +67,8 @@ class GCN(pl.LightningModule):
         # x = self.conv3(x, edge_index)
 
         # 2. Readout layer
-        x , edge_index , edge_attr , batch , perm , score = self.pooling(x , edge_index , edge_attr , batch)
+        if self.pooling_ratio > 0:
+            x , edge_index , edge_attr , batch , perm , score = self.pooling(x , edge_index , edge_attr , batch)
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
         # 3. Apply a final classifier

@@ -199,7 +199,8 @@ class ConfigurationManager:
             learning_rate=params.learning_rate,
             batch_size=params.batch_size,
             drop_out=params.drop_out, 
-            negative_corr=params.negative_corr
+            negative_corr=params.negative_corr, 
+            pooling_ratio=params.pooling_ratio
         )
         
         return compare_other_config
