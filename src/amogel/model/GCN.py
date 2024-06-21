@@ -6,7 +6,7 @@ import torch
 from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv , BatchNorm , GATConv 
-from torch_geometric.nn import global_mean_pool
+from torch_geometric.nn import global_mean_pool , SAGPooling , TopKPooling
 import mlflow
 from sklearn.metrics import classification_report
 
@@ -21,6 +21,7 @@ class GCN(pl.LightningModule):
         self.bn2 = BatchNorm(hidden_channels)
         self.conv3 = GATConv(hidden_channels, hidden_channels)
         self.lin_hidden = Linear(hidden_channels, hidden_channels)
+        self.pooling = SAGPooling(hidden_channels, ratio=0.5)
         self.lin = Linear(hidden_channels, num_classes)
         self.mlp = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels, hidden_channels),
@@ -65,6 +66,7 @@ class GCN(pl.LightningModule):
         # x = self.conv3(x, edge_index)
 
         # 2. Readout layer
+        x , edge_index , edge_attr , batch , perm , score = self.pooling(x , edge_attr , edge_index , batch)
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
         # 3. Apply a final classifier
