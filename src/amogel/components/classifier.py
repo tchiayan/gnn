@@ -56,7 +56,7 @@ class OtherClassifier:
         self.test_label = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , "labels_te.csv") , header=None , names=["label"])
         
         
-        _ , selected_gene  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "")
+        est , selected_gene  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "")
         logger.info(f"Selected gene: {len(selected_gene)}")
         selection = {0:0,1:0,2:0}
         for gene in selected_gene: 
@@ -67,8 +67,8 @@ class OtherClassifier:
             else:
                 selection[2] += 1
         logger.info(f"Selected gene distribution: {selection}")
-        self.train_data_ac =  self.train_data[selected_gene]
-        self.test_data_ac = self.test_data[selected_gene]
+        self.train_data_ac =  pd.DataFrame(est.transform(self.train_data))[selected_gene]
+        self.test_data_ac = pd.DataFrame(est.transform(self.test_data))[selected_gene]
         
         logger.info("Data dimension for training and testing")
         logger.info(f"Train data: {self.train_data.shape}")
@@ -247,7 +247,7 @@ class OtherClassifier:
         model = GCN(
             in_channels=1,
             hidden_channels=16,
-            num_classes=5
+            num_classes=5, 
         )
         
         trainer = Trainer(max_epochs=100)
