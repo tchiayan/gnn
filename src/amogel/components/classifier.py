@@ -14,6 +14,7 @@ from amogel.model.GCN import GCN
 import warnings
 import torch
 from tqdm import tqdm
+import mlflow
 warnings.filterwarnings("ignore")
 
 class OtherClassifier:
@@ -236,7 +237,8 @@ class OtherClassifier:
         torch.save(train_graph , "./artifacts/compare/traditional/train_graph.pt")
         torch.save(test_graph , "./artifacts/compare/traditional/test_graph.pt")
         
-    def train_and_test(self):
+        mlflow.pytorch.auto_log()
+        experiment_id = mlflow.create_experiment("Graph Feature Selection")
         
         train_graph = torch.load("./artifacts/compare/traditional/train_graph.pt")
         test_graph = torch.load("./artifacts/compare/traditional/test_graph.pt")
@@ -250,5 +252,6 @@ class OtherClassifier:
             num_classes=5, 
         )
         
-        trainer = Trainer(max_epochs=100)
-        trainer.fit(model , train_loader , test_loader)
+        with mlflow.start_run(experiment_id=experiment_id):
+            trainer = Trainer(max_epochs=100)
+            trainer.fit(model , train_loader , test_loader)
