@@ -198,6 +198,9 @@ class OtherClassifier:
         # generate graph data
         corr = self.train_data_ac.corr()
         
+        # abs 
+        corr = corr.abs()
+        
         # filter corr 
         corr = corr[corr > threshold]
         
