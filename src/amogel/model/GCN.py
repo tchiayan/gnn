@@ -66,7 +66,7 @@ class GCN(pl.LightningModule):
         # x = self.conv3(x, edge_index)
 
         # 2. Readout layer
-        x , edge_index , edge_attr , batch , perm , score = self.pooling(x , edge_attr , edge_index , batch)
+        x , edge_index , edge_attr , batch , perm , score = self.pooling(x , edge_index , edge_attr , batch)
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
         # 3. Apply a final classifier
