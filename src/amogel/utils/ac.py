@@ -4,6 +4,7 @@ import pandas as pd
 import argparse
 import math
 from sklearn.feature_selection import mutual_info_classif
+from sklearn.metrics import classification_report
 from tqdm import tqdm
 from fim import ista
 from pathlib import Path 
@@ -87,10 +88,14 @@ def correlation(data, class_column):
     return { columns[idx]:_corr for idx , _corr in enumerate(corr)}
 
 
-def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2 , filter=[]):
+def generate_ac_to_file(data_file, label_file , output_file , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2 , filter=[]):
     
     # Discretization
-    df = pd.read_csv(data_file, header=None)
+    if isinstance(data_file , Path) or isinstance(data_file , str):
+        df = pd.read_csv(data_file, header=None)
+    elif isinstance(data_file , pd.DataFrame):
+        df = data_file
+        
     est = preprocessing.KBinsDiscretizer(n_bins=n_bins , encode='ordinal' , strategy='quantile')
     # Get discretized threshold
     df = pd.DataFrame(est.fit_transform(df) , columns=df.columns)
@@ -99,7 +104,10 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
         df = df[filter]
 
     # Read label
-    df_label = pd.read_csv(label_file, names=['class'])
+    if isinstance(label_file , Path) or isinstance(label_file , str):
+        df_label = pd.read_csv(label_file, names=['class'])
+    elif isinstance(label_file , pd.DataFrame):
+        df_label = label_file
     df_label.columns = ['class']
     df_label['class'] = df_label['class'].astype(str)
 
@@ -220,6 +228,199 @@ def generate_ac_to_file(data_file:Path , label_file:Path , output_file , min_sup
     
     return est , list(feature_selection)
 
+
+def generate_ac_feature_selection(data_file, label_file , output_file  , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2 , filter=[]):
+    
+    # Discretization
+    if isinstance(data_file , Path) or isinstance(data_file , str):
+        df = pd.read_csv(data_file, header=None)
+    elif isinstance(data_file , pd.DataFrame):
+        df = data_file
+        
+    est = preprocessing.KBinsDiscretizer(n_bins=n_bins , encode='ordinal' , strategy='quantile')
+    # Get discretized threshold
+    df = pd.DataFrame(est.fit_transform(df) , columns=df.columns)
+    # Filtering
+    if len(filter) > 0:
+        df = df[filter]
+
+    # Read label
+    if isinstance(label_file , Path) or isinstance(label_file , str):
+        df_label = pd.read_csv(label_file, names=['class'])
+    elif isinstance(label_file , pd.DataFrame):
+        df_label = label_file
+    df_label.columns = ['class']
+    df_label['class'] = df_label['class'].astype(str)
+
+    class_labels = df_label['class'].unique().tolist()
+    class_labels.sort()
+
+    output = []
+    rule_summary = []
+    
+    # build transaction 
+    transactions = {}
+    for label_idx , label in enumerate(class_labels):
+        subdf = df.loc[df_label[df_label['class'] == label].index]
+        column_idx = subdf.columns.to_list()
+        transactions[label] = []
+        for idx , row in subdf.iterrows():
+            transaction = set([f"{column_idx[idx]}:{i}" for idx , i in enumerate(row.values)])
+            transactions[label].append(transaction)
+            
+    with tqdm(total=len(class_labels)) as pbar:
+        
+        for label_idx , label in enumerate(class_labels):
+            subdf = df.loc[df_label[df_label['class'] == label].index]
+            arm_summary = {}
+            
+            arm_summary['data_shape'] = subdf.shape
+            min_support = -(subdf.shape[0])
+            rule_count = 0
+            pbar.set_description("Generate frequent itemset for class {}".format(label))
+            while rule_count < min_rule_per_class: 
+                itemsets = ista(transactions[label] , target='c' , supp=min_support , report='a')
+                rule_count = len(itemsets)
+                min_support += 1
+            #print(f"Len of frequent itemset: {len(itemsets)} | Optimised support: {-min_support} ({-min_support/subdf.shape[0]*100}%)")
+            arm_summary['itemset_length'] = len(itemsets)
+            arm_summary['support'] = -min_support
+            arm_summary['support_percentage'] = -min_support/subdf.shape[0]*100
+            
+            generated_cars = 0
+            pbar.set_description("Generate CARs for class {}".format(label))
+            avg_confidence = 0
+            for itemset in itemsets:
+                antecedence , upper_support = itemset 
+                lower_support = subdf.shape[0]
+                # confidence = float(upper_support) / lower_support 
+                support = upper_support / lower_support
+                
+                # measure confidence 
+                match_transaction_within_class = 0 
+                match_transaction_outside_class = 0
+                for transaction_label , _transactions in transactions.items():
+                    if label == transaction_label:
+                        match_transaction_within_class += sum([ 1 for x in _transactions if set(antecedence).issubset(x)])
+                    else:
+                        match_transaction_outside_class += sum([ 1 for x in _transactions if set(antecedence).issubset(x)])
+                if match_transaction_within_class == 0:
+                    raise Exception("Error. Match transaction within class is 0.")
+                confidence = match_transaction_within_class / (match_transaction_within_class + match_transaction_outside_class)
+                avg_confidence += confidence
+                
+                if confidence >= min_confidence:
+                    generated_cars += 1
+                    if len(antecedence) > 1 :
+                        output.append([str(label) , str(confidence), str(support) , ",".join(list(antecedence))])
+                    
+            #print(f"Len of generated CARs: {generated_cars}")
+            arm_summary['cars_length'] = generated_cars
+            arm_summary['avg_confidence'] = avg_confidence / len(itemsets)
+            rule_summary.append(arm_summary)
+            pbar.update(1)
+    print(f"------ ARM summary [Gene Filter: {len(filter)}]---------")
+    print(pd.DataFrame(rule_summary))
+        
+
+    merged_df = df.join(df_label)
+    merged_df = merged_df.astype(str)
+
+    #class_column = merged_df.columns.to_list().index('class')
+    #merged_df.columns = [ x for x in range(len(merged_df.columns)) ]
+    corr = correlation(merged_df , 'class')
+    info_gain = information_gain(merged_df , 'class')
+    #feature_selection = set([])
+    for rule in output:
+        items = rule[3].split(",")
+        support = rule[2]
+        confidence = rule[1]
+        genes = [ int(x.split(":")[0]) for x in items ]
+        avg_ig = sum([ info_gain[x] for x  in genes if x in info_gain.keys() ])/len(items)
+        avg_corr = abs(sum([ corr[x] for x in genes if not math.isnan(corr[x]) ])/len(items)) + 0.0000001
+        
+        #feature_selection = feature_selection.union(set(genes))
+        try:
+            interestingness_1 = math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(confidence)+0.0000001)
+            interestingness_2 = 1/math.log2(avg_ig) + 1/math.log2(avg_corr) + 1/(float(confidence)+0.0000001)
+            interestingness_3 = math.log2(avg_ig) + math.log2(avg_corr) + math.log2(float(support)*float(confidence)+0.0000001)
+            if math.isnan(interestingness_1) or math.isnan(interestingness_2) or math.isnan(interestingness_3):
+                raise Exception("Error")
+        except: 
+            print( [corr[x] for x in genes ])
+            print(f"Error: {avg_ig} | {avg_corr} | {confidence}")
+            raise Exception("Error")
+        
+        #print(f"IG: {avg_ig} | Corr: {avg_corr} | Interestingness: {interestingess}")
+        rule.append(str(interestingness_1))
+        rule.append(str(interestingness_2))
+        rule.append(str(interestingness_3))
+
+    # x[0] = class , x[1] = confidence , x[2] = support , x[3] = antecedence , x[4] = interestingness_1 , x[5] = interestingness_2
+    # output = sorted(output , key = lambda x : float(x[4]) , reverse=True) # sort by interestingness_1
+
+    #print(f"Before feature selection: {len(feature_selection)}")
+    #feature_selection = [ gene for gene in feature_selection if corr[gene] > 0.1]
+    df_ac = pd.DataFrame(output , columns=['class' , 'confidence' , 'support' , 'rules' , 'interestingness_1' , 'interestingness_2' , 'interestingness_3'])
+    df_ac['interestingness_1'] = df_ac['interestingness_1'].astype(float)
+    df_ac['interestingness_2'] = df_ac['interestingness_2'].astype(float)
+    df_ac['interestingness_3'] = df_ac['interestingness_3'].astype(float)
+    
+    
+    test_k = [ 1 , 5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]
+    selected_k = 1 
+    best_acc = 0
+    selected_gene = []
+    for k in test_k:
+        feature_selection = set()
+        df_filter = df_ac.groupby('class').apply(lambda x: x.nlargest(k , 'interestingness_1')).reset_index(drop=True)
+        for idx , row in df_filter.iterrows():
+            items = row['rules'].split(",")
+            genes = [ int(x.split(":")[0]) for x in items ]
+            feature_selection = feature_selection.union(set(genes))
+            
+        # generate testing model 
+        model_summary = {}
+        for label in df_label['class'].unique():
+            df_sub = df_filter[df_filter['class'] == label]
+            model_summary[label] = []
+            for idx , row in df_sub.iterrows(): 
+                rule = [ x for x in row['rules'].split(",")]
+                model_summary[label].append(rule)
+        
+        # prediction 
+        class_summary = []
+        for idx , row in df.iterrows():
+            sample = set([f"{x[0]}:{x[1]}" for x in list(zip(row.index , row.values))])
+            summary = {}
+            for label in model_summary.keys():
+                summary[label] = []
+                
+                for rule in model_summary[label]:
+                    intersection_set = sample.intersection(set(rule))
+                    if len(rule) != 0:
+                        summary[label].append(len(intersection_set)/len(rule))
+                    else:
+                        summary[label].append(0)
+                summary[label] = sum(summary[label])/len(summary[label])
+            
+            # select the class with highest score
+            summary['predict'] = max(summary , key=summary.get) 
+            summary['sample'] = idx 
+            class_summary.append(summary)
+        
+        df_prediction = pd.DataFrame(class_summary)
+        report = classification_report(df_label['class'] , df_prediction['predict'] , output_dict=True , digits=4)
+        print(f"Top {k} | {report['accuracy']:.4f} | Lens gene: {len(feature_selection)}")
+        
+        if report['accuracy'] > best_acc:
+            best_acc = report['accuracy']
+            selected_gene = feature_selection
+            selected_k = k
+        
+    print("Best K: {} | Best Acc: {:.4f}".format(selected_k , best_acc))
+    
+    return est , list(selected_gene) 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Discretization")

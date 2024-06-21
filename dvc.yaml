@@ -27,29 +27,29 @@ stages:
     outs:
     - artifacts/data_preprocessing
 
-  arm_classification:
-    cmd: python src/amogel/pipeline/stage_arm_classification.py
-    deps:
-    - src/amogel/components/arm_classification.py
-    - src/amogel/pipeline/stage_arm_classification.py
-    params:
-    - arm_classification
-    outs:
-    - artifacts/arm_classification
+  # arm_classification:
+  #   cmd: python src/amogel/pipeline/stage_arm_classification.py
+  #   deps:
+  #   - src/amogel/components/arm_classification.py
+  #   - src/amogel/pipeline/stage_arm_classification.py
+  #   params:
+  #   - arm_classification
+  #   outs:
+  #   - artifacts/arm_classification
 
-  compare_mogonet: 
-    cmd: python MOGONET/main_mogonet.py 
-    deps:
-    - MOGONET/main_mogonet.py
-    outs:
-    - artifacts/compare/mogonet 
+  # compare_mogonet: 
+  #   cmd: python MOGONET/main_mogonet.py 
+  #   deps:
+  #   - MOGONET/main_mogonet.py
+  #   outs:
+  #   - artifacts/compare/mogonet 
 
-  compare_moglam: 
-    cmd: python MOGLAM/main_MOGLAM.py 
-    deps: 
-    - MOGLAM/main_MOGLAM.py
-    outs:
-    - artifacts/compare/moglam
+  # compare_moglam: 
+  #   cmd: python MOGLAM/main_MOGLAM.py 
+  #   deps: 
+  #   - MOGLAM/main_MOGLAM.py
+  #   outs:
+  #   - artifacts/compare/moglam
   
   compare_other: 
     cmd: python src/amogel/pipeline/stage_other_classification.py
@@ -57,7 +57,7 @@ stages:
     - src/amogel/pipeline/stage_other_classification.py
     outs: 
     - artifacts/compare/traditional
-    
+
   # train_embedding:
   #   cmd: python src/amogel/pipeline/stage_train_embedding.py
   #   deps:
@@ -79,24 +79,24 @@ stages:
   #   outs:
   #   - artifacts/train_encoder
 
-  knowledge_graph:
-    cmd: python src/amogel/pipeline/stage_knowledge_graph.py
-    deps:
-    - config/config.yaml
-    - src/amogel/components/knowledge_graph.py
-    - src/amogel/pipeline/stage_knowledge_graph.py
-    params: 
-    - knowledge_graph 
-    - model_training.dataset
-    - arm_classification.metric
-    - data_preprocessing.n_bins
-    outs:
-    - artifacts/knowledge_graph
+  # knowledge_graph:
+  #   cmd: python src/amogel/pipeline/stage_knowledge_graph.py
+  #   deps:
+  #   - config/config.yaml
+  #   - src/amogel/components/knowledge_graph.py
+  #   - src/amogel/pipeline/stage_knowledge_graph.py
+  #   params: 
+  #   - knowledge_graph 
+  #   - model_training.dataset
+  #   - arm_classification.metric
+  #   - data_preprocessing.n_bins
+  #   outs:
+  #   - artifacts/knowledge_graph
   
-  model_training:
-    cmd: python src/amogel/pipeline/stage_model_training.py
-    deps:
-    - src/amogel/components/model_training.py
-    - src/amogel/pipeline/stage_model_training.py
-    params: 
-    - model_training
+  # model_training:
+  #   cmd: python src/amogel/pipeline/stage_model_training.py
+  #   deps:
+  #   - src/amogel/components/model_training.py
+  #   - src/amogel/pipeline/stage_model_training.py
+  #   params: 
+  #   - model_training

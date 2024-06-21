@@ -5,25 +5,35 @@ from torchmetrics.classification import Accuracy , Precision , Recall , AUROC , 
 import torch
 from torch.nn import Linear
 import torch.nn.functional as F
-from torch_geometric.nn import GCNConv , BatchNorm 
+from torch_geometric.nn import GCNConv , BatchNorm , GATConv 
 from torch_geometric.nn import global_mean_pool
 import mlflow
+from sklearn.metrics import classification_report
 
 class GCN(pl.LightningModule):
-    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.5, weight=None, mlflow:mlflow = None):
+    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, mlflow:mlflow = None):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         super(GCN, self).__init__()
-        torch.manual_seed(12345)
-        self.conv1 = GCNConv(in_channels, hidden_channels)
+        self.conv1 = GATConv(in_channels, hidden_channels)
         self.bn1 = BatchNorm(hidden_channels)
-        self.conv2 = GCNConv(hidden_channels, hidden_channels)
+        self.conv2 = GATConv(hidden_channels, hidden_channels)
         self.bn2 = BatchNorm(hidden_channels)
-        self.conv3 = GCNConv(hidden_channels, hidden_channels)
+        self.conv3 = GATConv(hidden_channels, hidden_channels)
         self.lin_hidden = Linear(hidden_channels, hidden_channels)
         self.lin = Linear(hidden_channels, num_classes)
+        self.mlp = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Dropout(drop_out),
+            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Linear(hidden_channels, num_classes)
+        )
         self.weight = weight if weight is None else torch.tensor(weight, device=device)
-        self.criterion = torch.nn.CrossEntropyLoss(weight=torch.tensor(self.weight , device=device))
+        self.criterion = torch.nn.CrossEntropyLoss(weight=self.weight)
         
         # [[ 79   0  14  10   0] =  79+0+14+10+0 = 103 , 614 / (103) = 5.96 , 1 - 103 / 614 = 0.83
         # [ 14   0  18   9   0] = 14+0+18+9+0 = 41 , 614 /  41 = 14.97 , 1 - 41 / 614 = 0.93
@@ -39,43 +49,47 @@ class GCN(pl.LightningModule):
         self.f1score = F1Score(task="multiclass" , num_classes=num_classes , average="macro")
         self.cfm_training = ConfusionMatrix(task="multiclass", num_classes=num_classes)
         self.cfm_testing = ConfusionMatrix(task="multiclass", num_classes=num_classes)
+        self.actual = []
+        self.predicted = []
         self.lr = lr
         self.drop_out = drop_out
 
-    def forward(self, x, edge_index, batch):
+    def forward(self, x, edge_index, edge_attr, batch):
         # 1. Obtain node embeddings 
-        x = self.conv1(x, edge_index)
+        x = self.conv1(x, edge_index , edge_attr)
         x = self.bn1(x)
         x = x.relu()
-        x = self.conv2(x, edge_index)
+        x = self.conv2(x, edge_index , edge_attr)
         x = self.bn2(x)
         x = x.relu()
-        x = self.conv3(x, edge_index)
+        # x = self.conv3(x, edge_index)
 
         # 2. Readout layer
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
         # 3. Apply a final classifier
-        x = F.dropout(x, p=self.drop_out , training=self.training)
-        x = self.lin_hidden(x).relu()
-        x = self.lin(x)
+        # x = F.dropout(x, p=self.drop_out , training=self.training)
+        # x = self.lin_hidden(x).relu()
+        # x = self.lin(x)
+        x = self.mlp(x)
         
         return x
 
     def training_step(self, batch, batch_idx):
-        x , edge_index , batch , y = batch.x , batch.edge_index , batch.batch , batch.y
-        out = self(x, edge_index, batch)
+        x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
+        out = self(x, edge_index, edge_attr, batch)
         loss = self.criterion(out, y)
         acc = self.accuracy(out, y)
         self.cfm_training(out , y)
         
-        self.log('train_loss' , loss , prog_bar=True)
-        self.log('train_acc' , acc , prog_bar=True)
+        self.log('train_loss' , loss , prog_bar=True, on_epoch=True , on_step=False)
+        self.log('train_acc' , acc , prog_bar=True , on_epoch=True , on_step=False)
         return loss
     
     def validation_step(self, batch, batch_idx):
-        x , edge_index , batch , y = batch.x , batch.edge_index , batch.batch , batch.y
-        out = self(x, edge_index, batch)
+        x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
+        out = self(x, edge_index, edge_attr, batch)
+        
         loss = self.criterion(out, y)
         acc = self.accuracy(out, y)
         preci = self.precision(out, y)
@@ -84,6 +98,8 @@ class GCN(pl.LightningModule):
         spe = self.specificity(out, y)
         f1score = self.f1score(out, y)
         cfm = self.cfm_testing(out, y)  
+        self.actual.extend(y.cpu().numpy())
+        self.predicted.extend(out.argmax(dim=1).cpu().numpy())
         
         self.log('val_loss' , loss , prog_bar=True, on_epoch=True)
         self.log('val_acc' , acc , prog_bar=True, on_epoch=True)
@@ -95,22 +111,20 @@ class GCN(pl.LightningModule):
     
     def on_train_epoch_end(self) -> None:
         
-        if self.current_epoch % 10 == 0:
+        if self.current_epoch == self.trainer.max_epochs - 1:
             cfm = self.cfm_training.compute().cpu().numpy()
             print("")
             print("-------- Confusion Matrix [Training] --------")
             print(cfm)
-        
         self.cfm_training.reset()
         
     def on_validation_epoch_end(self):
         
-        if self.current_epoch % 10 == 0:
-            cfm = self.cfm_testing.compute().cpu().numpy()
-            print("")
-            print("-------- Confusion Matrix [Testing] --------")
-            print(cfm)
-        
+        if self.current_epoch == self.trainer.max_epochs - 1:
+            report = classification_report(self.actual , self.predicted , digits=4)
+            print(report)
+        self.actual = []
+        self.predicted = []
         self.cfm_testing.reset()
     
     def configure_optimizers(self):
