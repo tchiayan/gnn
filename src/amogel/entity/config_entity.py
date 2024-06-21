@@ -150,3 +150,4 @@ class CompareOtherConfig:
     learning_rate: float
     batch_size: int 
     drop_out: float
+    negative_corr: bool

@@ -198,7 +198,8 @@ class ConfigurationManager:
             hidden_units=params.hidden_units,
             learning_rate=params.learning_rate,
             batch_size=params.batch_size,
-            drop_out=params.drop_out
+            drop_out=params.drop_out, 
+            negative_corr=params.negative_corr
         )
         
         return compare_other_config

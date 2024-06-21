@@ -198,11 +198,11 @@ class OtherClassifier:
         # generate graph data
         corr = self.train_data_ac.corr()
         
-        # abs 
-        corr = corr.abs()
-        
-        # filter corr 
-        corr = corr[corr > threshold]
+        if self.config.negative_corr:
+            corr = corr[corr.abs() >= threshold]
+        else:
+            corr = corr.abs()
+            corr = corr[corr > threshold]
         
         # convert to tensor 
         corr_tensor = torch.tensor(corr.values , dtype=torch.float32)
@@ -263,5 +263,6 @@ class OtherClassifier:
         )
         
         with mlflow.start_run():
+            mlflow.log_params(self.config.__dict__)
             trainer = Trainer(max_epochs=self.config.epochs)
             trainer.fit(model , train_loader , test_loader)
