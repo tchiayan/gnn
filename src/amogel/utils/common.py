@@ -8,6 +8,8 @@ import numpy as np
 from torch_geometric.utils import to_undirected
 from torch_geometric.data import Data
 from scipy.sparse import coo_matrix
+from typing import List
+import pandas as pd
 
 def read_yaml(path_to_yaml: Path) -> ConfigBox: 
     """reads yaml file and returns
@@ -80,3 +82,66 @@ def symmetric_matrix_to_coo(matrix , threshold):
     coo = coo_matrix((data, (rows, cols)), shape=matrix.shape)
 
     return coo
+
+def load_omic_features_name(dir:str , dataset:str , type:List[int]):
+    
+    df_features = []
+    for i in type:
+        feature_filepath = os.path.join(dir , dataset , f"{i}_featname.csv")
+    
+        df_feature = pd.read_csv(feature_filepath , header=None)
+        
+        if i == 1:
+            df_feature['gene_name'] = df_feature[0].apply(lambda x: x.split("|")[0])
+        else:
+            df_feature['gene_name'] = df_feature[0]
+        df_features.append(df_feature)
+        
+    # merge all features
+    df_features = pd.concat(df_features)
+    df_features.reset_index(inplace=True)
+    df_features['gene_idx'] = df_features.index.to_list()
+    
+    return df_features[["gene_idx" , "gene_name"]]
+    
+def load_ppi(dir:str, df_features_name:pd.DataFrame, protein_score:int=400):
+    ppi_info_path = os.path.join(dir, f"protein_info.parquet.gzip")
+    ppi_link_path = os.path.join(dir, f"protein_links.parquet.gzip")
+    
+    if not os.path.exists(ppi_info_path):
+        raise FileNotFoundError(f"PPI info file not found at {ppi_info_path}")
+    
+    if not os.path.exists(ppi_link_path):
+        raise FileNotFoundError(f"PPI link file not found at {ppi_link_path}")
+    
+    df_protein = pd.read_parquet(ppi_info_path)
+    df_protein_link = pd.read_parquet(ppi_link_path)
+    
+    df_protein_merged = pd.merge(df_protein_link, df_protein[['#string_protein_id','preferred_name']], left_on="protein1", right_on="#string_protein_id")
+    df_protein_merged.rename(columns={"preferred_name":"protein1_name"}, inplace=True)
+
+    df_protein_merged = pd.merge(df_protein_merged, df_protein[['#string_protein_id','preferred_name']], left_on="protein2", right_on="#string_protein_id")
+    df_protein_merged.rename(columns={"preferred_name":"protein2_name"}, inplace=True)
+
+    # drop columns
+    df_protein_merged.drop(columns=["#string_protein_id_x", "#string_protein_id_y", "protein1" , "protein2"], inplace=True)
+    df_protein_merged.head()
+    
+
+    df_protein_merged = df_protein_merged.merge(df_features_name[['gene_idx' , 'gene_name']] , left_on="protein1_name", right_on="gene_name" , how="left")
+    df_protein_merged.rename(columns={"gene_idx":"gene1_idx"}, inplace=True)
+
+    df_protein_merged = df_protein_merged.merge(df_features_name[['gene_idx' , 'gene_name']] , left_on="protein2_name", right_on="gene_name" , how="left")
+    df_protein_merged.rename(columns={"gene_idx":"gene2_idx"}, inplace=True)
+
+    df_protein_merged.drop(columns=["gene_name_x", "gene_name_y"], inplace=True)
+    
+    # filter rows with only gene1_idx and gene2_idx
+    df_filter_protein = df_protein_merged[df_protein_merged['gene1_idx'].notnull()][df_protein_merged['gene2_idx'].notnull()]
+    
+    if protein_score > 0:
+        df_filter_protein = df_filter_protein[df_filter_protein['combined_score'] >= protein_score]
+        
+    return df_filter_protein
+    
+    

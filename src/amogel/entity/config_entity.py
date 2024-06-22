@@ -152,3 +152,4 @@ class CompareOtherConfig:
     drop_out: float
     negative_corr: bool
     pooling_ratio: float
+    ppi: bool

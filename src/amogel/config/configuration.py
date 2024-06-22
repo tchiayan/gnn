@@ -200,7 +200,8 @@ class ConfigurationManager:
             batch_size=params.batch_size,
             drop_out=params.drop_out, 
             negative_corr=params.negative_corr, 
-            pooling_ratio=params.pooling_ratio
+            pooling_ratio=params.pooling_ratio,
+            ppi=params.ppi,
         )
         
         return compare_other_config

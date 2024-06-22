@@ -9,7 +9,7 @@ from amogel.utils.ac import generate_ac_to_file , generate_ac_feature_selection
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from torch_geometric.loader import DataLoader
-from amogel.utils.common import symmetric_matrix_to_pyg
+from amogel.utils.common import symmetric_matrix_to_pyg , load_ppi , load_omic_features_name
 from amogel.model.GCN import GCN
 import warnings
 import torch
@@ -73,6 +73,7 @@ class OtherClassifier:
             else:
                 selection[2] += 1
         logger.info(f"Selected gene distribution: {selection}")
+        self.selected_gene = selected_gene
         self.train_data_ac =  pd.DataFrame(est.transform(self.train_data))[selected_gene]
         self.test_data_ac = pd.DataFrame(est.transform(self.test_data))[selected_gene]
         
@@ -194,6 +195,8 @@ class OtherClassifier:
         
     def train_and_evaluate_graph_feature_selection_ac(self):
         
+        edge_matrix = []
+        
         threshold = self.config.corr_threshold
         # generate graph data
         corr = self.train_data_ac.corr()
@@ -209,6 +212,22 @@ class OtherClassifier:
         
         # fill nan with 0 
         corr_tensor[torch.isnan(corr_tensor)] = 0
+        edge_matrix.append(corr_tensor)
+        
+        # load ppi 
+        if self.config.ppi:
+            feature_names = load_omic_features_name("./artifacts/data_preprocessing" , self.dataset , [1,2,3])
+            ppi = load_ppi("./artifacts/ppi_data/unzip"  , feature_names , 500)
+            ppi_tensor = torch.zeros(feature_names.shape[0] , feature_names.shape[0])
+            ppi_tensor[ppi["gene1_idx"].values , ppi['gene2_idx'].values] = 1 
+            ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = 1
+            ppi_tensor = ppi_tensor[self.selected_gene , self.selected_gene]
+            
+            edge_matrix.append(ppi_tensor)
+            assert (ppi_tensor != ppi_tensor.T).int().sum() == 0 , "PPI should be symmetric"
+            assert ppi_tensor.max() <= 1 , "PPI should be binary"
+            assert ppi_tensor.shape[0] == corr_tensor.shape[0] , "PPI and AC should have the same dimension"
+        edge_matrix = torch.stack(edge_matrix , dim=-1)
         
         train_graph = []
         with tqdm(total=self.train_data_ac.shape[0]) as pbar:

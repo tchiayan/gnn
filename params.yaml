@@ -44,6 +44,7 @@ compare_other:
   drop_out: 0.05
   negative_corr: true
   pooling_ratio: 0.9
+  ppi: true
 
 knowledge_graph: 
   ppi_combined_score: 500
