@@ -153,3 +153,5 @@ class CompareOtherConfig:
     negative_corr: bool
     pooling_ratio: float
     ppi: bool
+    ppi_score: int 
+    corr: bool

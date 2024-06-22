@@ -202,6 +202,8 @@ class ConfigurationManager:
             negative_corr=params.negative_corr, 
             pooling_ratio=params.pooling_ratio,
             ppi=params.ppi,
+            ppi_score=params.ppi_score,
+            corr=params.corr
         )
         
         return compare_other_config

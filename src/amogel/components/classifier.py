@@ -198,27 +198,28 @@ class OtherClassifier:
         edge_matrix = []
         
         threshold = self.config.corr_threshold
-        # generate graph data
-        corr = self.train_data_ac.corr()
-        
-        if self.config.negative_corr:
-            corr = corr[corr.abs() >= threshold]
-        else:
-            corr = corr.abs()
-            corr = corr[corr > threshold]
-        
-        # convert to tensor 
-        corr_tensor = torch.tensor(corr.values , dtype=torch.float32)
-        
-        # fill nan with 0 
-        corr_tensor[torch.isnan(corr_tensor)] = 0
-        logger.info(f"Correlation matrix shape: {corr_tensor.shape}")
-        edge_matrix.append(corr_tensor)
+        if self.config.corr:
+            # generate graph data
+            corr = self.train_data_ac.corr()
+            
+            if self.config.negative_corr:
+                corr = corr[corr.abs() >= threshold]
+            else:
+                corr = corr.abs()
+                corr = corr[corr > threshold]
+            
+            # convert to tensor 
+            corr_tensor = torch.tensor(corr.values , dtype=torch.float32)
+            
+            # fill nan with 0 
+            corr_tensor[torch.isnan(corr_tensor)] = 0
+            logger.info(f"Correlation matrix shape: {corr_tensor.shape}")
+            edge_matrix.append(corr_tensor)
         
         # load ppi 
         if self.config.ppi:
             feature_names = load_omic_features_name("./artifacts/data_preprocessing" , self.dataset , [1,2,3])
-            ppi = load_ppi("./artifacts/ppi_data/unzip"  , feature_names , 500)
+            ppi = load_ppi("./artifacts/ppi_data/unzip"  , feature_names , self.config.ppi_score)
             ppi_tensor = torch.zeros(feature_names.shape[0] , feature_names.shape[0])
             ppi_tensor[ppi["gene1_idx"].values , ppi['gene2_idx'].values] = 1 
             ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = 1

@@ -45,6 +45,8 @@ compare_other:
   negative_corr: true
   pooling_ratio: 0.9
   ppi: true
+  ppi_score: 500
+  corr: false
 
 knowledge_graph: 
   ppi_combined_score: 500
