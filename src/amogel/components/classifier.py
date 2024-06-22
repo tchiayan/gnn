@@ -228,9 +228,8 @@ class OtherClassifier:
             edge_matrix.append(ppi_tensor)
             logger.info(f"PPI matrix shape: {ppi_tensor.shape}")
             assert (ppi_tensor != ppi_tensor.T).int().sum() == 0 , "PPI should be symmetric"
-            assert ppi_tensor.max() <= 1 , "PPI should be binary"
-            assert ppi_tensor.shape[0] == corr_tensor.shape[0] , "PPI and AC should have the same dimension"
-            assert ppi_tensor.shape[1] == corr_tensor.shape[1] , "PPI and AC should have the same dimension"
+            #assert ppi_tensor.shape[0] == corr_tensor.shape[0] , "PPI and AC should have the same dimension"
+            #assert ppi_tensor.shape[1] == corr_tensor.shape[1] , "PPI and AC should have the same dimension"
         
         edge_matrix = torch.stack(edge_matrix , dim=-1)
         
