@@ -226,8 +226,8 @@ class OtherClassifier:
                 ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = 1
             else:
                 max_ppi_score = ppi['combined_score'].max()
-                ppi_tensor[ppi["gene1_idx"].values , ppi['gene2_idx'].values] = ppi['combined_score'].values / max_ppi_score
-                ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = ppi['combined_score'].values / max_ppi_score
+                ppi_tensor[ppi["gene1_idx"].values , ppi['gene2_idx'].values] = torch.tensor(ppi['combined_score'].values / max_ppi_score , dtype=torch.float)
+                ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = torch.tensor(ppi['combined_score'].values / max_ppi_score , dtype=torch.float)
             ppi_tensor = ppi_tensor[self.selected_gene][:, self.selected_gene]
             
             edge_matrix.append(ppi_tensor)
