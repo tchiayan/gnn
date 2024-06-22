@@ -212,6 +212,7 @@ class OtherClassifier:
         
         # fill nan with 0 
         corr_tensor[torch.isnan(corr_tensor)] = 0
+        logger.info(f"Correlation matrix shape: {corr_tensor.shape}")
         edge_matrix.append(corr_tensor)
         
         # load ppi 
@@ -224,6 +225,7 @@ class OtherClassifier:
             ppi_tensor = ppi_tensor[self.selected_gene , self.selected_gene]
             
             edge_matrix.append(ppi_tensor)
+            logger.info(f"PPI matrix shape: {ppi_tensor.shape}")
             assert (ppi_tensor != ppi_tensor.T).int().sum() == 0 , "PPI should be symmetric"
             assert ppi_tensor.max() <= 1 , "PPI should be binary"
             assert ppi_tensor.shape[0] == corr_tensor.shape[0] , "PPI and AC should have the same dimension"
