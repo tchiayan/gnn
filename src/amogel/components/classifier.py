@@ -221,8 +221,13 @@ class OtherClassifier:
             feature_names = load_omic_features_name("./artifacts/data_preprocessing" , self.dataset , [1,2,3])
             ppi = load_ppi("./artifacts/ppi_data/unzip"  , feature_names , self.config.ppi_score)
             ppi_tensor = torch.zeros(feature_names.shape[0] , feature_names.shape[0])
-            ppi_tensor[ppi["gene1_idx"].values , ppi['gene2_idx'].values] = 1 
-            ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = 1
+            if self.config.ppi_edge == 'binary':
+                ppi_tensor[ppi["gene1_idx"].values , ppi['gene2_idx'].values] = 1 
+                ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = 1
+            else:
+                max_ppi_score = ppi['combined_score'].max()
+                ppi_tensor[ppi["gene1_idx"].values , ppi['gene2_idx'].values] = ppi['combined_score'].values / max_ppi_score
+                ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = ppi['combined_score'].values / max_ppi_score
             ppi_tensor = ppi_tensor[self.selected_gene][:, self.selected_gene]
             
             edge_matrix.append(ppi_tensor)

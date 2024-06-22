@@ -203,7 +203,8 @@ class ConfigurationManager:
             pooling_ratio=params.pooling_ratio,
             ppi=params.ppi,
             ppi_score=params.ppi_score,
-            corr=params.corr
+            corr=params.corr, 
+            ppi_edge=params.ppi_edge
         )
         
         return compare_other_config

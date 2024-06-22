@@ -155,3 +155,4 @@ class CompareOtherConfig:
     ppi: bool
     ppi_score: int 
     corr: bool
+    ppi_edge: str
