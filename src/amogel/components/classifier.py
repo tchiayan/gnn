@@ -241,7 +241,7 @@ class OtherClassifier:
                 assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
 
                 graph = symmetric_matrix_to_pyg(
-                    matrix=corr_tensor, 
+                    matrix=edge_matrix, 
                     node_features=torch_sample.unsqueeze(-1),
                     y=torch.tensor(self.train_label.loc[idx].values , dtype=torch.long),
                     edge_threshold=threshold
@@ -257,7 +257,7 @@ class OtherClassifier:
                 assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
 
                 graph = symmetric_matrix_to_pyg(
-                    matrix=corr_tensor, 
+                    matrix=edge_matrix, 
                     node_features=torch_sample.unsqueeze(dim=-1) ,
                     y=torch.tensor(self.test_label.loc[idx].values , dtype=torch.long),
                     edge_threshold=threshold
