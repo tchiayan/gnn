@@ -248,7 +248,7 @@ class OtherClassifier:
             for idx , sample in self.train_data_ac.iterrows():
                 torch_sample = torch.tensor(sample.values , dtype=torch.float32)
                 if self.config.discretized and self.config.n_bins > 2: 
-                    torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).squeeze(1).float()
+                    torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).squeeze(1).squeeze(1).float()
                 else:
                     assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
 
@@ -266,7 +266,7 @@ class OtherClassifier:
             for idx , sample in self.test_data_ac.iterrows():
                 torch_sample = torch.tensor(sample.values , dtype=torch.float32)
                 if self.config.discretized and self.config.n_bins > 2: 
-                    torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).squeeze(1).float()
+                    torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).squeeze(1).squeeze(1).float()
                 else: 
                     assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
 
