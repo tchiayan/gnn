@@ -246,15 +246,15 @@ class OtherClassifier:
         train_graph = []
         with tqdm(total=self.train_data_ac.shape[0]) as pbar:
             for idx , sample in self.train_data_ac.iterrows():
-                torch_sample = torch.tensor(sample.values , dtype=torch.float32)
+                torch_sample = torch.tensor(sample.values , dtype=torch.float32).unsqueeze(-1)
                 if self.config.discretized and self.config.n_bins > 2: 
-                    torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).squeeze(1).squeeze(1).float()
+                    torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).squeeze(1).float()
                 else:
-                    assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
+                    assert len(torch_sample.shape) == 2 , "Only support 1D tensor"
 
                 graph = symmetric_matrix_to_pyg(
                     matrix=edge_matrix, 
-                    node_features=torch_sample.unsqueeze(-1),
+                    node_features=torch_sample,
                     y=torch.tensor(self.train_label.loc[idx].values , dtype=torch.long),
                     edge_threshold=threshold
                 )
@@ -264,15 +264,15 @@ class OtherClassifier:
         test_graph = []
         with tqdm(total=self.test_data_ac.shape[0]) as pbar:
             for idx , sample in self.test_data_ac.iterrows():
-                torch_sample = torch.tensor(sample.values , dtype=torch.float32)
+                torch_sample = torch.tensor(sample.values , dtype=torch.float32).unsqueeze(-1)
                 if self.config.discretized and self.config.n_bins > 2: 
                     torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).squeeze(1).squeeze(1).float()
                 else: 
-                    assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
+                    assert len(torch_sample.shape) == 2 , "Only support 1D tensor"
 
                 graph = symmetric_matrix_to_pyg(
                     matrix=edge_matrix, 
-                    node_features=torch_sample.unsqueeze(dim=-1) ,
+                    node_features=torch_sample ,
                     y=torch.tensor(self.test_label.loc[idx].values , dtype=torch.long),
                     edge_threshold=threshold
                 )
