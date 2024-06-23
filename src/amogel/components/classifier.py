@@ -249,8 +249,8 @@ class OtherClassifier:
                 torch_sample = torch.tensor(sample.values , dtype=torch.float32)
                 if self.config.discretized and self.config.n_bins > 2: 
                     torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).unsqueeze(1).float()
-
-                assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
+                else:
+                    assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
 
                 graph = symmetric_matrix_to_pyg(
                     matrix=edge_matrix, 
@@ -267,8 +267,8 @@ class OtherClassifier:
                 torch_sample = torch.tensor(sample.values , dtype=torch.float32)
                 if self.config.discretized and self.config.n_bins > 2: 
                     torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).unsqueeze(1).float()
-
-                assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
+                else: 
+                    assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
 
                 graph = symmetric_matrix_to_pyg(
                     matrix=edge_matrix, 
