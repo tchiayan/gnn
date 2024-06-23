@@ -74,8 +74,12 @@ class OtherClassifier:
                 selection[2] += 1
         logger.info(f"Selected gene distribution: {selection}")
         self.selected_gene = selected_gene
-        self.train_data_ac =  pd.DataFrame(est.transform(self.train_data))[selected_gene]
-        self.test_data_ac = pd.DataFrame(est.transform(self.test_data))[selected_gene]
+        if self.config.discretized:
+            self.train_data_ac =  pd.DataFrame(est.transform(self.train_data))[selected_gene]
+            self.test_data_ac = pd.DataFrame(est.transform(self.test_data))[selected_gene]
+        else:
+            self.train_data_ac = self.train_data[selected_gene]
+            self.test_data_ac = self.test_data[selected_gene]
         
         logger.info("Data dimension for training and testing")
         logger.info(f"Train data: {self.train_data.shape}")

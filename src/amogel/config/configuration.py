@@ -204,7 +204,8 @@ class ConfigurationManager:
             ppi=params.ppi,
             ppi_score=params.ppi_score,
             corr=params.corr, 
-            ppi_edge=params.ppi_edge
+            ppi_edge=params.ppi_edge, 
+            discretized=params.discretized
         )
         
         return compare_other_config
