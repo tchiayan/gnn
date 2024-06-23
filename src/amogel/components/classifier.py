@@ -294,7 +294,7 @@ class OtherClassifier:
         test_loader = DataLoader(test_graph , batch_size=32 , shuffle=False)
         
         model = GCN(
-            in_channels=1,
+            in_channels=train_graph[0].x.shape[1],
             hidden_channels=self.config.hidden_units,
             num_classes=5, 
             lr=self.config.learning_rate,
