@@ -13,6 +13,7 @@ from amogel.utils.common import symmetric_matrix_to_pyg , load_ppi , load_omic_f
 from amogel.model.GCN import GCN
 import warnings
 import torch
+from torch.nn.functional import one_hot
 from tqdm import tqdm
 import mlflow
 from amogel.entity.config_entity import CompareOtherConfig
@@ -246,6 +247,8 @@ class OtherClassifier:
         with tqdm(total=self.train_data_ac.shape[0]) as pbar:
             for idx , sample in self.train_data_ac.iterrows():
                 torch_sample = torch.tensor(sample.values , dtype=torch.float32)
+                if self.config.discretized and self.config.n_bins > 2: 
+                    torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).unsqueeze(1).float()
 
                 assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
 
@@ -262,6 +265,8 @@ class OtherClassifier:
         with tqdm(total=self.test_data_ac.shape[0]) as pbar:
             for idx , sample in self.test_data_ac.iterrows():
                 torch_sample = torch.tensor(sample.values , dtype=torch.float32)
+                if self.config.discretized and self.config.n_bins > 2: 
+                    torch_sample = one_hot(torch_sample.long() , num_classes=self.config.n_bins).unsqueeze(1).float()
 
                 assert len(torch_sample.shape) == 1 , "Only support 1D tensor"
 
