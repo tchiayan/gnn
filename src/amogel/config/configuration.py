@@ -189,7 +189,7 @@ class ConfigurationManager:
         
         return arm_classification_config
     
-    def get_compare_other_configurations(self) -> dict: 
+    def get_compare_other_configurations(self) -> CompareOtherConfig: 
         params = self.params.compare_other
         
         compare_other_config = CompareOtherConfig(
@@ -205,7 +205,9 @@ class ConfigurationManager:
             ppi_score=params.ppi_score,
             corr=params.corr, 
             ppi_edge=params.ppi_edge, 
-            discretized=params.discretized
+            discretized=params.discretized, 
+            n_bins=params.n_bins, 
+            select_k=params.select_k
         )
         
         return compare_other_config

@@ -157,3 +157,5 @@ class CompareOtherConfig:
     corr: bool
     ppi_edge: str
     discretized: bool
+    n_bins: int
+    select_k: str

@@ -48,7 +48,9 @@ compare_other:
   ppi_score: 500
   corr: false
   ppi_edge: 'score'
-  discretized: false
+  discretized: true
+  n_bins: 4
+  select_k: "auto"
 
 knowledge_graph: 
   ppi_combined_score: 500

@@ -11,7 +11,7 @@ class OtherClassificationPipeline:
         config = ConfigurationManager().get_compare_other_configurations()
         classifier = OtherClassifier(config=config , dataset=self.dataset)
         logger.info("Loading datasets")
-        classifier.load_data(select_k=1000)
+        classifier.load_data(select_k=config.select_k)
         # logger.info("Training and evaluating KNN model")
         # classifier.train_and_evaluate_knn()
         # logger.info("Training and evaluating SVM model")
