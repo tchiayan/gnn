@@ -48,6 +48,7 @@ compare_other:
   ppi_score: 500
   corr: false
   ppi_edge: 'score'
+  discretized: false
 
 knowledge_graph: 
   ppi_combined_score: 500
