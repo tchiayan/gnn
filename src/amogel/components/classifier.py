@@ -303,5 +303,6 @@ class OtherClassifier:
         
         with mlflow.start_run():
             mlflow.log_params(self.config.__dict__)
+            mlflow.log_param("dataset" , self.dataset)
             trainer = Trainer(max_epochs=self.config.epochs)
             trainer.fit(model , train_loader , test_loader)
