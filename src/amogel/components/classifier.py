@@ -296,7 +296,7 @@ class OtherClassifier:
         model = GCN(
             in_channels=train_graph[0].x.shape[1],
             hidden_channels=self.config.hidden_units,
-            num_classes=5, 
+            num_classes=self.train_label['label'].nunique(), 
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out
         )
