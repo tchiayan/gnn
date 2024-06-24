@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv , BatchNorm , GATConv 
 from torch_geometric.nn import global_mean_pool , SAGPooling , TopKPooling
 import mlflow
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report , roc_auc_score
 
 class GCN(pl.LightningModule):
     def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None):
@@ -54,6 +54,7 @@ class GCN(pl.LightningModule):
         self.cfm_testing = ConfusionMatrix(task="multiclass", num_classes=num_classes)
         self.actual = []
         self.predicted = []
+        self.predicted_proba = []
         self.lr = lr
         self.drop_out = drop_out
 
@@ -105,6 +106,7 @@ class GCN(pl.LightningModule):
         cfm = self.cfm_testing(out, y)  
         self.actual.extend(y.cpu().numpy())
         self.predicted.extend(out.argmax(dim=1).cpu().numpy())
+        self.predicted_proba.extend(out.cpu().numpy())  
         
         self.log('val_loss' , loss , prog_bar=True, on_epoch=True)
         self.log('val_acc' , acc , prog_bar=True, on_epoch=True)
@@ -127,11 +129,14 @@ class GCN(pl.LightningModule):
         
         if self.current_epoch == self.trainer.max_epochs - 1:
             report = classification_report(self.actual , self.predicted , digits=4)
+            auc = roc_auc_score(self.actual , self.predicted_proba , multi_class="ovr")
+            report += f"roc_auc_score: {auc:.4f}"
             if mlflow is not None:
                 mlflow.log_text(report , f"calssification_report_val_{self.current_epoch:04d}.txt")
             print(report)
         self.actual = []
         self.predicted = []
+        self.predicted_proba = []
         self.cfm_testing.reset()
     
     def configure_optimizers(self):

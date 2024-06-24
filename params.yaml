@@ -42,7 +42,7 @@ compare_other:
   learning_rate: 0.0001
   batch_size: 20
   drop_out: 0.05
-  negative_corr: true
+  negative_corr: false
   pooling_ratio: 0.9
   ppi: true
   ppi_score: 200
