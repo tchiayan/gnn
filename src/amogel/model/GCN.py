@@ -128,13 +128,15 @@ class GCN(pl.LightningModule):
         
     def on_validation_epoch_end(self):
         
-        if self.current_epoch == self.trainer.max_epochs - 1:
+        if (self.current_epoch+1) % 10 == 0 or self.current_epoch == self.trainer.max_epochs - 1:
             report = classification_report(self.actual , self.predicted , digits=4)
             auc = roc_auc_score(self.actual , self.predicted_proba , multi_class="ovr")
             report += f"roc_auc_score: {auc:.4f}"
-            if self.mlflow is not None:
-                self.mlflow.log_text(report , f"calssification_report_val_{self.current_epoch:04d}.txt")
-            print(report)
+            if mlflow is not None:
+                mlflow.log_text(report , f"calssification_report_val_{(self.current_epoch+1):04d}.txt")
+                
+            if self.current_epoch == self.trainer.max_epochs - 1:
+                print(report)
         self.actual = []
         self.predicted = []
         self.predicted_proba = []
