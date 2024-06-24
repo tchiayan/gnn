@@ -127,6 +127,8 @@ class GCN(pl.LightningModule):
         
         if self.current_epoch == self.trainer.max_epochs - 1:
             report = classification_report(self.actual , self.predicted , digits=4)
+            if mlflow is not None:
+                mlflow.log_text(report , f"calssification_report_val_{self.current_epoch:04d}.txt")
             print(report)
         self.actual = []
         self.predicted = []
