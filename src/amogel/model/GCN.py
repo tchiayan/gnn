@@ -106,7 +106,7 @@ class GCN(pl.LightningModule):
         cfm = self.cfm_testing(out, y)  
         self.actual.extend(y.cpu().numpy())
         self.predicted.extend(out.argmax(dim=1).cpu().numpy())
-        self.predicted_proba.extend(out.cpu().numpy())  
+        self.predicted_proba.extend(F.softmax(out , dim=-1).cpu().numpy())  
         
         self.log('val_loss' , loss , prog_bar=True, on_epoch=True)
         self.log('val_acc' , acc , prog_bar=True, on_epoch=True)
