@@ -37,6 +37,7 @@ class GCN(pl.LightningModule):
         )
         self.weight = weight if weight is None else torch.tensor(weight, device=device)
         self.criterion = torch.nn.CrossEntropyLoss(weight=self.weight)
+        self.mlflow = mlflow
         
         # [[ 79   0  14  10   0] =  79+0+14+10+0 = 103 , 614 / (103) = 5.96 , 1 - 103 / 614 = 0.83
         # [ 14   0  18   9   0] = 14+0+18+9+0 = 41 , 614 /  41 = 14.97 , 1 - 41 / 614 = 0.93
@@ -131,8 +132,8 @@ class GCN(pl.LightningModule):
             report = classification_report(self.actual , self.predicted , digits=4)
             auc = roc_auc_score(self.actual , self.predicted_proba , multi_class="ovr")
             report += f"roc_auc_score: {auc:.4f}"
-            if mlflow is not None:
-                mlflow.log_text(report , f"calssification_report_val_{self.current_epoch:04d}.txt")
+            if self.mlflow is not None:
+                self.mlflow.log_text(report , f"calssification_report_val_{self.current_epoch:04d}.txt")
             print(report)
         self.actual = []
         self.predicted = []
