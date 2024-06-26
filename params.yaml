@@ -1,4 +1,4 @@
-dataset: 'BRCA'
+dataset: 'KIPAN'
 data_preprocessing: 
   filtering:
     mRNA: 
@@ -36,7 +36,7 @@ arm_classification:
   strategy: 'union' # support ['union', 'topk', 'difference']
 
 compare_other: 
-  corr_threshold: 0.5
+  corr_threshold: 0.7
   epochs: 500
   hidden_units: 32 
   learning_rate: 0.0001
@@ -44,11 +44,12 @@ compare_other:
   drop_out: 0.05
   negative_corr: false
   pooling_ratio: 0.9
-  ppi: true
+  ppi: false
   ppi_score: 200
   corr: true
   ppi_edge: 'score'
   discretized: true
+  information: true
   n_bins: 3
   select_k: "auto"
 
