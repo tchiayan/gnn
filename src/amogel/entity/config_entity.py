@@ -159,3 +159,4 @@ class CompareOtherConfig:
     discretized: bool
     n_bins: int
     select_k: str
+    information: bool

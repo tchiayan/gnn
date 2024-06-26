@@ -61,9 +61,9 @@ class OtherClassifier:
         
         
         if select_k == "auto":
-            est , selected_gene  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "" , n_bins=self.config.n_bins)
+            est , selected_gene , information_edge_tensor  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "" , n_bins=self.config.n_bins)
         else:
-            est , selected_gene  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "" , fixed_k=select_k , n_bins=self.config.n_bins)
+            est , selected_gene , information_edge_tensor  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "" , fixed_k=select_k , n_bins=self.config.n_bins)
         logger.info(f"Selected gene: {len(selected_gene)}")
         selection = {0:0,1:0,2:0}
         for gene in selected_gene: 
@@ -75,6 +75,8 @@ class OtherClassifier:
                 selection[2] += 1
         logger.info(f"Selected gene distribution: {selection}")
         self.selected_gene = selected_gene
+        self.information_edge_tensor = information_edge_tensor
+        
         if self.config.discretized:
             self.train_data_ac =  pd.DataFrame(est.transform(self.train_data))[selected_gene]
             self.test_data_ac = pd.DataFrame(est.transform(self.test_data))[selected_gene]
@@ -241,6 +243,12 @@ class OtherClassifier:
             #assert ppi_tensor.shape[0] == corr_tensor.shape[0] , "PPI and AC should have the same dimension"
             #assert ppi_tensor.shape[1] == corr_tensor.shape[1] , "PPI and AC should have the same dimension"
         
+        if self.config.information: 
+            information_tensor = self.information_edge_tensor 
+            information_tensor = information_tensor[self.selected_gene][:, self.selected_gene]
+            edge_matrix.append(information_tensor)
+            
+            # assert (information_tensor != information_tensor.T).int().sum() == 0 , f"Information tensor should be symmetric: {(information_tensor != information_tensor.T).int().sum()} | {(information_tensor == information_tensor.T).int().sum()}" 
         edge_matrix = torch.stack(edge_matrix , dim=-1)
         
         train_graph = []

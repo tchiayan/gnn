@@ -9,6 +9,9 @@ from tqdm import tqdm
 from fim import ista
 from pathlib import Path 
 import numpy as np
+import torch
+import itertools
+import os
 
 def information_gain(data, class_column):
     """
@@ -420,24 +423,26 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
             best_acc = report['accuracy']
             selected_gene = feature_selection
             selected_k = k
+    
+    # build network graph for selected k 
+    corr_array = torch.tensor([abs(corr[x]) if x in corr.keys() else 0 for x in range(0 , df.shape[1])] , dtype=torch.float32)
+    infogain_array = torch.tensor([info_gain[x] if x in info_gain.keys() else 0 for x in range(0 , df.shape[1])] , dtype=torch.float32)
+    edge_tensor = torch.zeros(df.shape[1] , df.shape[1])    
+    df_filter = df_ac.groupby('class').apply(lambda x: x.nlargest(selected_k , 'interestingness_1')).reset_index(drop=True)
+    for idx , row in df_filter.iterrows():
+        gene_idx = [int(x.split(":")[0]) for x in row['rules'].split(",")]
+        combination = np.array([list(x) for x in itertools.combinations(gene_idx , 2)])
+        edge_tensor[combination[:,0] , combination[:,1]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
+        edge_tensor[combination[:,1] , combination[:,0]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
         
     print("Best K: {} | Best Acc: {:.4f}".format(selected_k , best_acc))
-    
-    return est , list(selected_gene) 
+    return est , list(selected_gene) , edge_tensor
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("Discretization")
-    parser.add_argument("--min_support" , default=0.9, type=float , help="Min support")
-    parser.add_argument("--min_confidence" , default=0.1, type=float , help="Min confidence")
-    parser.add_argument("--percentage", action="store_true")
-    parser.add_argument("--custom_support" , type=str , default=None)
-    parser.add_argument("--low_memory" , action='store_true')
-    parser.add_argument("--min_rule", action='store_true')
-    parser.add_argument("--min_rule_per_class" , type=int , default=1000)
-    parser.add_argument("--input", type=str , default="BRCA/1_tr.csv")
-    parser.add_argument("--label" , type=str , default="BRCA/labels_tr.csv")
-    parser.add_argument("--output" , type=str , default="AC_rules.tsv")
-    args = parser.parse_args()  
-    print(args)
-    
-    generate_ac_to_file(args.input , args.label , args.output , args.min_support , args.min_confidence , args.min_rule , args.min_rule_per_class , args.custom_support , args.low_memory)
+    print(os.listdir("../../../"))
+    generate_ac_feature_selection(
+        "./artifacts/data_preprocessing/KIPAN/1_tr.csv", 
+        "./artifacts/data_preprocessing/KIPAN/labels_tr.csv",
+        "", 
+        fixed_k=50
+    )

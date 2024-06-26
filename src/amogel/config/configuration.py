@@ -207,7 +207,8 @@ class ConfigurationManager:
             ppi_edge=params.ppi_edge, 
             discretized=params.discretized, 
             n_bins=params.n_bins, 
-            select_k=params.select_k
+            select_k=params.select_k, 
+            information=params.information
         )
         
         return compare_other_config
