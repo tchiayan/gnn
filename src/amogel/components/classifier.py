@@ -264,7 +264,7 @@ class OtherClassifier:
                     matrix=edge_matrix, 
                     node_features=torch_sample,
                     y=torch.tensor(self.train_label.loc[idx].values , dtype=torch.long),
-                    edge_threshold=threshold
+                    edge_threshold=self.config.filter
                 )
                 train_graph.append(graph)
                 pbar.update(1)
@@ -282,7 +282,7 @@ class OtherClassifier:
                     matrix=edge_matrix, 
                     node_features=torch_sample ,
                     y=torch.tensor(self.test_label.loc[idx].values , dtype=torch.long),
-                    edge_threshold=threshold
+                    edge_threshold=self.config.filter
                 )
                 test_graph.append(graph)
                 pbar.update(1)

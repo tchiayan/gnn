@@ -160,3 +160,4 @@ class CompareOtherConfig:
     n_bins: int
     select_k: str
     information: bool
+    filter: float

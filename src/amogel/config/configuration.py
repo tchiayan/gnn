@@ -208,7 +208,8 @@ class ConfigurationManager:
             discretized=params.discretized, 
             n_bins=params.n_bins, 
             select_k=params.select_k, 
-            information=params.information
+            information=params.information, 
+            filter=params.filter
         )
         
         return compare_other_config
