@@ -9,7 +9,8 @@ from amogel.utils.ac import generate_ac_to_file , generate_ac_feature_selection
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from torch_geometric.loader import DataLoader
-from amogel.utils.common import symmetric_matrix_to_pyg , load_ppi , load_omic_features_name
+from amogel.utils.common import symmetric_matrix_to_pyg , load_ppi , load_omic_features_name , load_feature_conversion 
+from amogel.utils.gene import generate_edges_from_annotation
 from amogel.model.GCN import GCN
 import warnings
 import torch
@@ -36,10 +37,10 @@ class OtherClassifier:
         
         self.train_data = pd.concat([train_data_omic_1 , train_data_omic_2 , train_data_omic_3 ] , axis=1)
         self.train_data.columns = list(range(self.train_data.shape[1]))
-        selected_gene_omic_1 = self.get_arm_feature_selection(1)
-        selected_gene_omic_2 = self.get_arm_feature_selection(2)
-        selected_gene_omic_3 = self.get_arm_feature_selection(3)
-        self.train_data_filter = pd.concat([train_data_omic_1[selected_gene_omic_1] , train_data_omic_2[selected_gene_omic_2] , train_data_omic_3[selected_gene_omic_3] ] , axis=1)
+        # selected_gene_omic_1 = self.get_arm_feature_selection(1)
+        # selected_gene_omic_2 = self.get_arm_feature_selection(2)
+        # selected_gene_omic_3 = self.get_arm_feature_selection(3)
+        # self.train_data_filter = pd.concat([train_data_omic_1[selected_gene_omic_1] , train_data_omic_2[selected_gene_omic_2] , train_data_omic_3[selected_gene_omic_3] ] , axis=1)
         
         
         # load train label 
@@ -54,7 +55,7 @@ class OtherClassifier:
         
         self.test_data = pd.concat([test_data_omic_1  , test_data_omic_2 , test_data_omic_3 ] , axis=1)
         self.test_data.columns = list(range(self.test_data.shape[1]))
-        self.test_data_filter = pd.concat([test_data_omic_1[selected_gene_omic_1] , test_data_omic_2[selected_gene_omic_2] , test_data_omic_3[selected_gene_omic_3] ] , axis=1)
+        # self.test_data_filter = pd.concat([test_data_omic_1[selected_gene_omic_1] , test_data_omic_2[selected_gene_omic_2] , test_data_omic_3[selected_gene_omic_3] ] , axis=1)
         
         # load test label
         self.test_label = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , "labels_te.csv") , header=None , names=["label"])
@@ -89,8 +90,8 @@ class OtherClassifier:
         logger.info(f"Train label: {self.train_label.shape}")
         logger.info(f"Test data: {self.test_data.shape}")
         logger.info(f"Test label: {self.test_label.shape}")
-        logger.info(f"Filtered Train data: {self.train_data_filter.shape}")
-        logger.info(f"Filtered Test data: {self.test_data_filter.shape}")
+        # logger.info(f"Filtered Train data: {self.train_data_filter.shape}")
+        # logger.info(f"Filtered Test data: {self.test_data_filter.shape}")
         logger.info(f"Train data with AC: {self.train_data_ac.shape}")
         logger.info(f"Test data with AC: {self.test_data_ac.shape}")
         
@@ -206,6 +207,7 @@ class OtherClassifier:
         
         threshold = self.config.corr_threshold
         if self.config.corr:
+            logger.info(f"Generating correlation edges...")
             # generate graph data
             corr = self.train_data_ac.corr()
             
@@ -225,6 +227,7 @@ class OtherClassifier:
         
         # load ppi 
         if self.config.ppi:
+            logger.info(f"Generating PPI edges...")
             feature_names = load_omic_features_name("./artifacts/data_preprocessing" , self.dataset , [1,2,3])
             ppi = load_ppi("./artifacts/ppi_data/unzip"  , feature_names , self.config.ppi_score)
             ppi_tensor = torch.zeros(feature_names.shape[0] , feature_names.shape[0])
@@ -244,14 +247,53 @@ class OtherClassifier:
             #assert ppi_tensor.shape[1] == corr_tensor.shape[1] , "PPI and AC should have the same dimension"
         
         if self.config.information: 
+            logger.info(f"Generate information edges...")
             information_tensor = self.information_edge_tensor 
             information_tensor = information_tensor[self.selected_gene][:, self.selected_gene]
             edge_matrix.append(information_tensor)
             
             # assert (information_tensor != information_tensor.T).int().sum() == 0 , f"Information tensor should be symmetric: {(information_tensor != information_tensor.T).int().sum()} | {(information_tensor == information_tensor.T).int().sum()}" 
+        if self.config.kegg: 
+            logger.info(f"Loading KEGG edges...")
+            feature_omic = load_omic_features_name(
+                "./artifacts/data_preprocessing/" , dataset=self.dataset, type=[1,2,3]
+            )
+            feature_conversion = load_feature_conversion(
+                "./artifacts/data_ingestion/unzip/" , dataset=self.dataset
+            )
+            features = feature_omic.merge(feature_conversion , left_on="gene_name" , right_on="gene" , how="left")
+            kegg_edges = generate_edges_from_annotation(
+                f"./artifacts/data_ingestion/unzip/{self.dataset}_kegg_go/KEGG_PATHWAY.txt", 
+                features=features, 
+                filter_p_value=self.config.kegg_filter
+            )
+            kegg_edges = kegg_edges[self.selected_gene][:, self.selected_gene]
+            
+            edge_matrix.append(kegg_edges)
+        
+        if self.config.go: 
+            logger.info(f"Generating GO edges...")
+            feature_omic = load_omic_features_name(
+                "./artifacts/data_preprocessing/" , dataset=self.dataset, type=[1,2,3]
+            )
+            feature_conversion = load_feature_conversion(
+                "./artifacts/data_ingestion/unzip/" , dataset=self.dataset
+            )
+            features = feature_omic.merge(feature_conversion , left_on="gene_name" , right_on="gene" , how="left")
+            kegg_edges = generate_edges_from_annotation(
+                f"./artifacts/data_ingestion/unzip/{self.dataset}_kegg_go/BP_DIRECT.txt", 
+                features=features, 
+                filter_p_value=self.config.kegg_filter
+            )
+            kegg_edges = kegg_edges[self.selected_gene][:, self.selected_gene]
+            
+            edge_matrix.append(kegg_edges)
+        
         edge_matrix = torch.stack(edge_matrix , dim=-1)
         
+        logger.info(f"Generating graph data for training...")
         train_graph = []
+        
         with tqdm(total=self.train_data_ac.shape[0]) as pbar:
             for idx , sample in self.train_data_ac.iterrows():
                 torch_sample = torch.tensor(sample.values , dtype=torch.float32).unsqueeze(-1)
@@ -269,6 +311,7 @@ class OtherClassifier:
                 train_graph.append(graph)
                 pbar.update(1)
         
+        logger.info(f"Generating graph data for testing...")
         test_graph = []
         with tqdm(total=self.test_data_ac.shape[0]) as pbar:
             for idx , sample in self.test_data_ac.iterrows():
@@ -290,7 +333,11 @@ class OtherClassifier:
         torch.save(train_graph , "./artifacts/compare/traditional/train_graph.pt")
         torch.save(test_graph , "./artifacts/compare/traditional/test_graph.pt")
         
-        logger.info(f"Node dimension: {test_graph[0].x.shape} , Edge dimension: {test_graph[0].edge_index.shape} , Edge attribute dimension: {test_graph[0].edge_attr.shape}")
+        logger.info(f"Node dimension: {test_graph[0].x.shape} , Edge dimension: {test_graph[0].edge_index.shape} , \
+                    Edge attribute dimension: {test_graph[0].edge_attr.shape} , \
+                    Edge max: {test_graph[0].edge_attr.max(dim=0).values} , \
+                    Nonzero edge: {torch.count_nonzero(test_graph[0].edge_attr , dim=0)}")
+        
         
         mlflow.pytorch.autolog()
         mlflow.set_experiment("Graph Feature Selection")
@@ -311,6 +358,13 @@ class OtherClassifier:
         
         with mlflow.start_run():
             mlflow.log_params(self.config.__dict__)
+            mlflow.log_params({
+                "node_dim": train_graph[0].x.shape, 
+                "edge_dim": train_graph[0].edge_index,
+                "edge_attr_dim": train_graph[0].edge_attr.shape,
+                "edge_attr_max": train_graph[0].edge_attr.max(dim=0).values,
+                "nonzero_edge": torch.count_nonzero(train_graph[0].edge_attr , dim=0)
+            })
             mlflow.log_param("dataset" , self.dataset)
             trainer = Trainer(max_epochs=self.config.epochs)
             trainer.fit(model , train_loader , test_loader)

@@ -160,4 +160,10 @@ class CompareOtherConfig:
     n_bins: int
     select_k: str
     information: bool
+    kegg: bool 
+    kegg_filter: float 
+    kegg_topk: int
+    go: bool 
+    go_filter: float
+    go_topk: int
     filter: float

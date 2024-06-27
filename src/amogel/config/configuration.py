@@ -209,7 +209,13 @@ class ConfigurationManager:
             n_bins=params.n_bins, 
             select_k=params.select_k, 
             information=params.information, 
-            filter=params.filter
+            filter=params.filter, 
+            kegg=params.kegg,
+            kegg_filter=params.kegg_filter,
+            kegg_topk=params.kegg_topk,
+            go=params.go,
+            go_filter=params.go_filter, 
+            go_topk=params.go_topk
         )
         
         return compare_other_config

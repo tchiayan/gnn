@@ -22,7 +22,7 @@ class DataPreprocessingPipeline:
             miRNA , mRNA , DNA , label = data_preprocessing.data_cleaning(miRNA , mRNA , DNA , label, target="histological_type")
         
         data_preprocessing.save_data(miRNA , mRNA , DNA , label , data_preprocessing_config.dataset)
-        data_preprocessing.generate_ac(data_preprocessing_config.dataset)
+        # data_preprocessing.generate_ac(data_preprocessing_config.dataset)
         
 
 if __name__ == "__main__":

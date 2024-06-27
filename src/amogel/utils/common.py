@@ -83,8 +83,30 @@ def symmetric_matrix_to_coo(matrix , threshold):
 
     return coo
 
-def load_omic_features_name(dir:str , dataset:str , type:List[int]):
+def load_feature_conversion(dif:str , dataset:str): 
     
+    feature_conversion_path = os.path.join(dif , f"{dataset}_kegg_go" , "featname_conversion.csv")
+    
+    if not os.path.exists(feature_conversion_path):
+        raise FileNotFoundError(f"Feature conversion file not found at {feature_conversion_path}")
+    
+    feature_conversion = pd.read_csv(feature_conversion_path)
+    feature_conversion['id'] = feature_conversion['id'].astype("Int64")
+    
+    return feature_conversion
+
+def load_omic_features_name(dir:str , dataset:str , type:List[int]):
+    """ 
+    Load omic features name from the directory
+    
+    Args:
+        dir: str : directory path
+        dataset: str : dataset name
+        type: List[int] : list of type of features
+    
+    Returns:
+        pd.DataFrame : DataFrame with gene_loc and gene_name
+    """
     df_features = []
     for i in type:
         feature_filepath = os.path.join(dir , dataset , f"{i}_featname.csv")
@@ -93,6 +115,9 @@ def load_omic_features_name(dir:str , dataset:str , type:List[int]):
         
         if i == 1:
             df_feature['gene_name'] = df_feature[0].apply(lambda x: x.split("|")[0])
+        elif i == 3:
+            df_feature['gene_name'] = df_feature[0].str.replace(r'(hsa-|-)', '', regex=True)
+            df_feature['gene_name'] = df_feature['gene_name'].apply(lambda x: "mir" + x if "let" in x else x)
         else:
             df_feature['gene_name'] = df_feature[0]
         df_features.append(df_feature)
