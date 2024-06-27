@@ -250,6 +250,10 @@ class OtherClassifier:
             logger.info(f"Generate information edges...")
             information_tensor = self.information_edge_tensor 
             information_tensor = information_tensor[self.selected_gene][:, self.selected_gene]
+            
+            # fill nan with 0
+            information_tensor[torch.isnan(information_tensor)] = 0
+            
             edge_matrix.append(information_tensor)
             
             # assert (information_tensor != information_tensor.T).int().sum() == 0 , f"Information tensor should be symmetric: {(information_tensor != information_tensor.T).int().sum()} | {(information_tensor == information_tensor.T).int().sum()}" 
@@ -363,7 +367,8 @@ class OtherClassifier:
                 "edge_dim": train_graph[0].edge_index.shape,
                 "edge_attr_dim": train_graph[0].edge_attr.shape,
                 "edge_attr_max": train_graph[0].edge_attr.max(dim=0).values,
-                "nonzero_edge": torch.count_nonzero(train_graph[0].edge_attr , dim=0)
+                "nonzero_edge": torch.count_nonzero(train_graph[0].edge_attr , dim=0),
+                "edge_attr_mean": train_graph[0].edge_attr.mean(dim=0)
             })
             mlflow.log_param("dataset" , self.dataset)
             trainer = Trainer(max_epochs=self.config.epochs)
