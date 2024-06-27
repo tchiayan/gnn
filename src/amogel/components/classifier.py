@@ -360,7 +360,7 @@ class OtherClassifier:
             mlflow.log_params(self.config.__dict__)
             mlflow.log_params({
                 "node_dim": train_graph[0].x.shape, 
-                "edge_dim": train_graph[0].edge_index,
+                "edge_dim": train_graph[0].edge_index.shape,
                 "edge_attr_dim": train_graph[0].edge_attr.shape,
                 "edge_attr_max": train_graph[0].edge_attr.max(dim=0).values,
                 "nonzero_edge": torch.count_nonzero(train_graph[0].edge_attr , dim=0)

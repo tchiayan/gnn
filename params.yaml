@@ -36,7 +36,7 @@ arm_classification:
   strategy: 'union' # support ['union', 'topk', 'difference']
 
 compare_other: 
-  filter: 0.5
+  filter: 0.2
   corr_threshold: 0.5
   epochs: 500
   hidden_units: 32 

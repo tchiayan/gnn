@@ -7,7 +7,6 @@ from pathlib import Path
 import pandas as pd
 import warnings
 import itertools
-from suds.client import Client
 import numpy as np
 import torch
 import os
