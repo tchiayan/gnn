@@ -204,8 +204,22 @@ class OtherClassifier:
     def train_and_evaluate_graph_feature_selection_ac(self):
         
         edge_matrix = []
-        
         threshold = self.config.corr_threshold
+        info_mean = 0
+        
+        if self.config.information: 
+            logger.info(f"Generate information edges...")
+            information_tensor = self.information_edge_tensor 
+            information_tensor = information_tensor[self.selected_gene][:, self.selected_gene]
+            
+            # fill nan with 0
+            information_tensor[torch.isnan(information_tensor)] = 0
+            
+            # calculate mean of information tensor given shape is 2D tensor
+            info_mean = information_tensor.mean()
+            
+            edge_matrix.append(information_tensor)
+            
         if self.config.corr:
             logger.info(f"Generating correlation edges...")
             # generate graph data
@@ -246,15 +260,6 @@ class OtherClassifier:
             #assert ppi_tensor.shape[0] == corr_tensor.shape[0] , "PPI and AC should have the same dimension"
             #assert ppi_tensor.shape[1] == corr_tensor.shape[1] , "PPI and AC should have the same dimension"
         
-        if self.config.information: 
-            logger.info(f"Generate information edges...")
-            information_tensor = self.information_edge_tensor 
-            information_tensor = information_tensor[self.selected_gene][:, self.selected_gene]
-            
-            # fill nan with 0
-            information_tensor[torch.isnan(information_tensor)] = 0
-            
-            edge_matrix.append(information_tensor)
             
             # assert (information_tensor != information_tensor.T).int().sum() == 0 , f"Information tensor should be symmetric: {(information_tensor != information_tensor.T).int().sum()} | {(information_tensor == information_tensor.T).int().sum()}" 
         if self.config.kegg: 
@@ -272,6 +277,8 @@ class OtherClassifier:
                 filter_p_value=self.config.kegg_filter
             )
             kegg_edges = kegg_edges[self.selected_gene][:, self.selected_gene]
+            if self.config.information_tensor and self.config.info_mean:
+                kegg_edges = kegg_edges * info_mean
             
             edge_matrix.append(kegg_edges)
         
@@ -291,6 +298,8 @@ class OtherClassifier:
             )
             kegg_edges = kegg_edges[self.selected_gene][:, self.selected_gene]
             
+            if self.config.information_tensor and self.config.info_mean:
+                kegg_edges = kegg_edges * info_mean
             edge_matrix.append(kegg_edges)
         
         edge_matrix = torch.stack(edge_matrix , dim=-1)

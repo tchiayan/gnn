@@ -167,3 +167,4 @@ class CompareOtherConfig:
     go_filter: float
     go_topk: int
     filter: float
+    info_mean: bool

@@ -215,7 +215,8 @@ class ConfigurationManager:
             kegg_topk=params.kegg_topk,
             go=params.go,
             go_filter=params.go_filter, 
-            go_topk=params.go_topk
+            go_topk=params.go_topk, 
+            info_mean=params.info_mean,
         )
         
         return compare_other_config

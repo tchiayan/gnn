@@ -59,6 +59,7 @@ compare_other:
   go_filter: 0.05
   go_topk: 100
   select_k: "auto"
+  info_mean: true
 
 knowledge_graph: 
   ppi_combined_score: 500
