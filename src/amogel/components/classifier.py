@@ -254,6 +254,9 @@ class OtherClassifier:
                 ppi_tensor[ppi["gene2_idx"].values , ppi['gene1_idx'].values] = torch.tensor(ppi['combined_score'].values / max_ppi_score , dtype=torch.float)
             ppi_tensor = ppi_tensor[self.selected_gene][:, self.selected_gene]
             
+            if self.config.information and self.config.info_mean:
+                ppi_tensor = ppi_tensor * info_mean
+                
             edge_matrix.append(ppi_tensor)
             logger.info(f"PPI matrix shape: {ppi_tensor.shape}")
             assert (ppi_tensor != ppi_tensor.T).int().sum() == 0 , "PPI should be symmetric"
