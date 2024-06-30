@@ -277,7 +277,7 @@ class OtherClassifier:
                 filter_p_value=self.config.kegg_filter
             )
             kegg_edges = kegg_edges[self.selected_gene][:, self.selected_gene]
-            if self.config.information_tensor and self.config.info_mean:
+            if self.config.information and self.config.info_mean:
                 kegg_edges = kegg_edges * info_mean
             
             edge_matrix.append(kegg_edges)
@@ -298,7 +298,7 @@ class OtherClassifier:
             )
             kegg_edges = kegg_edges[self.selected_gene][:, self.selected_gene]
             
-            if self.config.information_tensor and self.config.info_mean:
+            if self.config.information and self.config.info_mean:
                 kegg_edges = kegg_edges * info_mean
             edge_matrix.append(kegg_edges)
         
