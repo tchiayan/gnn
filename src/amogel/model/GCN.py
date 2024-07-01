@@ -15,6 +15,7 @@ class GCN(pl.LightningModule):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         super(GCN, self).__init__()
+        self.num_classes = num_classes
         self.pooling_ratio = pooling_ratio
         self.conv1 = GATConv(in_channels, hidden_channels)
         self.bn1 = BatchNorm(hidden_channels)
@@ -130,8 +131,12 @@ class GCN(pl.LightningModule):
         
         if (self.current_epoch+1) % 10 == 0 or self.current_epoch == self.trainer.max_epochs - 1:
             report = classification_report(self.actual , self.predicted , digits=4)
-            auc = roc_auc_score(self.actual , self.predicted_proba , multi_class="ovr")
-            report += f"roc_auc_score: {auc:.4f}"
+            if self.num_classes == 2:
+                auc = roc_auc_score(self.actual , self.predicted_proba[: , 1] , multi_class="ovr")
+                report += f"roc_auc_score: {auc:.4f}"
+            else:
+                auc = roc_auc_score(self.actual , self.predicted_proba , multi_class="ovr")
+                report += f"roc_auc_score: {auc:.4f}"
             if mlflow is not None:
                 mlflow.log_text(report , f"calssification_report_val_{(self.current_epoch+1):04d}.txt")
                 

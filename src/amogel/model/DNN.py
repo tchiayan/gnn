@@ -69,9 +69,9 @@ class DNN(pl.LightningModule):
         if self.current_epoch == self.trainer.max_epochs - 1:
             output = classification_report(self.actual , np.stack(self.predict, axis=0).argmax(axis=1) , digits=4)
             if self.num_classes == 2:
-                output += f"roc_auc: {roc_auc_score(self.actual , self.predict[:,1] , multi_class='ovr')}\n"
+                output += f"roc_auc: {roc_auc_score(self.actual , np.stack(self.predict , axis=0)[:,1] , multi_class='ovr')}\n"
             else:
-                output += f"roc_auc: {roc_auc_score(self.actual , self.predict , multi_class='ovr'):.4f}\n"
+                output += f"roc_auc: {roc_auc_score(self.actual , np.stack(self.predict , axis=0) , multi_class='ovr'):.4f}\n"
             
             with open("./artifacts/compare/traditional/dnn_report.txt" , "w") as f:
                 f.write(output)

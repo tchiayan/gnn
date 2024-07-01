@@ -13,7 +13,7 @@ data_preprocessing:
   test_split: 0.3
   n_bins: 2
   min_rules: 1000
-  fold_change: true
+  fold_change: false
   discretize_level: 1 
   random_state: 41
 
