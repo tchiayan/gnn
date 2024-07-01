@@ -26,9 +26,11 @@ class OtherClassifier:
         
         self.config = config
         self.dataset = dataset 
-        os.makedirs("./artifacts/compare/traditional" , exist_ok=True)
         
     def load_data_without_ac(self):
+        
+        os.makedirs("./artifacts/compare/traditional" , exist_ok=True)
+        
         # load train data 
         train_data_omic_1 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"1_tr.csv"), header=None)
         train_data_omic_2 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"2_tr.csv"), header=None)
@@ -388,7 +390,7 @@ class OtherClassifier:
         
         os.makedirs("./artifacts/amogel" , exist_ok=True)
         torch.save(train_graph , "./artifacts/amogel/train_graph.pt")
-        torch.save(test_graph , "./artifacts/amogel/traditional/test_graph.pt")
+        torch.save(test_graph , "./artifacts/amogel/test_graph.pt")
         
         logger.info(f"Node dimension: {test_graph[0].x.shape} , Edge dimension: {test_graph[0].edge_index.shape} , \
                     Edge attribute dimension: {test_graph[0].edge_attr.shape} , \
@@ -399,8 +401,8 @@ class OtherClassifier:
         mlflow.pytorch.autolog()
         mlflow.set_experiment("Graph Feature Selection")
         
-        train_graph = torch.load("./artifacts/compare/traditional/train_graph.pt")
-        test_graph = torch.load("./artifacts/compare/traditional/test_graph.pt")
+        train_graph = torch.load("./artifacts/amogel/train_graph.pt")
+        test_graph = torch.load("./artifacts/amogel/test_graph.pt")
         
         train_loader = DataLoader(train_graph , batch_size=32 , shuffle=True)
         test_loader = DataLoader(test_graph , batch_size=32 , shuffle=False)

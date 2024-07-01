@@ -371,7 +371,7 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
     
     
     if fixed_k is None:
-        test_k = [ 1 , 5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]
+        test_k = [  5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]
     else: 
         test_k  = [ fixed_k ]
     selected_k = 1 

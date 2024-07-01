@@ -54,7 +54,7 @@ compare_other:
   n_bins: 3
   kegg: true 
   kegg_filter: 0.05 
-  kegg_topk: 100
+  kegg_topk: 'auto'
   go: true 
   go_filter: 0.05
   go_topk: 100
