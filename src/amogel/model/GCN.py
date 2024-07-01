@@ -9,6 +9,7 @@ from torch_geometric.nn import GCNConv , BatchNorm , GATConv
 from torch_geometric.nn import global_mean_pool , SAGPooling , TopKPooling
 import mlflow
 from sklearn.metrics import classification_report , roc_auc_score
+import numpy as np
 
 class GCN(pl.LightningModule):
     def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None):
@@ -132,7 +133,7 @@ class GCN(pl.LightningModule):
         if (self.current_epoch+1) % 10 == 0 or self.current_epoch == self.trainer.max_epochs - 1:
             report = classification_report(self.actual , self.predicted , digits=4)
             if self.num_classes == 2:
-                auc = roc_auc_score(self.actual , self.predicted_proba[: , 1] , multi_class="ovr")
+                auc = roc_auc_score(self.actual ,  np.stack(self.predicted_proba , axis=0)[: , 1] , multi_class="ovr")
                 report += f"roc_auc_score: {auc:.4f}"
             else:
                 auc = roc_auc_score(self.actual , self.predicted_proba , multi_class="ovr")

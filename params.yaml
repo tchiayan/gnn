@@ -54,11 +54,11 @@ compare_other:
   n_bins: 3
   kegg: true 
   kegg_filter: 0.05 
-  kegg_topk: 'auto'
+  kegg_topk: 50
   go: true 
   go_filter: 0.05
   go_topk: 100
-  select_k: 50
+  select_k: 'auto'
   info_mean: true
 
 knowledge_graph: 
