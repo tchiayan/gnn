@@ -68,6 +68,18 @@ class ConfigurationManager:
                     'DNA': config.KIPAN.DNA, 
                     'label': config.KIPAN.label
                 }, 
+            BLCA={
+                    'miRNA': config.BLCA.miRNA,
+                    'mRNA': config.BLCA.mRNA,
+                    'DNA': config.BLCA.DNA,
+                    'label': config.BLCA.label
+                },
+            LUSC={
+                    'miRNA': config.LUSC.miRNA,
+                    'mRNA': config.LUSC.mRNA,
+                    'DNA': config.LUSC.DNA,
+                    'label': config.LUSC.label
+                },
             preprocessing=params.filtering , 
             test_split=params.test_split, 
             n_bins=params.n_bins,

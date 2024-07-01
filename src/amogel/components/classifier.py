@@ -27,6 +27,37 @@ class OtherClassifier:
         self.config = config
         self.dataset = dataset 
         os.makedirs("./artifacts/compare/traditional" , exist_ok=True)
+        
+    def load_data_without_ac(self):
+        # load train data 
+        train_data_omic_1 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"1_tr.csv"), header=None)
+        train_data_omic_2 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"2_tr.csv"), header=None)
+        train_data_omic_3 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"3_tr.csv"), header=None)
+        
+        self.train_data = pd.concat([train_data_omic_1 , train_data_omic_2 , train_data_omic_3 ] , axis=1)
+        self.train_data.columns = list(range(self.train_data.shape[1]))
+        
+        # load train label 
+        self.train_label = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , "labels_tr.csv") , header=None , names=["label"])
+        self.num_classes = len(self.train_label['label'].unique())
+        
+        # load test data 
+        test_data_omic_1 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"1_te.csv"), header=None)
+        test_data_omic_2 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"2_te.csv"), header=None)
+        test_data_omic_3 = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , f"3_te.csv"), header=None)
+        
+        self.test_data = pd.concat([test_data_omic_1  , test_data_omic_2 , test_data_omic_3 ] , axis=1)
+        self.test_data.columns = list(range(self.test_data.shape[1]))
+        
+        
+        # load test label
+        self.test_label = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset , "labels_te.csv") , header=None , names=["label"])
+        
+        logger.info("Data dimension for training and testing")
+        logger.info(f"Train data: {self.train_data.shape}")
+        logger.info(f"Train label: {self.train_label.shape}")
+        logger.info(f"Test data: {self.test_data.shape}")
+        logger.info(f"Test label: {self.test_label.shape}")
 
     def load_data(self , select_k="auto"):
         
@@ -115,7 +146,10 @@ class OtherClassifier:
         pred = knn.predict(self.test_data)
         pred_prob = knn.predict_proba(self.test_data)
         output  = classification_report(self.test_label , pred , digits=4)
-        auc = roc_auc_score(self.test_label , pred_prob , multi_class="ovr")
+        if pred_prob.shape[1] == 2:
+            auc = roc_auc_score(self.test_label , pred_prob[:,1] , multi_class="ovr")
+        else:
+            auc = roc_auc_score(self.test_label , pred_prob , multi_class="ovr")
         output += f"au_graph\t{auc:.4f}\n"
         print(output)
         
@@ -131,7 +165,10 @@ class OtherClassifier:
         pred = svm.predict(self.test_data)
         pred_prob = svm.predict_proba(self.test_data)
         output  = classification_report(self.test_label , pred , digits=4)
-        auc = roc_auc_score(self.test_label , pred_prob , multi_class="ovr")
+        if pred_prob.shape[1] == 2:
+            auc = roc_auc_score(self.test_label , pred_prob[:,1] , multi_class="ovr")
+        else:
+            auc = roc_auc_score(self.test_label , pred_prob , multi_class="ovr")
         output += f"au_graph: {auc:.4f}"
         
         print(output)
@@ -150,7 +187,10 @@ class OtherClassifier:
         pred = nb.predict(self.test_data)
         pred_prob = nb.predict_proba(self.test_data)
         output  = classification_report(self.test_label , pred , digits=4)
-        auc = roc_auc_score(self.test_label , pred_prob , multi_class="ovr")
+        if pred_prob.shape[1] == 2:
+            auc = roc_auc_score(self.test_label , pred_prob[:,1] , multi_class="ovr")
+        else:
+            auc = roc_auc_score(self.test_label , pred_prob , multi_class="ovr")
         output += f"roc_auc: {auc:.4f} \n"
         
         print(output)
@@ -346,8 +386,9 @@ class OtherClassifier:
                 test_graph.append(graph)
                 pbar.update(1)
         
-        torch.save(train_graph , "./artifacts/compare/traditional/train_graph.pt")
-        torch.save(test_graph , "./artifacts/compare/traditional/test_graph.pt")
+        os.makedirs("./artifacts/amogel" , exist_ok=True)
+        torch.save(train_graph , "./artifacts/amogel/train_graph.pt")
+        torch.save(test_graph , "./artifacts/amogel/traditional/test_graph.pt")
         
         logger.info(f"Node dimension: {test_graph[0].x.shape} , Edge dimension: {test_graph[0].edge_index.shape} , \
                     Edge attribute dimension: {test_graph[0].edge_attr.shape} , \

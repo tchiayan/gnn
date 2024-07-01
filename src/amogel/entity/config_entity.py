@@ -6,11 +6,15 @@ from typing import List , Optional
 class Datasets:
     BRCA: str 
     KIPAN: str 
+    BLCA: str 
+    LUSC: str
 
 @dataclass(frozen=True)
 class KeggGo: 
     BRCA: str 
     KIPAN: str
+    BLCA: str
+    LUSC: str
     
 @dataclass(frozen=True)
 class DataPreparationConfig: 
@@ -49,6 +53,8 @@ class DataPreprocessingConfig:
     root_dir: Path 
     BRCA: OmicsRawDataPaths
     KIPAN: OmicsRawDataPaths
+    BLCA: OmicsRawDataPaths
+    LUSC: OmicsRawDataPaths
     preprocessing: OmicTypeWithFilteringConfig
     test_split: float 
     n_bins: int 

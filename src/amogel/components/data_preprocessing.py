@@ -32,7 +32,7 @@ class DataPreprocessing:
             Tuple[pd.DataFrame , pd.DataFrame , pd.DataFrame , pd.DataFrame]: Load miRNA, mRNA, DNA and label data
         """
         
-        assert dataset in ['BRCA' , 'KIPAN'] , "Invalid dataset"
+        assert dataset in ['BRCA' , 'KIPAN' , 'BLCA' , "LUSC"] , "Invalid dataset"
         
         logger.info(f"Loading dataset {dataset}")
 
@@ -197,7 +197,7 @@ class DataPreprocessing:
             dataset (str): _description_
         """
         
-        assert dataset in ['BRCA' , 'KIPAN'] , "Invalid dataset"
+        assert dataset in ['BRCA' , 'KIPAN' , 'BLCA' , "LUSC"] , "Invalid dataset"
         
         logger.info(f"Saving dataset {dataset}")
         
@@ -347,7 +347,8 @@ class DataPreprocessing:
                     #selected_genes.append(gene)
                 
             logger.info(f"Selected genes: {len(selected_genes)} , {selected_genes[:5]}...")
-            df = df[selected_genes]
+            if len(selected_genes) > 10:
+                df = df[selected_genes]
             
         sel = SelectKBest(score_func=f_classif, k=threshold)
         df_filtered = pd.DataFrame(sel.fit_transform(df, df_label[target]), index=df.index , columns=df.columns[sel.get_support()])

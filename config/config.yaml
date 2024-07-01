@@ -31,6 +31,16 @@ data_preprocessing:
     mRNA: artifacts/data_ingestion/unzip/BRCA/mRNA/BRCA.uncv2.mRNAseq_RSEM_all.txt
     DNA: artifacts/data_ingestion/unzip/BRCA/DNA/BRCA.meth.by_mean.data.txt
     label: artifacts/data_ingestion/unzip/BRCA/All_CDEs.txt
+  LUSC: 
+    miRNA: artifacts/data_ingestion/unzip/LUSC/miRNA/LUSC.miRseq_RPKM.txt
+    mRNA: artifacts/data_ingestion/unzip/LUSC/mRNA/LUSC.uncv2.mRNAseq_RSEM_all.txt
+    DNA: artifacts/data_ingestion/unzip/LUSC/DNA/LUSC.meth.by_mean.data.txt
+    label: artifacts/data_ingestion/unzip/LUSC/All_CDEs.txt
+  BLCA:
+    miRNA: artifacts/data_ingestion/unzip/BLCA/miRNA/BLCA.miRseq_RPKM.txt
+    mRNA: artifacts/data_ingestion/unzip/BLCA/mRNA/BLCA.uncv2.mRNAseq_RSEM_all.txt
+    DNA: artifacts/data_ingestion/unzip/BLCA/DNA/BLCA.meth.by_mean.data.txt
+    label: artifacts/data_ingestion/unzip/BLCA/All_CDEs.txt
 
 train_embedding: 
   root_dir: artifacts/train_embedding

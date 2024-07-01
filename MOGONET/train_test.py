@@ -117,6 +117,10 @@ def train_test(data_folder, view_list, num_class,
     if data_folder == './artifacts/data_preprocessing/BRCA':
         adj_parameter = 10
         dim_he_list = [400,400,200]
+    if data_folder == './artifacts/data_preprocessing/BLCA':
+        adj_parameter = 2
+        dim_he_list = [200,200,100]
+        
     data_tr_list, data_trte_list, trte_idx, labels_trte = prepare_trte_data(data_folder, view_list)
     labels_tr_tensor = torch.LongTensor(labels_trte[trte_idx["tr"]])
     onehot_labels_tr_tensor = one_hot_tensor(labels_tr_tensor, num_class)
@@ -154,9 +158,14 @@ def train_test(data_folder, view_list, num_class,
             acc = accuracy_score(labels_trte[trte_idx["te"]], te_prob.argmax(1))
             f1_weighted = f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='weighted')
             f1_macro = f1_score(labels_trte[trte_idx["te"]], te_prob.argmax(1), average='macro')
-            auc_macro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='macro' , multi_class='ovr')
-            auc_micro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='micro' , multi_class='ovr')
-            auc_weighted = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='weighted' , multi_class='ovr')
+            if num_class == 2:
+                auc_macro = roc_auc_score(labels_trte[trte_idx["te"]], te_prob[:,1], average='macro')
+                auc_micro = roc_auc_score(labels_trte[trte_idx["te"]], te_prob[:,1], average='micro')
+                auc_weighted = roc_auc_score(labels_trte[trte_idx["te"]], te_prob[:,1], average='weighted')
+            else:
+                auc_macro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='macro' , multi_class='ovr')
+                auc_micro = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='micro' , multi_class='ovr')
+                auc_weighted = roc_auc_score(labels_trte[trte_idx["te"]] , te_prob , average='weighted' , multi_class='ovr')
             
             print_log = f"Test: Epoch {epoch:04d} | Acc : {acc:.4f} | F1_weighted : {f1_weighted:.4f} | F1_macro : {f1_macro:.4f} | AUC_macro : {auc_macro:.4f} | AUC_micro : {auc_micro:.4f} | AUC_weighted : {auc_weighted:.4f}"
             with open(os.path.join(artifact_dir, "log.txt"), "a") as f:

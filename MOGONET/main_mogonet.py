@@ -17,6 +17,8 @@ if __name__ == "__main__":
         num_class = 3
     if data_folder == './artifacts/data_preprocessing/BRCA':
         num_class = 5
+    if data_folder == './artifacts/data_preprocessing/BLCA':
+        num_class = 2
     
     train_test(data_folder, view_list, num_class,
                lr_e_pretrain, lr_e, lr_c, 

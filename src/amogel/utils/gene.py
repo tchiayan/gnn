@@ -137,9 +137,9 @@ if __name__ == "__main__":
     
     # test 
     filepaths = [
-        Path("./artifacts/data_ingestion/unzip/KIPAN/mRNA/KIPAN.uncv2.mRNAseq_RSEM_all.txt") , 
-        Path("./artifacts/data_ingestion/unzip/KIPAN/DNA/KIPAN.meth.by_mean.data.txt"),
-        Path("./artifacts/data_ingestion/unzip/KIPAN/miRNA/KIPAN.miRseq_RPKM.txt")
+        Path("./artifacts/data_ingestion/unzip/LUSC/mRNA/LUSC.uncv2.mRNAseq_RSEM_all.txt") , 
+        Path("./artifacts/data_ingestion/unzip/LUSC/DNA/LUSC.meth.by_mean.data.txt"),
+        Path("./artifacts/data_ingestion/unzip/LUSC/miRNA/LUSC.miRseq_RPKM.txt")
     ]
     
     configs = [

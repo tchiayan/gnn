@@ -18,8 +18,12 @@ class DataPreprocessingPipeline:
         miRNA , mRNA , DNA , label = data_preprocessing.load_data(dataset=data_preprocessing_config.dataset)
         if data_preprocessing_config.dataset == "BRCA":
             miRNA , mRNA , DNA , label = data_preprocessing.data_cleaning(miRNA , mRNA , DNA , label, target="BRCA_Subtype_PAM50")
-        else:
+        elif data_preprocessing_config.dataset == "KIPAN":
             miRNA , mRNA , DNA , label = data_preprocessing.data_cleaning(miRNA , mRNA , DNA , label, target="histological_type")
+        elif data_preprocessing_config.dataset == 'LUSC':
+            miRNA , mRNA , DNA , label = data_preprocessing.data_cleaning(miRNA , mRNA , DNA , label, target="histological_type")
+        elif data_preprocessing_config.dataset == 'BLCA':
+            miRNA , mRNA , DNA , label = data_preprocessing.data_cleaning(miRNA , mRNA , DNA , label, target="diagnosis_subtype") 
         
         data_preprocessing.save_data(miRNA , mRNA , DNA , label , data_preprocessing_config.dataset)
         # data_preprocessing.generate_ac(data_preprocessing_config.dataset)

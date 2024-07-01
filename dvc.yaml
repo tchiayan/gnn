@@ -37,19 +37,19 @@ stages:
   #   outs:
   #   - artifacts/arm_classification
 
-  # compare_mogonet: 
-  #   cmd: python MOGONET/main_mogonet.py 
-  #   deps:
-  #   - MOGONET/main_mogonet.py
-  #   outs:
-  #   - artifacts/compare/mogonet 
+  compare_mogonet: 
+    cmd: python MOGONET/main_mogonet.py 
+    deps:
+    - MOGONET/main_mogonet.py
+    outs:
+    - artifacts/compare/mogonet 
 
-  # compare_moglam: 
-  #   cmd: python MOGLAM/main_MOGLAM.py 
-  #   deps: 
-  #   - MOGLAM/main_MOGLAM.py
-  #   outs:
-  #   - artifacts/compare/moglam
+  compare_moglam: 
+    cmd: python MOGLAM/main_MOGLAM.py 
+    deps: 
+    - MOGLAM/main_MOGLAM.py
+    outs:
+    - artifacts/compare/moglam
   
   compare_other: 
     cmd: python src/amogel/pipeline/stage_other_classification.py
@@ -57,6 +57,13 @@ stages:
     - src/amogel/pipeline/stage_other_classification.py
     outs: 
     - artifacts/compare/traditional
+  
+  amogel: 
+    cmd: python src/amogel/pipeline/stage_amogel.py
+    deps:
+    - src/amogel/pipeline/stage_amogel.py
+    outs:
+    - artifacts/amogel
 
   # train_embedding:
   #   cmd: python src/amogel/pipeline/stage_train_embedding.py

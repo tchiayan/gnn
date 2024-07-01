@@ -1,4 +1,4 @@
-dataset: 'BRCA'
+dataset: 'BLCA'
 data_preprocessing: 
   filtering:
     mRNA: 
@@ -58,7 +58,7 @@ compare_other:
   go: true 
   go_filter: 0.05
   go_topk: 100
-  select_k: "auto"
+  select_k: 50
   info_mean: true
 
 knowledge_graph: 

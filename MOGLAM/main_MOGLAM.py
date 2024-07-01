@@ -29,6 +29,13 @@ if __name__ == "__main__":
         lr_c = 1e-6
         reg = 0.001
         neta = 0.1
+    elif data_folder == './artifacts/data_preprocessing/BLCA': 
+        num_class = 2
+        lr_e_pretrain = 1e-4
+        lr_e = 1e-5
+        lr_c = 1e-6
+        reg = 0.001
+        neta = 0.1
 
 
     train_test(data_folder, view_list, num_class,
