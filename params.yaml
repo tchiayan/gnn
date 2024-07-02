@@ -1,4 +1,4 @@
-dataset: 'BLCA'
+dataset: 'KIPAN'
 data_preprocessing: 
   filtering:
     mRNA: 
@@ -13,7 +13,7 @@ data_preprocessing:
   test_split: 0.3
   n_bins: 2
   min_rules: 1000
-  fold_change: false
+  fold_change: true
   discretize_level: 1 
   random_state: 41
 
@@ -58,7 +58,7 @@ compare_other:
   go: true 
   go_filter: 0.05
   go_topk: 100
-  select_k: 'auto'
+  select_k: 'CBA'
   info_mean: true
 
 knowledge_graph: 
