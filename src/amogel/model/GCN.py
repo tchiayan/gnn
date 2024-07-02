@@ -27,23 +27,17 @@ class GCN(pl.LightningModule):
         self.pooling = SAGPooling(hidden_channels, ratio=self.pooling_ratio)
         self.lin = Linear(hidden_channels, num_classes)
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.Linear(hidden_channels , 1024),
+            torch.nn.BatchNorm1d(1024),
             torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Linear(1024 , 512),
+            torch.nn.BatchNorm1d(512),
+            torch.nn.ReLU(),
             torch.nn.Dropout(drop_out),
-            torch.nn.Linear(hidden_channels, hidden_channels),
-            torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Linear(512 , 32),
+            torch.nn.BatchNorm1d(32),
             torch.nn.Dropout(drop_out),
-            torch.nn.Linear(hidden_channels, hidden_channels),
-            torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(hidden_channels),
-            torch.nn.Dropout(drop_out),
-            torch.nn.Linear(hidden_channels, hidden_channels),
-            torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(hidden_channels),
-            torch.nn.Dropout1d(drop_out),
-            torch.nn.Linear(hidden_channels, num_classes)
+            torch.nn.Linear(32, num_classes)
         )
         self.weight = weight if weight is None else torch.tensor(weight, device=device)
         self.criterion = torch.nn.CrossEntropyLoss(weight=self.weight)
