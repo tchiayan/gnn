@@ -17,6 +17,32 @@ data_preprocessing:
   discretize_level: 1 
   random_state: 41
 
+compare_other: 
+  filter: 0.4
+  corr_threshold: 0.5
+  epochs: 200
+  hidden_units: 32
+  learning_rate: 0.0001
+  batch_size: 20
+  drop_out: 0.01
+  negative_corr: false
+  pooling_ratio: 0.5
+  ppi: false
+  ppi_score: 500
+  corr: false
+  ppi_edge: 'score'
+  discretized: true
+  information: true
+  n_bins: 3
+  kegg: false
+  kegg_filter: 0.05 
+  kegg_topk: 50
+  go: false
+  go_filter: 0.05
+  go_topk: 100
+  select_k: 'CBA'
+  info_mean: true
+
 embedding_training: 
   learning_rate: 0.001
   output_channel: 128
@@ -35,31 +61,7 @@ arm_classification:
   data_path: './artifact/data_preprocessing'
   strategy: 'union' # support ['union', 'topk', 'difference']
 
-compare_other: 
-  filter: 0.2
-  corr_threshold: 0.5
-  epochs: 500
-  hidden_units: 32 
-  learning_rate: 0.0001
-  batch_size: 20
-  drop_out: 0.05
-  negative_corr: false
-  pooling_ratio: 0.5
-  ppi: true
-  ppi_score: 500
-  corr: false
-  ppi_edge: 'score'
-  discretized: true
-  information: true
-  n_bins: 3
-  kegg: true 
-  kegg_filter: 0.05 
-  kegg_topk: 50
-  go: true 
-  go_filter: 0.05
-  go_topk: 100
-  select_k: 'CBA'
-  info_mean: true
+
 
 knowledge_graph: 
   ppi_combined_score: 500

@@ -34,6 +34,14 @@ class GCN(pl.LightningModule):
             torch.nn.Linear(hidden_channels, hidden_channels),
             torch.nn.ReLU(),
             torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Dropout(drop_out),
+            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Dropout(drop_out),
+            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(hidden_channels),
             torch.nn.Dropout1d(drop_out),
             torch.nn.Linear(hidden_channels, num_classes)
         )
