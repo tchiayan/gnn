@@ -8,6 +8,7 @@ import pandas as pd
 import torch
 from sklearn.metrics import classification_report , roc_auc_score
 import numpy as np
+import os
 
 class DNN(pl.LightningModule):
     
@@ -73,8 +74,9 @@ class DNN(pl.LightningModule):
             else:
                 output += f"roc_auc: {roc_auc_score(self.actual , np.stack(self.predict , axis=0) , multi_class='ovr'):.4f}\n"
             
-            with open("./artifacts/compare/traditional/dnn_report.txt" , "w") as f:
-                f.write(output)
+            # os.makedirs("./artifacts/dnn_ac" , exist_ok=True)
+            # with open("./artifacts/dnn_ac/dnn_report.txt" , "w") as f:
+            #     f.write(output)
                 
             print(output)
             

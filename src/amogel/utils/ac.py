@@ -12,6 +12,7 @@ import numpy as np
 import torch
 import itertools
 import os
+from collections import Counter
 
 def information_gain(data, class_column):
     """
@@ -370,10 +371,87 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
     df_ac['interestingness_3'] = df_ac['interestingness_3'].astype(float)
     
     
-    if fixed_k is None:
+    if fixed_k == "CBA":
+        # build CBA classifier 
+        df_ac = df_ac.sort_values(by='interestingness_1' , ascending=False) # sort by interestingness_1 from highest to lowest
+        classifier = []
+        default_classes = [] 
+        rules_error = []
+        total_errors = []
+        # convert dataframe to list of set
+        datasets = [ set([f"{x[0]}:{x[1]}" for x in list(zip(row.index , row.values))]) for idx , row in df.copy(deep=True).iterrows()]
+        labels = df_label['class'].values.tolist()
+        print(len(datasets) , len(labels))
+        with tqdm(total=len(df_ac)) as pbar:
+            for idx , row in df_ac.iterrows():
+                rule_antecedents = set([ x for x in row['rules'].split(",")])
+                rule_consequent = row['class']
+                rule_marked = False
+                
+                if len(datasets) <= 0: 
+                    break
+                
+                temp_label = []
+                temp_len = 0 
+                temp_satistifes_conseq_cnt = 0 
+                
+                for didx , datacase in enumerate(datasets):
+                    if rule_antecedents <= datacase: # if rule is subset of datacase
+                        temp_label.append(didx)
+                        temp_len += 1
+                        
+                        if rule_consequent == labels[didx]:
+                            temp_satistifes_conseq_cnt += 1
+                            rule_marked = True
+                    
+                if rule_marked: 
+                    classifier.append(rule_antecedents)
+                    datasets = [ x for idx , x in enumerate(datasets) if idx not in temp_label]
+                    labels = [ x for idx , x in enumerate(labels) if idx not in temp_label]
+                    
+                    # get the default class by majority remaining class 
+                    try:
+                        most_label_item = Counter(labels).most_common(1)[0]
+                        most_common_label = most_label_item[0]
+                        most_common_label_count = most_label_item[1]
+                    except: 
+                        most_common_label = "None"
+                        most_common_label_count = 0
+                        print("End of most_common_label")
+                    default_classes.append(most_common_label)
+                    
+                    rules_error.append(temp_len - temp_satistifes_conseq_cnt)
+                    dflt_class_err = len(datasets) - most_common_label_count 
+                    total_errors.append(dflt_class_err + sum(rules_error))
+                    
+                pbar.update(1)
+        
+        idx_to_cut = total_errors.index(min(total_errors))
+        final_classifier = classifier[:idx_to_cut+1]
+        default_class = default_classes[idx_to_cut]
+        
+        feature_selection = set()
+        for rule in final_classifier:
+            feature_selection = feature_selection.union(set([ int(x.split(":")[0]) for x in list(rule) ]))
+            
+        # build network graph for selected k 
+        corr_array = torch.tensor([abs(corr[x]) if x in corr.keys() else 0 for x in range(0 , df.shape[1])] , dtype=torch.float32)
+        infogain_array = torch.tensor([info_gain[x] if x in info_gain.keys() else 0 for x in range(0 , df.shape[1])] , dtype=torch.float32)
+        edge_tensor = torch.zeros(df.shape[1] , df.shape[1])    
+        #df_filter = df_ac.groupby('class').apply(lambda x: x.nlargest(selected_k , 'interestingness_1')).reset_index(drop=True)
+        for idx , row in enumerate(final_classifier):
+            gene_idx = [int(x.split(":")[0]) for x in list(row)]
+            combination = np.array([list(x) for x in itertools.combinations(gene_idx , 2)])
+            edge_tensor[combination[:,0] , combination[:,1]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
+            edge_tensor[combination[:,1] , combination[:,0]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
+            
+        return est , list(feature_selection) , edge_tensor
+    
+    elif fixed_k is None:
         test_k = [  5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]
     else: 
         test_k  = [ fixed_k ]
+    
     selected_k = 1 
     best_acc = 0
     selected_gene = []
