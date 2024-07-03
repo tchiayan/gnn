@@ -65,10 +65,10 @@ class GCN(pl.LightningModule):
 
     def forward(self, x, edge_index, edge_attr, batch):
         # 1. Obtain node embeddings 
-        x = self.conv1(x, edge_index , edge_attr)
+        x , edge_attn_l1 = self.conv1(x, edge_index , edge_attr , return_attention_weights=True)
         x = self.bn1(x)
         x = x.relu()
-        x = self.conv2(x, edge_index , edge_attr)
+        x , edge_attn_l2 = self.conv2(x, edge_index , edge_attr , return_attention_weights=True)
         x = self.bn2(x)
         x = x.relu()
         # x = self.conv3(x, edge_index)
@@ -78,6 +78,9 @@ class GCN(pl.LightningModule):
             x , edge_index , edge_attr , batch , perm , score = self.pooling(x , edge_index , edge_attr , batch)
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
+        if self.current_epoch == self.trainer.max_epochs - 1:
+            print(f"edge_attn_l1_shape: {edge_attn_l1.shape}")
+            print(f"edge_attn_l2_shape: {edge_attn_l2.shape}")
         # 3. Apply a final classifier
         # x = F.dropout(x, p=self.drop_out , training=self.training)
         # x = self.lin_hidden(x).relu()
