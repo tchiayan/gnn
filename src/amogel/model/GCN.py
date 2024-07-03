@@ -79,8 +79,8 @@ class GCN(pl.LightningModule):
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
         if self.current_epoch == self.trainer.max_epochs - 1:
-            print(f"edge_attn_l1_shape: {edge_attn_l1.shape}")
-            print(f"edge_attn_l2_shape: {edge_attn_l2.shape}")
+            print(f"edge_attn_l1_shape: {edge_attn_l1[0].shape} | {edge_attn_l1[1].shape}")
+            print(f"edge_attn_l2_shape: {edge_attn_l2[0].shape} | {edge_attn_l2[1].shape}")
         # 3. Apply a final classifier
         # x = F.dropout(x, p=self.drop_out , training=self.training)
         # x = self.lin_hidden(x).relu()
