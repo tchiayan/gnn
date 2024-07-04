@@ -99,6 +99,7 @@ class OtherClassifier:
         else:
             est , selected_gene , information_edge_tensor  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "" , fixed_k=select_k , n_bins=self.config.n_bins)
         logger.info(f"Selected gene: {len(selected_gene)}")
+        selected_gene = sorted(selected_gene)
         selection = {0:0,1:0,2:0}
         for gene in selected_gene: 
             if gene in range(0 , train_data_omic_1.shape[1]):
