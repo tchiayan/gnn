@@ -27,7 +27,7 @@ class ConfigurationManager:
         return self.params.dataset
     
     def get_topk(self) -> int: 
-        return self.params.compare_other.topk
+        return self.params.compare_other.epochs
     
     def get_biomarkers(self) -> int:
         return self.params.biomarkers
