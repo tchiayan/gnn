@@ -112,6 +112,7 @@ def load_omic_features_name(dir:str , dataset:str , type:List[int]):
         feature_filepath = os.path.join(dir , dataset , f"{i}_featname.csv")
     
         df_feature = pd.read_csv(feature_filepath , header=None)
+        df_feature['omic_type'] = i
         
         if i == 1:
             df_feature['gene_name'] = df_feature[0].apply(lambda x: x.split("|")[0])
@@ -127,7 +128,7 @@ def load_omic_features_name(dir:str , dataset:str , type:List[int]):
     df_features.reset_index(inplace=True)
     df_features['gene_idx'] = df_features.index.to_list()
     
-    return df_features[["gene_idx" , "gene_name"]]
+    return df_features[["gene_idx" , "gene_name", "omic_type"]]
     
 def load_ppi(dir:str, df_features_name:pd.DataFrame, protein_score:int=400):
     ppi_info_path = os.path.join(dir, f"protein_info.parquet.gzip")

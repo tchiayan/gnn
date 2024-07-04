@@ -65,6 +65,9 @@ class GCN(pl.LightningModule):
         self.edge_attn_l1 = []
         self.edge_attn_l2 = []
         self.batches = []
+        self.pool_batches = []
+        self.pool_perm = []
+        self.pool_score = []
 
     def forward(self, x, edge_index, edge_attr, batch):
         # 1. Obtain node embeddings 
@@ -88,11 +91,11 @@ class GCN(pl.LightningModule):
         # x = self.lin(x)
         x = self.mlp(x)
         
-        return x , edge_attn_l1 , edge_attn_l2
+        return x , edge_attn_l1 , edge_attn_l2 , batch , perm , score
 
     def training_step(self, batch, batch_idx):
         x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
-        out , edge_attn_l1 , edge_attn_l2 = self(x, edge_index, edge_attr, batch)
+        out , edge_attn_l1 , edge_attn_l2 , _ , _ , _ = self(x, edge_index, edge_attr, batch)
         loss = self.criterion(out, y)
         acc = self.accuracy(out, y)
         self.cfm_training(out , y)
@@ -105,10 +108,13 @@ class GCN(pl.LightningModule):
         
         x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
         self.batches.append(batch)
-        out , edge_attn_l1, edge_attn_l2  = self(x, edge_index, edge_attr, batch)
+        out , edge_attn_l1, edge_attn_l2 , pool_batch , pool_perm , pool_score = self(x, edge_index, edge_attr, batch)
         
         self.edge_attn_l1.append(edge_attn_l1)
         self.edge_attn_l2.append(edge_attn_l2)
+        self.pool_batches.append(pool_batch)
+        self.pool_perm.append(pool_perm)
+        self.pool_score.append(pool_score)
         
         loss = self.criterion(out, y)
         acc = self.accuracy(out, y)
@@ -161,10 +167,16 @@ class GCN(pl.LightningModule):
                 torch.save(self.edge_attn_l1 , f"./artifacts/amogel/edge_attn_l1_{self.current_epoch+1}.pt")
                 torch.save(self.edge_attn_l2 , f"./artifacts/amogel/edge_attn_l2_{self.current_epoch+1}.pt")
                 torch.save(self.batches , f"./artifacts/amogel/batches_{self.current_epoch+1}.pt")
+                torch.save(self.pool_batches , f"./artifacts/amogel/pool_batches_{self.current_epoch+1}.pt")
+                torch.save(self.pool_perm , f"./artifacts/amogel/pool_perm_{self.current_epoch+1}.pt")
+                torch.save(self.pool_score , f"./artifacts/amogel/pool_score_{self.current_epoch+1}.pt")
             
         self.edge_attn_l2 = []
         self.edge_attn_l1 = []
         self.batches = []
+        self.pool_batches = []
+        self.pool_perm = []
+        self.pool_score = []
         self.actual = []
         self.predicted = []
         self.predicted_proba = []
