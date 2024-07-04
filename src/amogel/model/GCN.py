@@ -62,6 +62,9 @@ class GCN(pl.LightningModule):
         self.predicted_proba = []
         self.lr = lr
         self.drop_out = drop_out
+        self.edge_attn_l1 = []
+        self.edge_attn_l2 = []
+        self.batches = []
 
     def forward(self, x, edge_index, edge_attr, batch):
         # 1. Obtain node embeddings 
@@ -78,20 +81,18 @@ class GCN(pl.LightningModule):
             x , edge_index , edge_attr , batch , perm , score = self.pooling(x , edge_index , edge_attr , batch)
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
-        if self.current_epoch == self.trainer.max_epochs - 1:
-            print(f"edge_attn_l1_shape: {edge_attn_l1[0].shape} | {edge_attn_l1[1].shape}")
-            print(f"edge_attn_l2_shape: {edge_attn_l2[0].shape} | {edge_attn_l2[1].shape}")
+        
         # 3. Apply a final classifier
         # x = F.dropout(x, p=self.drop_out , training=self.training)
         # x = self.lin_hidden(x).relu()
         # x = self.lin(x)
         x = self.mlp(x)
         
-        return x
+        return x , edge_attn_l1 , edge_attn_l2
 
     def training_step(self, batch, batch_idx):
         x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
-        out = self(x, edge_index, edge_attr, batch)
+        out , edge_attn_l1 , edge_attn_l2 = self(x, edge_index, edge_attr, batch)
         loss = self.criterion(out, y)
         acc = self.accuracy(out, y)
         self.cfm_training(out , y)
@@ -101,8 +102,12 @@ class GCN(pl.LightningModule):
         return loss
     
     def validation_step(self, batch, batch_idx):
+        self.batches.append(batch)
         x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
-        out = self(x, edge_index, edge_attr, batch)
+        out , edge_attn_l1, edge_attn_l2  = self(x, edge_index, edge_attr, batch)
+        
+        self.edge_attn_l1.append(edge_attn_l1)
+        self.edge_attn_l2.append(edge_attn_l2)
         
         loss = self.criterion(out, y)
         acc = self.accuracy(out, y)
@@ -131,6 +136,9 @@ class GCN(pl.LightningModule):
             print("")
             print("-------- Confusion Matrix [Training] --------")
             print(cfm)
+        self.edge_attn_l2 = []
+        self.edge_attn_l1 = []
+        self.batches = []
         self.cfm_training.reset()
         
     def on_validation_epoch_end(self):
@@ -148,6 +156,14 @@ class GCN(pl.LightningModule):
                 
             if self.current_epoch == self.trainer.max_epochs - 1:
                 print(report)
+            
+            torch.save(self.edge_attn_l1 , f"./artifacts/amogel/edge_attn_l1_{self.current_epoch+1}.pt")
+            torch.save(self.edge_attn_l2 , f"./artifacts/amogel/edge_attn_l2_{self.current_epoch+1}.pt")
+            torch.save(self.batches , f"./artifacts/amogel/batches_{self.current_epoch+1}.pt")
+            
+        self.edge_attn_l2 = []
+        self.edge_attn_l1 = []
+        self.batches = []
         self.actual = []
         self.predicted = []
         self.predicted_proba = []
