@@ -20,7 +20,7 @@ data_preprocessing:
 compare_other: 
   filter: 0.4
   corr_threshold: 0.5
-  epochs: 200
+  epochs: 100
   hidden_units: 64
   learning_rate: 0.0001
   batch_size: 20
