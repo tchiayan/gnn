@@ -10,7 +10,6 @@ from torch_geometric.nn import global_mean_pool , SAGPooling , TopKPooling
 import mlflow
 from sklearn.metrics import classification_report , roc_auc_score
 import numpy as np
-from torch_geometric.utils import 
 
 class GCN(pl.LightningModule):
     def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None):
