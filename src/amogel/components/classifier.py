@@ -403,10 +403,12 @@ class OtherClassifier:
             logger.info(f"Node dimension: {test_graph[0].x.shape} , Edge dimension: {test_graph[0].edge_index.shape} , \
                     Edge attribute dimension: {test_graph[0].edge_attr.shape} , \
                     Edge max: {test_graph[0].edge_attr.max(dim=0).values} , \
+                    Edge mean: {test_graph[0].edge_attr.mean(dim=0)} , \
                     Nonzero edge: {torch.count_nonzero(test_graph[0].edge_attr , dim=0)}")
         except Exception as e:
             logger.info(f"Node dimension: {test_graph[0].x.shape} , Edge dimension: {test_graph[0].edge_index.shape} , \
                     Edge attribute dimension: {test_graph[0].edge_attr.shape} , \
+                    Edge mean: {test_graph[0].edge_attr.mean(dim=0)} , \
                     Nonzero edge: {torch.count_nonzero(test_graph[0].edge_attr , dim=0)}")
         
         mlflow.pytorch.autolog()
