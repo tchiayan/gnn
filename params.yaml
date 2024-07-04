@@ -42,6 +42,9 @@ compare_other:
   go_topk: 100
   select_k: 'auto'
   info_mean: true
+  scale_edge: false
+
+biomarkers: 100
 
 embedding_training: 
   learning_rate: 0.001

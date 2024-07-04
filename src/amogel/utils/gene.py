@@ -12,6 +12,7 @@ import torch
 import os
 from amogel.utils.common import load_omic_features_name , load_feature_conversion
 from tqdm import tqdm
+from torch_geometric.utils import to_dense_adj
 warnings.filterwarnings("ignore")
 
 
@@ -114,7 +115,32 @@ def generate_edges_from_annotation(kegg_filepath: Path , features:pd.DataFrame ,
     non_zero_edges = (edge_tensor[tri_idx[0] , tri_idx[1]] > 0).sum()
     print(f"Partial match annotation: {partial_match} | Number of non-zero edges: {non_zero_edges}")
     return edge_tensor
+
+def get_gene_attention(batches , edge_attn):
+    edge_attn_layer = []
     
+    for i , batch in enumerate(batches):
+        dense_attn = to_dense_adj(edge_attn[i][0] , batch , edge_attr=edge_attn[i][1]).squeeze(dim=-1)
+        edge_attn_layer.append(dense_attn)
+    
+    edge_attn_layer = torch.concat(edge_attn_layer , dim=0)
+    return edge_attn_layer 
+
+def biomarkers_selection(batch_file , edge_attn_files , topk=10):
+    
+    batches = torch.load(batch_file , map_location=torch.device('cpu'))
+    edge_attn_layers = []
+    
+    for edge_attn_file in edge_attn_files:
+        edge_attn = torch.load(edge_attn_file , map_location=torch.device('cpu'))
+        edge_attn_layer = get_gene_attention(batches , edge_attn)
+        edge_attn_layers.append(edge_attn_layer)
+    
+    edge_attn_layers = torch.stack(edge_attn_layers , dim=-1)
+    
+    biomarkers = edge_attn_layers.sum(dim=-1).mean(dim=0).sum(dim=-1).topk(topk)
+    return biomarkers
+  
 if __name__ == "__main__":
     
     

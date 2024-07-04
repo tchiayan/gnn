@@ -174,3 +174,4 @@ class CompareOtherConfig:
     go_topk: int
     filter: float
     info_mean: bool
+    scale_edge: bool

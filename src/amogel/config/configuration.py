@@ -26,6 +26,12 @@ class ConfigurationManager:
     def get_dataset(self) -> str: 
         return self.params.dataset
     
+    def get_topk(self) -> int: 
+        return self.params.compare_other.topk
+    
+    def get_biomarkers(self) -> int:
+        return self.params.biomarkers
+    
     def get_data_ingestion_config(self) -> DataPreparationConfig:
         config = self.config.data_preparation 
         
@@ -229,6 +235,7 @@ class ConfigurationManager:
             go_filter=params.go_filter, 
             go_topk=params.go_topk, 
             info_mean=params.info_mean,
+            scale_edge=params.scale_edge
         )
         
         return compare_other_config

@@ -353,7 +353,8 @@ class OtherClassifier:
         edge_matrix = torch.stack(edge_matrix , dim=-1)
         
         # scale the edge matrix to 0-1
-        edge_matrix = (edge_matrix - edge_matrix.min()) / (edge_matrix.max() - edge_matrix.min())
+        if self.config.scale_edge:
+            edge_matrix = (edge_matrix - edge_matrix.min()) / (edge_matrix.max() - edge_matrix.min())
         
         logger.info(f"Generating graph data for training...")
         train_graph = []
