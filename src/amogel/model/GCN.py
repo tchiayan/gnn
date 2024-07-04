@@ -82,6 +82,9 @@ class GCN(pl.LightningModule):
         # 2. Readout layer
         if self.pooling_ratio > 0:
             x , edge_index , edge_attr , batch , perm , score = self.pooling(x , edge_index , edge_attr , batch)
+        else:
+            perm = None 
+            score = None
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
 
         
