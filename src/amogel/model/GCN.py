@@ -102,8 +102,9 @@ class GCN(pl.LightningModule):
         return loss
     
     def validation_step(self, batch, batch_idx):
-        self.batches.append(batch)
+        
         x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
+        self.batches.append(batch)
         out , edge_attn_l1, edge_attn_l2  = self(x, edge_index, edge_attr, batch)
         
         self.edge_attn_l1.append(edge_attn_l1)
@@ -157,9 +158,9 @@ class GCN(pl.LightningModule):
             if self.current_epoch == self.trainer.max_epochs - 1:
                 print(report)
             
-            torch.save(self.edge_attn_l1 , f"./artifacts/amogel/edge_attn_l1_{self.current_epoch+1}.pt")
-            torch.save(self.edge_attn_l2 , f"./artifacts/amogel/edge_attn_l2_{self.current_epoch+1}.pt")
-            torch.save(self.batches , f"./artifacts/amogel/batches_{self.current_epoch+1}.pt")
+                torch.save(self.edge_attn_l1 , f"./artifacts/amogel/edge_attn_l1_{self.current_epoch+1}.pt")
+                torch.save(self.edge_attn_l2 , f"./artifacts/amogel/edge_attn_l2_{self.current_epoch+1}.pt")
+                torch.save(self.batches , f"./artifacts/amogel/batches_{self.current_epoch+1}.pt")
             
         self.edge_attn_l2 = []
         self.edge_attn_l1 = []
