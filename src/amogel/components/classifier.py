@@ -109,6 +109,8 @@ class OtherClassifier:
                 selection[2] += 1
         logger.info(f"Selected gene distribution: {selection}")
         self.selected_gene = selected_gene
+        os.makedirs("./artifacts/ac_genes" , exist_ok=True)
+        torch.save(selected_gene , f"./artifacts/ac_genes/gene.pt")
         self.information_edge_tensor = information_edge_tensor
         
         if self.config.discretized:
