@@ -468,9 +468,9 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
             feature_selection = list(feature_selection)
             feature_selection.sort()
             
-            train_data = df.loc[: , list(feature_selection)]
-            test_data = df_test_data.loc[: , list(feature_selection)]
+            train_data = data_file.loc[: , list(feature_selection)]
             train_label = label_file
+            test_data = df_test_data.loc[: , list(feature_selection)]
             test_label = df_test_label
             
             train_dataset = OmicDataset(train_data , train_label)
