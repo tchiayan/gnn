@@ -13,6 +13,9 @@ import torch
 import itertools
 import os
 from collections import Counter
+from amogel.model.DNN import DNN , OmicDataset
+from pytorch_lightning import Trainer
+from torch.utils.data import DataLoader
 
 def information_gain(data, class_column):
     """
@@ -233,7 +236,7 @@ def generate_ac_to_file(data_file, label_file , output_file , min_support=0.9 , 
     return est , list(feature_selection)
 
 
-def generate_ac_feature_selection(data_file, label_file , output_file  , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2 , filter=[] , fixed_k=None):
+def generate_ac_feature_selection(data_file, label_file , output_file  , min_support=0.9 , min_confidence=0.0 , min_rule_per_class=1000 , n_bins=2 , filter=[] , fixed_k=None , df_test_data:pd.DataFrame = None , df_test_label:pd.DataFrame = None):
     
     # Discretization
     if isinstance(data_file , Path) or isinstance(data_file , str):
@@ -252,7 +255,7 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
     if isinstance(label_file , Path) or isinstance(label_file , str):
         df_label = pd.read_csv(label_file, names=['class'])
     elif isinstance(label_file , pd.DataFrame):
-        df_label = label_file
+        df_label = label_file.copy(deep=True)
     df_label.columns = ['class']
     df_label['class'] = df_label['class'].astype(str)
 
@@ -446,6 +449,63 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
             edge_tensor[combination[:,1] , combination[:,0]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
             
         return est , list(feature_selection) , edge_tensor
+    elif fixed_k == "DNN":
+        
+        test_k = [  5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]
+        # test_k = [ 5 , 10 ]
+        selected_k = 5
+        best_acc = 0 
+        
+        for k in test_k:
+            feature_selection = set()
+            df_filter = df_ac.groupby('class').apply(lambda x: x.nlargest(k , 'interestingness_1')).reset_index(drop=True)
+            for idx , row in df_filter.iterrows():
+                items = row['rules'].split(",")
+                genes = [ int(x.split(":")[0]) for x in items ]
+                feature_selection = feature_selection.union(set(genes))
+                
+            # load data and train the model using DNN
+            feature_selection = list(feature_selection)
+            feature_selection.sort()
+            
+            train_data = df.loc[: , list(feature_selection)]
+            test_data = df_test_data.loc[: , list(feature_selection)]
+            train_label = label_file
+            test_label = df_test_label
+            
+            train_dataset = OmicDataset(train_data , train_label)
+            test_dataset = OmicDataset(test_data , test_label)
+            
+            # dataloader 
+            train_loader = DataLoader(train_dataset , batch_size=32 , shuffle=True)
+            test_loader = DataLoader(test_dataset , batch_size=32 , shuffle=False)
+            
+            num_classes = len(df_label['class'].unique())
+            model = DNN(input_dimension=train_data.shape[1] , num_classes=num_classes)
+            
+            trainer = Trainer(max_epochs=100 , enable_progress_bar=False , enable_checkpointing=False)
+            trainer.fit(model , train_loader )
+            print(f"Testing with topk: {k}")
+            output = trainer.test(model , test_loader)
+            
+            if output[0]['test_acc'] > best_acc:
+                best_acc = output[0]['test_acc']
+                selected_gene = feature_selection
+                selected_k = k
+            
+        # build network graph for selected k 
+        corr_array = torch.tensor([abs(corr[x]) if x in corr.keys() else 0 for x in range(0 , df.shape[1])] , dtype=torch.float32)
+        infogain_array = torch.tensor([info_gain[x] if x in info_gain.keys() else 0 for x in range(0 , df.shape[1])] , dtype=torch.float32)
+        edge_tensor = torch.zeros(df.shape[1] , df.shape[1])    
+        df_filter = df_ac.groupby('class').apply(lambda x: x.nlargest(selected_k , 'interestingness_1')).reset_index(drop=True)
+        for idx , row in df_filter.iterrows():
+            gene_idx = [int(x.split(":")[0]) for x in row['rules'].split(",")]
+            combination = np.array([list(x) for x in itertools.combinations(gene_idx , 2)])
+            edge_tensor[combination[:,0] , combination[:,1]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
+            edge_tensor[combination[:,1] , combination[:,0]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
+            
+        print("Best K: {} | Best Acc: {:.4f}".format(selected_k , best_acc))
+        return est , list(selected_gene) , edge_tensor
     
     elif fixed_k is None:
         test_k = [  5 , 10 , 20 , 30 , 40 , 50 , 100 , 150 , 200 , 500 , 1000 , 1500 , 2000  ]

@@ -82,6 +82,19 @@ class DNN(pl.LightningModule):
             
         self.actual = []
         self.predict = []
+    
+    def test_step(self, batch , batch_idx):
+        x , y = batch
+        y_hat = self.model(x) 
+        self.actual.extend(y.cpu().numpy())
+        self.predict.extend(F.softmax(y_hat , dim=1).cpu().numpy())
+    
+    def on_test_epoch_end(self) -> None:
+        predict = np.stack(self.predict , axis=0).argmax(axis=1)
+        output = classification_report(self.actual , predict , digits=4 , output_dict=True)
+        
+        self.log_dict({"test_acc" : output['accuracy']})
+        
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters() , lr=1e-5 , weight_decay=0.01)
         return optimizer

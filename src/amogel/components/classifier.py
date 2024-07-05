@@ -95,9 +95,9 @@ class OtherClassifier:
         
         
         if select_k == "auto":
-            est , selected_gene , information_edge_tensor  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "" , n_bins=self.config.n_bins)
+            est , selected_gene , information_edge_tensor  = generate_ac_feature_selection(self.train_data.copy(deep=True) , self.train_label.copy(deep=True) , "" , n_bins=self.config.n_bins , df_test_data=self.test_data.copy(deep=True) , df_test_label=self.test_label.copy(deep=True))
         else:
-            est , selected_gene , information_edge_tensor  = generate_ac_feature_selection(self.train_data , self.train_label.copy(deep=True) , "" , fixed_k=select_k , n_bins=self.config.n_bins)
+            est , selected_gene , information_edge_tensor  = generate_ac_feature_selection(self.train_data.copy(deep=True) , self.train_label.copy(deep=True) , "" , fixed_k=select_k , n_bins=self.config.n_bins ,  df_test_data=self.test_data.copy(deep=True) , df_test_label=self.test_label.copy(deep=True))
         logger.info(f"Selected gene: {len(selected_gene)}")
         selected_gene = sorted(selected_gene)
         selection = {0:0,1:0,2:0}
