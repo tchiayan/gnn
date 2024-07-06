@@ -188,4 +188,4 @@ class GCN(pl.LightningModule):
         self.cfm_testing.reset()
     
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.lr)
+        return torch.optim.Adam(self.parameters(), lr=self.lr , weight_decay=0.001)
