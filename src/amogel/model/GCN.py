@@ -28,10 +28,11 @@ class GCN(pl.LightningModule):
         self.lin = Linear(hidden_channels, num_classes)
         self.mlp = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels , 512),
-            torch.nn.BatchNorm1d(512),
             torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(512),
             torch.nn.Dropout(drop_out),
             torch.nn.Linear(512 , 32),
+            torch.nn.ReLU(),
             torch.nn.BatchNorm1d(32),
             torch.nn.Dropout(drop_out),
             torch.nn.Linear(32, num_classes)
