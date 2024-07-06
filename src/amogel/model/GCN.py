@@ -27,11 +27,15 @@ class GCN(pl.LightningModule):
         self.pooling = SAGPooling(hidden_channels, ratio=self.pooling_ratio)
         self.lin = Linear(hidden_channels, num_classes)
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels , 512),
+            torch.nn.Linear(hidden_channels , 256),
             torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(512),
+            torch.nn.BatchNorm1d(256),
             torch.nn.Dropout(drop_out),
-            torch.nn.Linear(512 , 32),
+            torch.nn.Linear(256 , 128),
+            torch.nn.ReLU(),
+            torch.nn.BatchNorm1d(128),
+            torch.nn.Dropout(drop_out),
+            torch.nn.Linear(128 , 32),
             torch.nn.ReLU(),
             torch.nn.BatchNorm1d(32),
             torch.nn.Dropout(drop_out),

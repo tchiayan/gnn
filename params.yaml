@@ -18,9 +18,9 @@ data_preprocessing:
   random_state: 41
 
 compare_other: 
-  filter: 0.4
+  filter: 0.3
   corr_threshold: 0.5
-  epochs: 100
+  epochs: 200
   hidden_units: 64
   learning_rate: 0.0001
   batch_size: 20
@@ -39,7 +39,7 @@ compare_other:
   kegg_topk: 50
   go: true
   go_filter: 0.05
-  go_topk: 100
+  go_topk: 50
   select_k: 'DNN'
   info_mean: true
   scale_edge: false
