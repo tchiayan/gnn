@@ -426,7 +426,8 @@ class OtherClassifier:
             num_classes=self.train_label['label'].nunique(), 
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
-            pooling_ratio=self.config.pooling_ratio
+            pooling_ratio=self.config.pooling_ratio,
+            decay=self.config.decay
         )
         
         with mlflow.start_run():

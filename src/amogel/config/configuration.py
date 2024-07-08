@@ -235,7 +235,8 @@ class ConfigurationManager:
             go_filter=params.go_filter, 
             go_topk=params.go_topk, 
             info_mean=params.info_mean,
-            scale_edge=params.scale_edge
+            scale_edge=params.scale_edge, 
+            decay=params.decay
         )
         
         return compare_other_config

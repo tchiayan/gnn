@@ -21,7 +21,7 @@ compare_other:
   filter: 0.3
   corr_threshold: 0.5
   epochs: 200
-  hidden_units: 64
+  hidden_units: 32
   learning_rate: 0.0001
   batch_size: 20
   drop_out: 0.05
@@ -40,9 +40,10 @@ compare_other:
   go: true
   go_filter: 0.05
   go_topk: 50
-  select_k: 'DNN'
+  select_k: 'auto'
   info_mean: true
   scale_edge: false
+  decay: 0.001
 
 biomarkers: 100
 

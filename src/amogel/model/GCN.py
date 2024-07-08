@@ -12,12 +12,13 @@ from sklearn.metrics import classification_report , roc_auc_score
 import numpy as np
 
 class GCN(pl.LightningModule):
-    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None):
+    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None , decay=0.0):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         super(GCN, self).__init__()
         self.num_classes = num_classes
         self.pooling_ratio = pooling_ratio
+        self.decay = decay
         self.conv1 = GATConv(in_channels, hidden_channels)
         self.bn1 = BatchNorm(hidden_channels)
         self.conv2 = GATConv(hidden_channels, hidden_channels)
@@ -27,19 +28,15 @@ class GCN(pl.LightningModule):
         self.pooling = SAGPooling(hidden_channels, ratio=self.pooling_ratio)
         self.lin = Linear(hidden_channels, num_classes)
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels , 256),
+            torch.nn.Linear(hidden_channels, hidden_channels),
             torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(256),
+            torch.nn.BatchNorm1d(hidden_channels),
             torch.nn.Dropout(drop_out),
-            torch.nn.Linear(256 , 128),
+            torch.nn.Linear(hidden_channels, hidden_channels),
             torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(128),
-            torch.nn.Dropout(drop_out),
-            torch.nn.Linear(128 , 32),
-            torch.nn.ReLU(),
-            torch.nn.BatchNorm1d(32),
-            torch.nn.Dropout(drop_out),
-            torch.nn.Linear(32, num_classes)
+            torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Dropout1d(drop_out),
+            torch.nn.Linear(hidden_channels, num_classes)
         )
         self.weight = weight if weight is None else torch.tensor(weight, device=device)
         self.criterion = torch.nn.CrossEntropyLoss(weight=self.weight)
@@ -188,4 +185,4 @@ class GCN(pl.LightningModule):
         self.cfm_testing.reset()
     
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.lr , weight_decay=0.001)
+        return torch.optim.Adam(self.parameters(), lr=self.lr , weight_decay=self.decay)

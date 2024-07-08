@@ -175,3 +175,4 @@ class CompareOtherConfig:
     filter: float
     info_mean: bool
     scale_edge: bool
+    decay: float
