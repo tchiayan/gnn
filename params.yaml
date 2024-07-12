@@ -42,7 +42,7 @@ compare_other:
   go_topk: 50
   select_k: 'auto'
   info_mean: true
-  scale_edge: false
+  scale_edge: true
   decay: 0.001
 
 biomarkers: 100

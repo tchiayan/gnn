@@ -354,7 +354,10 @@ class OtherClassifier:
         
         # scale the edge matrix to 0-1
         if self.config.scale_edge:
-            edge_matrix = (edge_matrix - edge_matrix.min()) / (edge_matrix.max() - edge_matrix.min())
+            if self.config.information: 
+                # scale only first layer 
+                edge_matrix[0] = (edge_matrix[0] - edge_matrix[0].min()) / (edge_matrix[0].max() - edge_matrix[0].min())
+            # edge_matrix = (edge_matrix - edge_matrix.min()) / (edge_matrix.max() - edge_matrix.min())
         
         logger.info(f"Generating graph data for training...")
         train_graph = []
