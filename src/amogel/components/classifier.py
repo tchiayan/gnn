@@ -420,8 +420,8 @@ class OtherClassifier:
         train_graph = torch.load("./artifacts/amogel/train_graph.pt")
         test_graph = torch.load("./artifacts/amogel/test_graph.pt")
         
-        train_loader = DataLoader(train_graph , batch_size=32 , shuffle=True)
-        test_loader = DataLoader(test_graph , batch_size=32 , shuffle=False)
+        train_loader = DataLoader(train_graph , batch_size=self.config.batch_size , shuffle=True)
+        test_loader = DataLoader(test_graph , batch_size=self.config.batch_size , shuffle=False)
         
         model = GCN(
             in_channels=train_graph[0].x.shape[1],
@@ -430,7 +430,10 @@ class OtherClassifier:
             lr=self.config.learning_rate,
             drop_out=self.config.drop_out, 
             pooling_ratio=self.config.pooling_ratio,
-            decay=self.config.decay
+            decay=self.config.decay, 
+            no_of_nodes=train_graph[0].x.shape[0] * train_graph[0].x.shape[1], 
+            DNN=self.config.dnn , 
+            GNN=self.config.gnn
         )
         
         with mlflow.start_run():

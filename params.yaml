@@ -1,12 +1,12 @@
-dataset: 'BRCA'
+dataset: 'KIPAN'
 data_preprocessing: 
   filtering:
     mRNA: 
       variance: 0.1
-      annova: 1000
+      annova: 2000
     DNA:
       variance: 0.001
-      annova: 1000
+      annova: 2000
     miRNA:
       variance: 0
       annova: 502
@@ -14,16 +14,18 @@ data_preprocessing:
   n_bins: 2
   min_rules: 1000
   fold_change: true
-  discretize_level: 1 
-  random_state: 41
+  discretize_level: 1
+  random_state: 44
 
 compare_other: 
+  dnn: true
+  gnn: true
   filter: 0.3
   corr_threshold: 0.5
-  epochs: 200
+  epochs: 500
   hidden_units: 32
-  learning_rate: 0.0001
-  batch_size: 20
+  learning_rate: 0.00005
+  batch_size: 50
   drop_out: 0.05
   negative_corr: false
   pooling_ratio: 0.0
@@ -40,7 +42,7 @@ compare_other:
   go: true
   go_filter: 0.05
   go_topk: 50
-  select_k: 'auto'
+  select_k: 1000
   info_mean: true
   scale_edge: true
   decay: 0.001

@@ -7,15 +7,18 @@ from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv , BatchNorm , GATConv 
 from torch_geometric.nn import global_mean_pool , SAGPooling , TopKPooling
+from torch_geometric.utils import to_dense_batch
 import mlflow
 from sklearn.metrics import classification_report , roc_auc_score
 import numpy as np
 
 class GCN(pl.LightningModule):
-    def __init__(self, in_channels ,  hidden_channels , num_classes , lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None , decay=0.0):
+    def __init__(self, in_channels ,  hidden_channels , num_classes , no_of_nodes ,  lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None , decay=0.0 , GNN=True , DNN=True):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         super(GCN, self).__init__()
+        self.DNN = DNN
+        self.GNN = GNN
         self.num_classes = num_classes
         self.pooling_ratio = pooling_ratio
         self.decay = decay
@@ -28,7 +31,7 @@ class GCN(pl.LightningModule):
         self.pooling = SAGPooling(hidden_channels, ratio=self.pooling_ratio)
         self.lin = Linear(hidden_channels, num_classes)
         self.mlp = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.Linear(hidden_channels * 2 if GNN and DNN else hidden_channels, hidden_channels), # combined feed x and graph x 
             torch.nn.ReLU(),
             torch.nn.BatchNorm1d(hidden_channels),
             torch.nn.Dropout(drop_out),
@@ -41,6 +44,18 @@ class GCN(pl.LightningModule):
         self.weight = weight if weight is None else torch.tensor(weight, device=device)
         self.criterion = torch.nn.CrossEntropyLoss(weight=self.weight)
         self.mlflow = mlflow
+        self.feedforward = torch.nn.Sequential(
+            torch.nn.Linear(no_of_nodes , 1024),
+            torch.nn.BatchNorm1d(1024),
+            torch.nn.ReLU(),
+            torch.nn.Linear(1024 , 512),
+            torch.nn.BatchNorm1d(512),
+            torch.nn.ReLU(),
+            torch.nn.Dropout(drop_out),
+            torch.nn.Linear(512 , hidden_channels),
+            torch.nn.BatchNorm1d(hidden_channels),
+            torch.nn.Dropout(drop_out),
+        )
         
         # [[ 79   0  14  10   0] =  79+0+14+10+0 = 103 , 614 / (103) = 5.96 , 1 - 103 / 614 = 0.83
         # [ 14   0  18   9   0] = 14+0+18+9+0 = 41 , 614 /  41 = 14.97 , 1 - 41 / 614 = 0.93
@@ -67,8 +82,16 @@ class GCN(pl.LightningModule):
         self.pool_batches = []
         self.pool_perm = []
         self.pool_score = []
+        self.embeddings = []
 
     def forward(self, x, edge_index, edge_attr, batch):
+        
+        # convert node embeddign to dense batch 
+        batch_x , batch_mask = to_dense_batch(x , batch) # dimension ( no_batch , number_of_node )
+        batch_x = batch_x.view(batch_x.shape[0] , batch_x.shape[1] * batch_x.shape[2]) 
+        
+        feed_x  = self.feedforward(batch_x) # [ batch_size  hidden_channels ]
+        
         # 1. Obtain node embeddings 
         x , edge_attn_l1 = self.conv1(x, edge_index , edge_attr , return_attention_weights=True)
         x = self.bn1(x)
@@ -85,13 +108,19 @@ class GCN(pl.LightningModule):
             perm = None 
             score = None
         x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
-
+        
+        concat_layer = []
+        if self.GNN:
+            concat_layer.append(x)
+        if self.DNN: 
+            concat_layer.append(feed_x)
+        global_x = torch.concat(concat_layer , dim=1)
         
         # 3. Apply a final classifier
         # x = F.dropout(x, p=self.drop_out , training=self.training)
         # x = self.lin_hidden(x).relu()
         # x = self.lin(x)
-        x = self.mlp(x)
+        x = self.mlp(global_x)
         
         return x , edge_attn_l1 , edge_attn_l2 , batch , perm , score
 

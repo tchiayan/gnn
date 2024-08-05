@@ -211,6 +211,8 @@ class ConfigurationManager:
         params = self.params.compare_other
         
         compare_other_config = CompareOtherConfig(
+            dnn=params.dnn , 
+            gnn=params.gnn,
             corr_threshold=params.corr_threshold, 
             epochs=params.epochs,
             hidden_units=params.hidden_units,

@@ -138,8 +138,9 @@ def biomarkers_selection(batch_file , edge_attn_files , topk=10):
     
     edge_attn_layers = torch.stack(edge_attn_layers , dim=-1)
     
-    biomarkers = edge_attn_layers.sum(dim=-1).mean(dim=0).sum(dim=-1).topk(topk)
-    return biomarkers
+    summarize_edges = edge_attn_layers.sum(dim=-1).mean(dim=0)
+    biomarkers = summarize_edges.sum(dim=-1).topk(topk) 
+    return biomarkers , summarize_edges
   
 if __name__ == "__main__":
     

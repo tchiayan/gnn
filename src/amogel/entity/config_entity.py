@@ -150,6 +150,8 @@ class ARMClassificationConfig:
     
 @dataclass(frozen=True)
 class CompareOtherConfig:
+    dnn: bool 
+    gnn: bool
     corr_threshold: float
     epochs: int 
     hidden_units: int 
