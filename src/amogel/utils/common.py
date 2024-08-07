@@ -58,7 +58,7 @@ def symmetric_matrix_to_pyg(matrix , node_features , y , edge_threshold=0.0):
     indices , values = to_undirected(torch.LongTensor(np.vstack((rows, cols))) , torch.FloatTensor(data) , reduce="mean")
     
     ## Filter the edges with all features is more than 0 
-    mask = torch.any(values > edge_threshold , dim=-1)
+    mask = torch.any(values[0] >= 0 , dim=-1)
     indices = indices[:,mask]
     values = values[mask]
     

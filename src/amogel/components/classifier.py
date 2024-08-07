@@ -263,6 +263,9 @@ class OtherClassifier:
             # calculate mean of information tensor given shape is 2D tensor
             info_mean = information_tensor.mean()
             
+            # mask value 
+            mask = information_tensor < self.config.filter
+            information_tensor[mask] = 0
             edge_matrix.append(information_tensor)
             
         if self.config.corr:
