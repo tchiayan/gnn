@@ -436,6 +436,7 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
         feature_selection = set()
         for rule in final_classifier:
             feature_selection = feature_selection.union(set([ int(x.split(":")[0]) for x in list(rule) ]))
+        print(f"Number of rules: {len(final_classifier)}")
             
         # build network graph for selected k 
         corr_array = torch.tensor([abs(corr[x]) if x in corr.keys() else 0 for x in range(0 , df.shape[1])] , dtype=torch.float32)
@@ -504,7 +505,7 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
             edge_tensor[combination[:,0] , combination[:,1]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
             edge_tensor[combination[:,1] , combination[:,0]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
             
-        print("Best K: {} | Best Acc: {:.4f}".format(selected_k , best_acc))
+        print("Best K: {} | Best Acc: {:.4f} | Total selected gene: {}".format(selected_k , best_acc, len(selected_gene)))
         return est , list(selected_gene) , edge_tensor
     
     elif fixed_k is None:

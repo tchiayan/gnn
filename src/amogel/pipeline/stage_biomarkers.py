@@ -71,6 +71,16 @@ class BiomarkersPipeline:
                 print(row['gene_name'])
                 
             print("------ end of list ------")
+            
+    @staticmethod 
+    def label_value(dataset , index): 
+        # print(dataset)
+        # print(index)
+        LABEL = {
+            "KIPAN": [ "KICH" , "KIRP" , "KICC"] , 
+            "BRCA": ["Basal" , "Her" , "LumaA" , "LumaB" , "Normal"]
+        }
+        return LABEL[dataset][int(index)]
     
     def plot_t_test(self, top_n_idx , top_n_names):
         # load gene expression for all the omics data 
@@ -86,8 +96,10 @@ class BiomarkersPipeline:
         # load label 
         test_label = pd.read_csv(os.path.join("./artifacts/data_preprocessing" , self.dataset, "labels_te.csv") , header=None , names=['label'])
         
+        
         f_statistic , p_value = f_regression(test_data , test_label)
         
+        test_label['label'] = test_label['label'].apply(lambda x: self.label_value(self.dataset ,  x))
         df = test_data.join(test_label)
         num_of_rows = math.ceil(len(top_n_idx) / 4)
         fig , axis = plt.subplots(num_of_rows, 4, figsize=(20, 20))
