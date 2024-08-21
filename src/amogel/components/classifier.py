@@ -18,6 +18,7 @@ from torch.nn.functional import one_hot
 from tqdm import tqdm
 import mlflow
 from amogel.entity.config_entity import CompareOtherConfig
+import numpy as np
 warnings.filterwarnings("ignore")
 
 class OtherClassifier:
@@ -268,6 +269,11 @@ class OtherClassifier:
             information_tensor[mask] = 0
             edge_matrix.append(information_tensor)
             
+            # calculate the number of edges
+            tri_idx = np.triu_indices(n=information_tensor.shape[0] , k=0)
+            non_zero_edges = (information_tensor[tri_idx[0] , tri_idx[1]] > 0).sum()
+            print(f"Number of non-zero edges: {non_zero_edges}")
+            
         if self.config.corr:
             logger.info(f"Generating correlation edges...")
             # generate graph data
@@ -416,6 +422,8 @@ class OtherClassifier:
                     Edge attribute dimension: {test_graph[0].edge_attr.shape} , \
                     Edge mean: {test_graph[0].edge_attr.mean(dim=0)} , \
                     Nonzero edge: {torch.count_nonzero(test_graph[0].edge_attr , dim=0)}")
+            logger.error("Please check the configuration setting")
+            exit()
         
         mlflow.pytorch.autolog()
         mlflow.set_experiment("Graph Feature Selection")
