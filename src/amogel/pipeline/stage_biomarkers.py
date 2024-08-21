@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns 
 import math
 import warnings 
+import json
 
 warnings.filterwarnings("ignore")
 
@@ -49,6 +50,8 @@ class BiomarkersPipeline:
         
         # ac selected genes 
         ac_genes = torch.load("artifacts/ac_genes/gene.pt" , map_location=torch.device("cpu"))
+        with open("artifacts/biomarkers/gene.json" , "w") as f: # save selected features (gene name) to file 
+            json.dump(feature_names[feature_names['gene_idx'].isin(list(ac_genes))]['gene_name'].to_list() , f)
         # selection mapping 
         map_ac_genes = {k:v for k,v in enumerate(ac_genes)}
         #print(feature_names[feature_names['gene_idx'].isin(list(ac_genes))])
@@ -61,8 +64,10 @@ class BiomarkersPipeline:
         selected_features = feature_names[feature_names['gene_idx'].isin(list(ac_genes))].iloc[biomarkers.indices.numpy(),:]
         
         print("==== TopN from all omic type ====")
-        for i in top_N_gene_names: 
-            print(i)
+        for ix , i in enumerate(top_N_gene_names): 
+            print(f"{i}\t{biomarkers.indices.numpy()[ix]}")
+        with open("artifacts/biomarkers/top_genes.json", "w") as f:
+            json.dump([str(biomarkers.indices.numpy()[ix]) for ix , i in enumerate(top_N_gene_names)] , f)
         print("==================================")
         
         for i in omic_types:

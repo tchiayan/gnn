@@ -209,6 +209,7 @@ class DataPreprocessing:
         # ordinal encoder 
         enc = OrdinalEncoder()
         label = enc.fit_transform(df_label.iloc[: , 0:1])
+        print(enc.categories_)
         df_label.iloc[: , 0] = label
         
         # train test split 
