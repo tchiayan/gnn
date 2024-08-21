@@ -36,7 +36,7 @@ class BiomarkersPipeline:
         
         # saved the summarize_edge 
         os.makedirs("./artifacts/biomarkers/" , exist_ok=True)
-        torch.save(summarized_edges , f"./artifacts/biomarkers/graph_edges.pt")
+        
         print("----- Summarize edges information -----")
         print(f"-- Edges matrix shape : {summarized_edges.shape}")
         assert summarized_edges.shape[0] == summarized_edges.shape[1] , "Number of genes must be equal"
@@ -52,6 +52,8 @@ class BiomarkersPipeline:
         ac_genes = torch.load("artifacts/ac_genes/gene.pt" , map_location=torch.device("cpu"))
         with open("artifacts/biomarkers/gene.json" , "w") as f: # save selected features (gene name) to file 
             json.dump(feature_names[feature_names['gene_idx'].isin(list(ac_genes))]['gene_name'].to_list() , f)
+        torch.save({"edges_score":summarized_edges , "gene_names": feature_names[feature_names['gene_idx'].isin(list(ac_genes))]['gene_name'].to_list()} , f"./artifacts/biomarkers/graph_edges.pt")
+        
         # selection mapping 
         map_ac_genes = {k:v for k,v in enumerate(ac_genes)}
         #print(feature_names[feature_names['gene_idx'].isin(list(ac_genes))])
