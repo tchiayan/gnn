@@ -18,3 +18,9 @@ mlruns*
 
 # checkpoint
 *.ckpt
+
+# temporary ignore
+MOCAT/*
+
+# biomarkers
+biomarkers/*

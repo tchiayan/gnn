@@ -65,6 +65,13 @@ stages:
     outs:
     - artifacts/amogel
 
+  biomarkers: 
+    cmd: python src/amogel/pipeline/stage_biomarkers.py
+    deps: 
+    - src/amogel/pipeline/stage_biomarkers.py 
+    outs: 
+    - artifacts/biomarkers
+
   # train_embedding:
   #   cmd: python src/amogel/pipeline/stage_train_embedding.py
   #   deps:
