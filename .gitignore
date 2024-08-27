@@ -24,3 +24,7 @@ MOCAT/*
 
 # biomarkers
 biomarkers/*
+
+# ignore everything in the xena folder except mpkgnn.ipynb
+xena/*
+!xena/mpkgnn.ipynb
