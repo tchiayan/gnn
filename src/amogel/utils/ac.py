@@ -568,12 +568,14 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
     infogain_array = torch.tensor([info_gain[x] if x in info_gain.keys() else 0 for x in range(0 , df.shape[1])] , dtype=torch.float32)
     edge_tensor = torch.zeros(df.shape[1] , df.shape[1])    
     df_filter = df_ac.groupby('class').apply(lambda x: x.nlargest(selected_k , 'interestingness_1')).reset_index(drop=True)
-    for idx , row in df_filter.iterrows():
-        gene_idx = [int(x.split(":")[0]) for x in row['rules'].split(",")]
-        combination = np.array([list(x) for x in itertools.combinations(gene_idx , 2)])
-        edge_tensor[combination[:,0] , combination[:,1]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
-        edge_tensor[combination[:,1] , combination[:,0]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
-        
+    with tqdm(total=len(df_filter), desc="Generate information-edge tensor") as pbar:
+        for idx , row in df_filter.iterrows():
+            gene_idx = [int(x.split(":")[0]) for x in row['rules'].split(",")]
+            combination = np.array([list(x) for x in itertools.combinations(gene_idx , 2)])
+            edge_tensor[combination[:,0] , combination[:,1]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
+            edge_tensor[combination[:,1] , combination[:,0]] = (infogain_array[combination[:,0]] + infogain_array[combination[:,1]] + corr_array[combination[:,0]] + corr_array[combination[:,1]])/4
+            pbar.update(1)
+            
     print("Best K: {} | Best Acc: {:.4f}".format(selected_k , best_acc))
     return est , list(selected_gene) , edge_tensor
 
