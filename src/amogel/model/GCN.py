@@ -13,10 +13,11 @@ from sklearn.metrics import classification_report , roc_auc_score
 import numpy as np
 
 class GCN(pl.LightningModule):
-    def __init__(self, in_channels ,  hidden_channels , num_classes , no_of_nodes ,  lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None , decay=0.0 , GNN=True , DNN=True):
+    def __init__(self, in_channels ,  hidden_channels , num_classes , no_of_nodes ,  lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None , decay=0.0 , GNN=True , DNN=True, save_dir="./artifacts/amogel"):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         super(GCN, self).__init__()
+        self.save_dir = save_dir
         self.DNN = DNN
         self.GNN = GNN
         self.num_classes = num_classes
@@ -195,12 +196,12 @@ class GCN(pl.LightningModule):
             if self.current_epoch == self.trainer.max_epochs - 1:
                 print(report)
             
-                torch.save(self.edge_attn_l1 , f"./artifacts/amogel/edge_attn_l1_{self.current_epoch+1}.pt")
-                torch.save(self.edge_attn_l2 , f"./artifacts/amogel/edge_attn_l2_{self.current_epoch+1}.pt")
-                torch.save(self.batches , f"./artifacts/amogel/batches_{self.current_epoch+1}.pt")
-                torch.save(self.pool_batches , f"./artifacts/amogel/pool_batches_{self.current_epoch+1}.pt")
-                torch.save(self.pool_perm , f"./artifacts/amogel/pool_perm_{self.current_epoch+1}.pt")
-                torch.save(self.pool_score , f"./artifacts/amogel/pool_score_{self.current_epoch+1}.pt")
+                torch.save(self.edge_attn_l1 , f"{self.save_dir}/edge_attn_l1_{self.current_epoch+1}.pt")
+                torch.save(self.edge_attn_l2 , f"{self.save_dir}/edge_attn_l2_{self.current_epoch+1}.pt")
+                torch.save(self.batches , f"{self.save_dir}/batches_{self.current_epoch+1}.pt")
+                torch.save(self.pool_batches , f"{self.save_dir}/pool_batches_{self.current_epoch+1}.pt")
+                torch.save(self.pool_perm , f"{self.save_dir}/pool_perm_{self.current_epoch+1}.pt")
+                torch.save(self.pool_score , f"{self.save_dir}/pool_score_{self.current_epoch+1}.pt")
             
         self.edge_attn_l2 = []
         self.edge_attn_l1 = []
