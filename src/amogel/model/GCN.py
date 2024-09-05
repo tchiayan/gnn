@@ -13,7 +13,7 @@ from sklearn.metrics import classification_report , roc_auc_score
 import numpy as np
 
 class GCN(pl.LightningModule):
-    def __init__(self, in_channels ,  hidden_channels , num_classes , no_of_nodes ,  lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None , decay=0.0 , GNN=True , DNN=True, save_dir="./artifacts/amogel"):
+    def __init__(self, in_channels ,  hidden_channels , num_classes , no_of_nodes ,  dnn_hidden_nodes=1024, lr=0.0001 , drop_out=0.0, weight=None, pooling_ratio=0 ,mlflow:mlflow = None , decay=0.0 , GNN=True , DNN=True, save_dir="./artifacts/amogel"):
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         super(GCN, self).__init__()
@@ -46,14 +46,14 @@ class GCN(pl.LightningModule):
         self.criterion = torch.nn.CrossEntropyLoss(weight=self.weight)
         self.mlflow = mlflow
         self.feedforward = torch.nn.Sequential(
-            torch.nn.Linear(no_of_nodes , 1024),
-            torch.nn.BatchNorm1d(1024),
+            torch.nn.Linear(no_of_nodes , dnn_hidden_nodes),
+            torch.nn.BatchNorm1d(dnn_hidden_nodes),
             torch.nn.ReLU(),
-            torch.nn.Linear(1024 , 512),
-            torch.nn.BatchNorm1d(512),
+            torch.nn.Linear(dnn_hidden_nodes , int(dnn_hidden_nodes/2)),
+            torch.nn.BatchNorm1d(int(dnn_hidden_nodes/2)),
             torch.nn.ReLU(),
             torch.nn.Dropout(drop_out),
-            torch.nn.Linear(512 , hidden_channels),
+            torch.nn.Linear(int(dnn_hidden_nodes/2) , hidden_channels),
             torch.nn.BatchNorm1d(hidden_channels),
             torch.nn.Dropout(drop_out),
         )
@@ -216,3 +216,4 @@ class GCN(pl.LightningModule):
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.lr , weight_decay=self.decay)
+        
