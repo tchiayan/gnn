@@ -1,0 +1,1883 @@
+[
+    {
+     "name": "omic.mir934",
+     "score": 100.17559051513672,
+     "top_10": true,
+     "imports": [
+      "omic.mir934",
+      "omic.FOXC1",
+      "omic.LOC145837",
+      "omic.INGX",
+      "omic.MIA",
+      "omic.SFRP1",
+      "omic.BCL11A",
+      "omic.IL34",
+      "omic.TRIM29",
+      "omic.ARL4C",
+      "omic.TMPRSS12",
+      "omic.EPHA2",
+      "omic.CHST3",
+      "omic.HRK",
+      "omic.RUNX3",
+      "omic.mir1052",
+      "omic.mir516a2",
+      "omic.PTX3",
+      "omic.SOX10",
+      "omic.PELI1",
+      "omic.EXO1",
+      "omic.KNTC1",
+      "omic.mir663",
+      "omic.CDKN3",
+      "omic.CENPF",
+      "omic.FANCI",
+      "omic.SEC14L4",
+      "omic.VGLL1",
+      "omic.ASPM",
+      "omic.KIF23",
+      "omic.mir580",
+      "omic.TLE4",
+      "omic.mir636",
+      "omic.mir519a1",
+      "omic.mir137",
+      "omic.SPAG5",
+      "omic.GABRP",
+      "omic.RGMA",
+      "omic.FXYD5",
+      "omic.TUBB6",
+      "omic.CKAP2L",
+      "omic.NCOA7",
+      "omic.SFRS13B",
+      "omic.FANCD2",
+      "omic.HELLS",
+      "omic.RNF145",
+      "omic.mir522",
+      "omic.PCNA",
+      "omic.mir520a",
+      "omic.KIF11",
+      "omic.ZNF367",
+      "omic.mir1276",
+      "omic.CENPE",
+      "omic.GPM6B",
+      "omic.mir551a",
+      "omic.mir3622a",
+      "omic.ESPL1",
+      "omic.mir1381",
+      "omic.ARHGAP11A",
+      "omic.UBE2T",
+      "omic.mir1304",
+      "omic.TCF7L1",
+      "omic.LOC84856",
+      "omic.CDK1",
+      "omic.STAC",
+      "omic.RACGAP1",
+      "omic.CNTNAP3",
+      "omic.SCPEP1",
+      "omic.GINS1",
+      "omic.C12orf48",
+      "omic.FERMT1",
+      "omic.CCNE2",
+      "omic.PDE9A",
+      "omic.mir519a2",
+      "omic.KRT6B",
+      "omic.ATAD2",
+      "omic.C9orf53",
+      "omic.NUSAP1",
+      "omic.CSRP2",
+      "omic.C6orf145",
+      "omic.mir3680",
+      "omic.mir767",
+      "omic.PPP1R14C",
+      "omic.mir765",
+      "omic.mir520b",
+      "omic.WNT6",
+      "omic.mir3691"
+     ]
+    },
+    {
+     "name": "omic.FOXC1",
+     "score": 72.23394775390625,
+     "top_10": true,
+     "imports": [
+      "omic.mir934",
+      "omic.FOXC1",
+      "omic.ESR1",
+      "omic.MIR563",
+      "omic.C6orf97",
+      "omic.GATA3",
+      "omic.AGR3",
+      "omic.LOC145837",
+      "omic.GPR77",
+      "omic.FOXA1",
+      "omic.GREB1",
+      "omic.MIA",
+      "omic.TBC1D9",
+      "omic.CDH3",
+      "omic.SFRP1",
+      "omic.LOC100130331",
+      "omic.BCL11A",
+      "omic.IL34",
+      "omic.CMBL",
+      "omic.TRIM29",
+      "omic.CCDC82",
+      "omic.ARL4C",
+      "omic.TMPRSS12",
+      "omic.EPHA2",
+      "omic.CHST3",
+      "omic.RUNX3",
+      "omic.MLPH",
+      "omic.CA12",
+      "omic.mir1052",
+      "omic.PTX3",
+      "omic.SOX10",
+      "omic.PELI1",
+      "omic.XBP1",
+      "omic.mir3117",
+      "omic.TIMELESS",
+      "omic.mir552",
+      "omic.ANXA9",
+      "omic.FAM171A1",
+      "omic.VGLL1",
+      "omic.PLAGL1",
+      "omic.BRCA1",
+      "omic.mir346",
+      "omic.CSDA",
+      "omic.mir641",
+      "omic.mir190b",
+      "omic.UGT2B11",
+      "omic.TLE4",
+      "omic.SLC44A4",
+      "omic.S1PR2",
+      "omic.FAM63A",
+      "omic.CCDC125",
+      "omic.mir4286",
+      "omic.PBK",
+      "omic.GABRP",
+      "omic.MICALL1",
+      "omic.TUBB6",
+      "omic.NCOA7",
+      "omic.mir488",
+      "omic.SFRS13B",
+      "omic.ABAT",
+      "omic.ZNF552",
+      "omic.SLC22A5",
+      "omic.RNF145",
+      "omic.CDC42EP1",
+      "omic.mir520a",
+      "omic.mir206",
+      "omic.THSD4",
+      "omic.GPM6B",
+      "omic.ARSG",
+      "omic.HAPLN3",
+      "omic.TMEM200C",
+      "omic.mir1910",
+      "omic.mir1381",
+      "omic.SPDEF",
+      "omic.ROPN1",
+      "omic.LOC84856",
+      "omic.DNALI1",
+      "omic.MID1",
+      "omic.mir3942",
+      "omic.STAC",
+      "omic.CNTNAP3",
+      "omic.SIDT1",
+      "omic.SCPEP1",
+      "omic.GPR160",
+      "omic.SLC7A8",
+      "omic.mir204",
+      "omic.FERMT1",
+      "omic.MLF1IP",
+      "omic.DUSP7",
+      "omic.MAPT",
+      "omic.ATAD2",
+      "omic.NUSAP1",
+      "omic.CSRP2",
+      "omic.C6orf145",
+      "omic.AFF3",
+      "omic.SIRPA",
+      "omic.PPP1R14C",
+      "omic.mir765",
+      "omic.WNT6"
+     ]
+    },
+    {
+     "name": "omic.ESR1",
+     "score": 57.99478530883789,
+     "top_10": true,
+     "imports": [
+      "omic.FOXC1",
+      "omic.ESR1",
+      "omic.MIR563",
+      "omic.C6orf97",
+      "omic.GATA3",
+      "omic.AGR3",
+      "omic.LOC145837",
+      "omic.GPR77",
+      "omic.FOXA1",
+      "omic.GREB1",
+      "omic.MIA",
+      "omic.TBC1D9",
+      "omic.SUSD3",
+      "omic.CDH3",
+      "omic.LOC100130331",
+      "omic.BCL11A",
+      "omic.IL34",
+      "omic.CMBL",
+      "omic.MPHOSPH6",
+      "omic.CCDC82",
+      "omic.BCL2",
+      "omic.ARL4C",
+      "omic.TMPRSS12",
+      "omic.EPHA2",
+      "omic.RUNX3",
+      "omic.MLPH",
+      "omic.CA12",
+      "omic.SOX10",
+      "omic.XBP1",
+      "omic.mir3194",
+      "omic.mir3667",
+      "omic.mir1255a",
+      "omic.ANXA9",
+      "omic.FAM171A1",
+      "omic.PLAGL1",
+      "omic.CSDA",
+      "omic.mir518f",
+      "omic.mir190b",
+      "omic.TLE4",
+      "omic.SLC44A4",
+      "omic.mir636",
+      "omic.FAM63A",
+      "omic.CCDC125",
+      "omic.mir4286",
+      "omic.SFRS13B",
+      "omic.mir5121",
+      "omic.ABAT",
+      "omic.ZNF552",
+      "omic.SLC22A5",
+      "omic.ZWINT",
+      "omic.CDC42EP1",
+      "omic.mir520a",
+      "omic.TMEM86A",
+      "omic.THSD4",
+      "omic.ARSG",
+      "omic.HAPLN3",
+      "omic.mir525",
+      "omic.SPDEF",
+      "omic.DNALI1",
+      "omic.mir2115",
+      "omic.SIDT1",
+      "omic.SCPEP1",
+      "omic.GPR160",
+      "omic.SLC7A8",
+      "omic.RRM2",
+      "omic.KLHDC1",
+      "omic.MAPT",
+      "omic.WDR19",
+      "omic.AFF3",
+      "omic.PADI2",
+      "omic.SIRPA",
+      "omic.mir765"
+     ]
+    },
+    {
+     "name": "omic.MIR563",
+     "score": 56.23706817626953,
+     "top_10": true,
+     "imports": [
+      "omic.FOXC1",
+      "omic.ESR1",
+      "omic.MIR563",
+      "omic.GATA3",
+      "omic.AGR3",
+      "omic.LOC145837",
+      "omic.GPR77",
+      "omic.FOXA1",
+      "omic.MIA",
+      "omic.TBC1D9",
+      "omic.CDH3",
+      "omic.SFRP1",
+      "omic.LOC100130331",
+      "omic.BCL11A",
+      "omic.IL34",
+      "omic.CMBL",
+      "omic.TRIM29",
+      "omic.CCDC82",
+      "omic.ARL4C",
+      "omic.EPHA2",
+      "omic.CHST3",
+      "omic.RUNX3",
+      "omic.MLPH",
+      "omic.CA12",
+      "omic.PTX3",
+      "omic.SOX10",
+      "omic.PELI1",
+      "omic.XBP1",
+      "omic.ANXA9",
+      "omic.FAM171A1",
+      "omic.VGLL1",
+      "omic.mir2276",
+      "omic.PLAGL1",
+      "omic.BRCA1",
+      "omic.CSDA",
+      "omic.mir641",
+      "omic.mir190b",
+      "omic.UGT2B11",
+      "omic.TLE4",
+      "omic.SLC44A4",
+      "omic.S1PR2",
+      "omic.FAM63A",
+      "omic.CCDC125",
+      "omic.mir4286",
+      "omic.PBK",
+      "omic.GABRP",
+      "omic.MICALL1",
+      "omic.NCOA7",
+      "omic.ABAT",
+      "omic.ZNF552",
+      "omic.SLC22A5",
+      "omic.RNF145",
+      "omic.ZWINT",
+      "omic.CDC42EP1",
+      "omic.THSD4",
+      "omic.GPM6B",
+      "omic.ARSG",
+      "omic.HAPLN3",
+      "omic.TMEM200C",
+      "omic.mir1910",
+      "omic.SPDEF",
+      "omic.ROPN1",
+      "omic.LOC84856",
+      "omic.DNALI1",
+      "omic.MID1",
+      "omic.mir3942",
+      "omic.STAC",
+      "omic.CNTNAP3",
+      "omic.SIDT1",
+      "omic.SCPEP1",
+      "omic.GPR160",
+      "omic.SLC7A8",
+      "omic.mir204",
+      "omic.FERMT1",
+      "omic.MLF1IP",
+      "omic.DUSP7",
+      "omic.ATAD2",
+      "omic.CSRP2",
+      "omic.C6orf145",
+      "omic.AFF3",
+      "omic.SIRPA",
+      "omic.mir765"
+     ]
+    },
+    {
+     "name": "omic.C6orf97",
+     "score": 35.220054626464844,
+     "top_10": true,
+     "imports": [
+      "omic.FOXC1",
+      "omic.ESR1",
+      "omic.C6orf97",
+      "omic.GATA3",
+      "omic.AGR3",
+      "omic.GPR77",
+      "omic.FOXA1",
+      "omic.GREB1",
+      "omic.MIA",
+      "omic.TBC1D9",
+      "omic.SUSD3",
+      "omic.MPHOSPH6",
+      "omic.BCL2",
+      "omic.TMPRSS12",
+      "omic.MLPH",
+      "omic.CA12",
+      "omic.SOX10",
+      "omic.XBP1",
+      "omic.mir489",
+      "omic.ANXA9",
+      "omic.SLC44A4",
+      "omic.FAM63A",
+      "omic.mir5121",
+      "omic.ABAT",
+      "omic.ZNF552",
+      "omic.ZWINT",
+      "omic.mir520a",
+      "omic.TMEM86A",
+      "omic.THSD4",
+      "omic.ARSG",
+      "omic.mir525",
+      "omic.SPDEF",
+      "omic.DNALI1",
+      "omic.mir2115",
+      "omic.RRM2",
+      "omic.KLHDC1",
+      "omic.MAPT",
+      "omic.WDR19",
+      "omic.AFF3",
+      "omic.PADI2",
+      "omic.mir520b"
+     ]
+    },
+    {
+     "name": "omic.GATA3",
+     "score": 34.329341888427734,
+     "top_10": true,
+     "imports": [
+      "omic.FOXC1",
+      "omic.ESR1",
+      "omic.MIR563",
+      "omic.C6orf97",
+      "omic.GATA3",
+      "omic.AGR3",
+      "omic.LOC145837",
+      "omic.GPR77",
+      "omic.FOXA1",
+      "omic.GREB1",
+      "omic.MIA",
+      "omic.TBC1D9",
+      "omic.SUSD3",
+      "omic.CDH3",
+      "omic.LOC100130331",
+      "omic.BCL11A",
+      "omic.IL34",
+      "omic.CMBL",
+      "omic.MPHOSPH6",
+      "omic.CCDC82",
+      "omic.BCL2",
+      "omic.ARL4C",
+      "omic.EPHA2",
+      "omic.CHST3",
+      "omic.RUNX3",
+      "omic.MLPH",
+      "omic.CA12",
+      "omic.PELI1",
+      "omic.XBP1",
+      "omic.ANXA9",
+      "omic.FAM171A1",
+      "omic.VGLL1",
+      "omic.PLAGL1",
+      "omic.CSDA",
+      "omic.mir190b",
+      "omic.UGT2B11",
+      "omic.TLE4",
+      "omic.SLC44A4",
+      "omic.S1PR2",
+      "omic.FAM63A",
+      "omic.CCDC125",
+      "omic.GABRP",
+      "omic.MICALL1",
+      "omic.NCOA7",
+      "omic.SFRS13B",
+      "omic.ABAT",
+      "omic.ZNF552",
+      "omic.SLC22A5",
+      "omic.RNF145",
+      "omic.TMEM86A",
+      "omic.THSD4",
+      "omic.GPM6B",
+      "omic.ARSG",
+      "omic.mir1910",
+      "omic.SPDEF",
+      "omic.DNALI1",
+      "omic.mir2115",
+      "omic.SIDT1",
+      "omic.SCPEP1",
+      "omic.GPR160",
+      "omic.SLC7A8",
+      "omic.mir204",
+      "omic.RRM2",
+      "omic.FERMT1",
+      "omic.MAPT",
+      "omic.C6orf145",
+      "omic.WDR19",
+      "omic.AFF3",
+      "omic.PADI2",
+      "omic.SIRPA",
+      "omic.mir765"
+     ]
+    },
+    {
+     "name": "omic.AGR3",
+     "score": 31.660974502563477,
+     "top_10": true,
+     "imports": [
+      "omic.FOXC1",
+      "omic.ESR1",
+      "omic.MIR563",
+      "omic.C6orf97",
+      "omic.GATA3",
+      "omic.AGR3",
+      "omic.LOC145837",
+      "omic.GPR77",
+      "omic.FOXA1",
+      "omic.GREB1",
+      "omic.TBC1D9",
+      "omic.SUSD3",
+      "omic.BCL11A",
+      "omic.CMBL",
+      "omic.MPHOSPH6",
+      "omic.BCL2",
+      "omic.TMPRSS12",
+      "omic.MLPH",
+      "omic.CA12",
+      "omic.XBP1",
+      "omic.ANXA9",
+      "omic.FAM171A1",
+      "omic.mir190b",
+      "omic.SLC44A4",
+      "omic.FAM63A",
+      "omic.CCDC125",
+      "omic.SFRS13B",
+      "omic.ABAT",
+      "omic.ZNF552",
+      "omic.SLC22A5",
+      "omic.ZWINT",
+      "omic.TMEM86A",
+      "omic.THSD4",
+      "omic.ARSG",
+      "omic.mir525",
+      "omic.SPDEF",
+      "omic.DNALI1",
+      "omic.mir2115",
+      "omic.SIDT1",
+      "omic.SCPEP1",
+      "omic.GPR160",
+      "omic.SLC7A8",
+      "omic.RRM2",
+      "omic.KLHDC1",
+      "omic.MAPT",
+      "omic.WDR19",
+      "omic.AFF3",
+      "omic.PADI2"
+     ]
+    },
+    {
+     "name": "omic.LOC145837",
+     "score": 31.49106788635254,
+     "top_10": true,
+     "imports": [
+      "omic.mir934",
+      "omic.FOXC1",
+      "omic.ESR1",
+      "omic.MIR563",
+      "omic.GATA3",
+      "omic.AGR3",
+      "omic.LOC145837",
+      "omic.GPR77",
+      "omic.INGX",
+      "omic.FOXA1",
+      "omic.MIA",
+      "omic.TBC1D9",
+      "omic.CDH3",
+      "omic.SFRP1",
+      "omic.LOC100130331",
+      "omic.BCL11A",
+      "omic.IL34",
+      "omic.CMBL",
+      "omic.TRIM29",
+      "omic.CCDC82",
+      "omic.ARL4C",
+      "omic.EPHA2",
+      "omic.CHST3",
+      "omic.RUNX3",
+      "omic.MLPH",
+      "omic.CA12",
+      "omic.PTX3",
+      "omic.SOX10",
+      "omic.PELI1",
+      "omic.XBP1",
+      "omic.ANXA9",
+      "omic.FAM171A1",
+      "omic.VGLL1",
+      "omic.mir2276",
+      "omic.PLAGL1",
+      "omic.BRCA1",
+      "omic.mir346",
+      "omic.CSDA",
+      "omic.mir641",
+      "omic.mir190b",
+      "omic.UGT2B11",
+      "omic.TLE4",
+      "omic.SLC44A4",
+      "omic.S1PR2",
+      "omic.FAM63A",
+      "omic.CCDC125",
+      "omic.PBK",
+      "omic.GABRP",
+      "omic.MICALL1",
+      "omic.RGMA",
+      "omic.NCOA7",
+      "omic.ABAT",
+      "omic.ZNF552",
+      "omic.SLC22A5",
+      "omic.RNF145",
+      "omic.mir206",
+      "omic.THSD4",
+      "omic.HAPLN3",
+      "omic.mir1910",
+      "omic.SPDEF",
+      "omic.ROPN1",
+      "omic.LOC84856",
+      "omic.DNALI1",
+      "omic.MID1",
+      "omic.mir3942",
+      "omic.STAC",
+      "omic.CNTNAP3",
+      "omic.SIDT1",
+      "omic.SCPEP1",
+      "omic.GPR160",
+      "omic.SLC7A8",
+      "omic.mir204",
+      "omic.FERMT1",
+      "omic.MLF1IP",
+      "omic.DUSP7",
+      "omic.MAPT",
+      "omic.ATAD2",
+      "omic.CSRP2",
+      "omic.C6orf145",
+      "omic.AFF3",
+      "omic.SIRPA",
+      "omic.mir765",
+      "omic.WNT6"
+     ]
+    },
+    {
+     "name": "omic.GPR77",
+     "score": 28.99152374267578,
+     "top_10": true,
+     "imports": [
+      "omic.FOXC1",
+      "omic.ESR1",
+      "omic.MIR563",
+      "omic.C6orf97",
+      "omic.GATA3",
+      "omic.AGR3",
+      "omic.LOC145837",
+      "omic.GPR77",
+      "omic.FOXA1",
+      "omic.GREB1",
+      "omic.MIA",
+      "omic.TBC1D9",
+      "omic.SUSD3",
+      "omic.BCL11A",
+      "omic.MPHOSPH6",
+      "omic.BCL2",
+      "omic.TMPRSS12",
+      "omic.MLPH",
+      "omic.CA12",
+      "omic.XBP1",
+      "omic.ANXA9",
+      "omic.mir190b",
+      "omic.SLC44A4",
+      "omic.FAM63A",
+      "omic.CCDC125",
+      "omic.mir5121",
+      "omic.ABAT",
+      "omic.ZNF552",
+      "omic.SLC22A5",
+      "omic.ZWINT",
+      "omic.TMEM86A",
+      "omic.THSD4",
+      "omic.ARSG",
+      "omic.mir525",
+      "omic.SPDEF",
+      "omic.DNALI1",
+      "omic.mir2115",
+      "omic.SIDT1",
+      "omic.GPR160",
+      "omic.SLC7A8",
+      "omic.RRM2",
+      "omic.KLHDC1",
+      "omic.MAPT",
+      "omic.WDR19",
+      "omic.AFF3",
+      "omic.PADI2"
+     ]
+    },
+    {
+     "name": "omic.INGX",
+     "score": 27.97113800048828,
+     "top_10": true,
+     "imports": [
+      "omic.mir934",
+      "omic.LOC145837",
+      "omic.INGX",
+      "omic.MIA",
+      "omic.SFRP1",
+      "omic.IL34",
+      "omic.TRIM29",
+      "omic.TMPRSS12",
+      "omic.CHST3",
+      "omic.HRK",
+      "omic.mir1052",
+      "omic.mir516a2",
+      "omic.PTX3",
+      "omic.SEC14L4",
+      "omic.CENPI",
+      "omic.mir580",
+      "omic.mir519a1",
+      "omic.RGMA",
+      "omic.SFRS13B",
+      "omic.FANCD2",
+      "omic.mir522",
+      "omic.PCNA",
+      "omic.FBLIM1",
+      "omic.mir1276",
+      "omic.CENPE",
+      "omic.mir3622a",
+      "omic.mir1381",
+      "omic.mir1304",
+      "omic.CDK1",
+      "omic.STAC",
+      "omic.RACGAP1",
+      "omic.CNTNAP3",
+      "omic.CCNE2",
+      "omic.mir519a2",
+      "omic.ATAD2",
+      "omic.C9orf53",
+      "omic.NUSAP1",
+      "omic.C6orf145",
+      "omic.mir3680",
+      "omic.mir767",
+      "omic.mir520b",
+      "omic.mir3691"
+     ]
+    },
+    {
+     "name": "omic.FOXA1",
+     "score": 25.420419692993164,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.GREB1",
+     "score": 22.806913375854492,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.MIA",
+     "score": 21.727041244506836,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TBC1D9",
+     "score": 19.268455505371094,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SUSD3",
+     "score": 18.180280685424805,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CDH3",
+     "score": 17.026269912719727,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SFRP1",
+     "score": 16.042070388793945,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.LOC100130331",
+     "score": 15.332216262817383,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.BCL11A",
+     "score": 14.82958698272705,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.IL34",
+     "score": 14.567145347595215,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CMBL",
+     "score": 14.156609535217285,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TRIM29",
+     "score": 13.150168418884277,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.MPHOSPH6",
+     "score": 13.038278579711914,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CCDC82",
+     "score": 12.875202178955078,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.BCL2",
+     "score": 12.786739349365234,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ARL4C",
+     "score": 12.594213485717773,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TMPRSS12",
+     "score": 12.05348014831543,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.EPHA2",
+     "score": 12.012524604797363,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CHST3",
+     "score": 11.784320831298828,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.HRK",
+     "score": 10.97474479675293,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.RUNX3",
+     "score": 10.78516674041748,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.MLPH",
+     "score": 10.15213394165039,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir1537",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir548t",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir5122",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir561",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CXorf61",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.RAD54B",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PRDM13",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3291",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.NCAPG2",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir570",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir2192",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3191",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir548k",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PRIM1",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3174",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir518c",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3157",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir1538",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir548j",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TTC22",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir11851",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3188",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3620",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3684",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3150",
+     "score": 10.0,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CA12",
+     "score": 9.683414459228516,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir1052",
+     "score": 9.663847923278809,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir516a2",
+     "score": 9.502248764038086,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PTX3",
+     "score": 9.474257469177246,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SOX10",
+     "score": 9.449469566345215,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PELI1",
+     "score": 9.323531150817871,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.XBP1",
+     "score": 9.16553020477295,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir518b",
+     "score": 9.136302947998047,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir517a",
+     "score": 9.135796546936035,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir517b",
+     "score": 9.135796546936035,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.EXO1",
+     "score": 9.087425231933594,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.KNTC1",
+     "score": 9.066842079162598,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir489",
+     "score": 9.03640365600586,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir663",
+     "score": 9.036230087280273,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3117",
+     "score": 9.032927513122559,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CDKN3",
+     "score": 9.031521797180176,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CENPF",
+     "score": 9.030646324157715,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3194",
+     "score": 9.028609275817871,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3667",
+     "score": 9.028105735778809,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir1255a",
+     "score": 9.027873039245605,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TIMELESS",
+     "score": 9.026239395141602,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CRHR1",
+     "score": 9.013355255126953,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.FSCN1",
+     "score": 9.002001762390137,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.FANCI",
+     "score": 9.000524520874023,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir552",
+     "score": 9.000284194946289,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ANXA9",
+     "score": 8.934715270996094,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SEC14L4",
+     "score": 8.931217193603516,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CENPI",
+     "score": 8.753826141357422,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.FAM171A1",
+     "score": 8.721498489379883,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.VGLL1",
+     "score": 8.689385414123535,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir2276",
+     "score": 8.687087059020996,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ASPM",
+     "score": 8.684405326843262,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.KIF23",
+     "score": 8.677654266357422,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PLAGL1",
+     "score": 8.617487907409668,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TPX2",
+     "score": 8.592057228088379,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir580",
+     "score": 8.586792945861816,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.BRCA1",
+     "score": 8.554484367370605,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir346",
+     "score": 8.55262279510498,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CSDA",
+     "score": 8.549214363098145,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir641",
+     "score": 8.535711288452148,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir518f",
+     "score": 8.522990226745605,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir190b",
+     "score": 8.43053913116455,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.UGT2B11",
+     "score": 8.397109031677246,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TLE4",
+     "score": 8.352088928222656,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SLC44A4",
+     "score": 8.165705680847168,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.S1PR2",
+     "score": 8.129047393798828,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir636",
+     "score": 8.076288223266602,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.FAM63A",
+     "score": 8.055309295654297,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.AURKA",
+     "score": 7.999149322509766,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CCDC125",
+     "score": 7.889233112335205,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PLEKHF2",
+     "score": 7.881479263305664,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir519a1",
+     "score": 7.829648017883301,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir137",
+     "score": 7.750507354736328,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir4286",
+     "score": 7.7430572509765625,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SPAG5",
+     "score": 7.688877582550049,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PBK",
+     "score": 7.664630889892578,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.GABRP",
+     "score": 7.657505512237549,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.MICALL1",
+     "score": 7.6372575759887695,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.RGMA",
+     "score": 7.559132099151611,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.FXYD5",
+     "score": 7.534493446350098,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TUBB6",
+     "score": 7.440177917480469,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CKAP2L",
+     "score": 7.437758922576904,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.NCOA7",
+     "score": 7.38551139831543,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir488",
+     "score": 7.3839006423950195,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SFRS13B",
+     "score": 7.343592166900635,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir5121",
+     "score": 7.300119400024414,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ABAT",
+     "score": 7.266878604888916,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.FANCD2",
+     "score": 7.261695384979248,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.HELLS",
+     "score": 7.259115219116211,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ZNF552",
+     "score": 7.258824348449707,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SLC22A5",
+     "score": 7.238147258758545,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.RNF145",
+     "score": 7.205474376678467,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ZWINT",
+     "score": 7.197854518890381,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CDC42EP1",
+     "score": 7.184795379638672,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir522",
+     "score": 7.157506465911865,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PCNA",
+     "score": 7.149749279022217,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir520a",
+     "score": 7.02351188659668,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TMEM86A",
+     "score": 7.019670009613037,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir206",
+     "score": 6.8469133377075195,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.FBLIM1",
+     "score": 6.780769348144531,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.KIF11",
+     "score": 6.7694597244262695,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ZNF367",
+     "score": 6.740123271942139,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.THSD4",
+     "score": 6.709284782409668,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir1276",
+     "score": 6.661114692687988,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CENPE",
+     "score": 6.655907154083252,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.GPM6B",
+     "score": 6.483145236968994,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir551a",
+     "score": 6.4735283851623535,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3622a",
+     "score": 6.468835830688477,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ARSG",
+     "score": 6.406459808349609,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ESPL1",
+     "score": 6.382167339324951,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.HAPLN3",
+     "score": 6.369909763336182,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TMEM200C",
+     "score": 6.3627028465271,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir1910",
+     "score": 6.314491271972656,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir1381",
+     "score": 6.270323276519775,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir525",
+     "score": 6.209909439086914,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ARHGAP11A",
+     "score": 6.1798415184021,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SPDEF",
+     "score": 6.090659141540527,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.UBE2T",
+     "score": 6.0132012367248535,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir1304",
+     "score": 5.9489946365356445,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ROPN1",
+     "score": 5.942954063415527,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.TCF7L1",
+     "score": 5.928084373474121,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.LOC84856",
+     "score": 5.920158386230469,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.DNALI1",
+     "score": 5.914076328277588,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CDK1",
+     "score": 5.8919358253479,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.MID1",
+     "score": 5.851779937744141,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3942",
+     "score": 5.834646701812744,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir2115",
+     "score": 5.758344650268555,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.STAC",
+     "score": 5.751468181610107,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.RACGAP1",
+     "score": 5.72528076171875,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CNTNAP3",
+     "score": 5.714433670043945,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SIDT1",
+     "score": 5.688830375671387,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SCPEP1",
+     "score": 5.581698417663574,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.GPR160",
+     "score": 5.581096172332764,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SLC7A8",
+     "score": 5.466447830200195,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir204",
+     "score": 5.459877967834473,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.GINS1",
+     "score": 5.441856861114502,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.RRM2",
+     "score": 5.439873218536377,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.C12orf48",
+     "score": 5.387745380401611,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.FERMT1",
+     "score": 5.358551979064941,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CCNE2",
+     "score": 5.3170318603515625,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PDE9A",
+     "score": 5.305875301361084,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir519a2",
+     "score": 5.258236885070801,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.KLHDC1",
+     "score": 5.226631164550781,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.MLF1IP",
+     "score": 5.20974588394165,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.KRT6B",
+     "score": 5.200108528137207,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.DUSP7",
+     "score": 5.166779518127441,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.MAPT",
+     "score": 5.161250114440918,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.ATAD2",
+     "score": 5.114664554595947,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.C9orf53",
+     "score": 5.11045503616333,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.NUSAP1",
+     "score": 5.102108478546143,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.CSRP2",
+     "score": 5.047756195068359,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.C6orf145",
+     "score": 5.038443088531494,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.WDR19",
+     "score": 5.035652160644531,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.AFF3",
+     "score": 5.022185325622559,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PADI2",
+     "score": 5.000239372253418,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3680",
+     "score": 4.965550422668457,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir767",
+     "score": 4.965040683746338,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.SIRPA",
+     "score": 4.962423801422119,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.PPP1R14C",
+     "score": 4.949353218078613,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir765",
+     "score": 4.942076206207275,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir520b",
+     "score": 4.913422107696533,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.WNT6",
+     "score": 4.842885494232178,
+     "top_10": false,
+     "imports": []
+    },
+    {
+     "name": "omic.mir3691",
+     "score": 4.816721439361572,
+     "top_10": false,
+     "imports": []
+    }
+   ]

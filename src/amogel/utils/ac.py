@@ -285,7 +285,7 @@ def generate_ac_feature_selection(data_file, label_file , output_file  , min_sup
             min_support = -(subdf.shape[0])
             rule_count = 0
             pbar.set_description("Generate frequent itemset for class {}".format(label))
-            while rule_count < min_rule_per_class: 
+            while rule_count < min_rule_per_class and min_support < -10: 
                 itemsets = ista(transactions[label] , target='c' , supp=min_support , report='a')
                 rule_count = len(itemsets)
                 min_support += 1

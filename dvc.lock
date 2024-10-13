@@ -39,22 +39,41 @@ stages:
     deps:
     - path: config/config.yaml
       hash: md5
-      md5: 4f7d0981eaea14a2e0040873e8336697
-      size: 1879
+      md5: 69e05b97fdcb91c457786d7fd6c6bec4
+      size: 2510
     - path: src/amogel/components/data_preprocessing.py
       hash: md5
-      md5: 0bde7b157cec1959b4f8809073cf1406
-      size: 15177
+      md5: ec2f0be10ec0a7ea0e81276599f4bfe4
+      size: 18294
     - path: src/amogel/pipeline/stage_data_preprocessing.py
       hash: md5
-      md5: 240fe8ae57fa88bcd91159b3c86ed69a
-      size: 1206
+      md5: 8b25b6001eec9252d5a97f0df8fd53f1
+      size: 1914
+    params:
+      params.yaml:
+        data_preprocessing:
+          filtering:
+            mRNA:
+              variance: 0.1
+              annova: 2000
+            DNA:
+              variance: 0.001
+              annova: 2000
+            miRNA:
+              variance: 0
+              annova: 502
+          test_split: 0.3
+          n_bins: 2
+          min_rules: 1000
+          fold_change: true
+          discretize_level: 1
+          random_state: 44
     outs:
     - path: artifacts/data_preprocessing
       hash: md5
-      md5: 3fa169e42deaf0c97fd80c9a39809eb6.dir
-      size: 175310298
-      nfiles: 20
+      md5: fed58aa8c70ef0a401f712fcddd445fb.dir
+      size: 33496809
+      nfiles: 11
   model_training:
     cmd: python src/amogel/pipeline/stage_06_model_training.py
     deps:
@@ -131,3 +150,16 @@ stages:
       md5: a033188ab02cbacdfd5abfe29306d7ea.dir
       size: 167882
       nfiles: 1
+  biomarkers:
+    cmd: python src/amogel/pipeline/stage_biomarkers.py
+    deps:
+    - path: src/amogel/pipeline/stage_biomarkers.py
+      hash: md5
+      md5: 8bb40bc7cd6c3d157b9f8b56d38a3ce3
+      size: 6008
+    outs:
+    - path: artifacts/biomarkers
+      hash: md5
+      md5: 089c0607187dee69e573229930393948.dir
+      size: 982526
+      nfiles: 4

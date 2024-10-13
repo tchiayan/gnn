@@ -1,0 +1,5782 @@
+[
+ {
+  "name": "omic.ABAT",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.PRKX",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TTC8",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.ADCY9",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GPR77",
+   "omic.MPHOSPH6",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.AFF3",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.C6orf97",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.NUDT12",
+   "omic.RRM2",
+   "omic.SIDT1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.AGPAT4",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CMBL",
+   "omic.FAM171A1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.LOC84856",
+   "omic.NCK2",
+   "omic.C14orf72",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.AGR3",
+  "size": 15,
+  "top_10": true,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.BCL2",
+   "omic.C14orf45",
+   "omic.C16orf57",
+   "omic.C4orf34",
+   "omic.C6orf97",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CBX2",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CENPA",
+   "omic.CENPW",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.DNMT3B",
+   "omic.ENO1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.ETFA",
+   "omic.FAM174A",
+   "omic.FAM174B",
+   "omic.FAM63A",
+   "omic.FAM64A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.G6PD",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.IVD",
+   "omic.KCNJ11",
+   "omic.KCNK5",
+   "omic.KDM4B",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.KMO",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.MTHFD1L",
+   "omic.MYO10",
+   "omic.NUDT12",
+   "omic.PADI2",
+   "omic.PDSS1",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.RRM2",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SOX11",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TMEM86A",
+   "omic.TRPV6",
+   "omic.TTC8",
+   "omic.TTLL4",
+   "omic.TTYH3",
+   "omic.WDR19",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.GAS1",
+   "omic.KLF14",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.SNORD93",
+   "omic.TMEFF1",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir2114",
+   "omic.mir216a",
+   "omic.mir30a",
+   "omic.mir30c2",
+   "omic.mir383",
+   "omic.mir449a",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.ANKRA2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CCDC125",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.ANXA8",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.MIA",
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.ANXA9",
+  "size": 10,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.C14orf45",
+   "omic.C17orf28",
+   "omic.C4orf34",
+   "omic.C6orf97",
+   "omic.C9orf116",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CENPA",
+   "omic.CENPW",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ENO1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FAM174A",
+   "omic.FAM174B",
+   "omic.FAM64A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.IVD",
+   "omic.KCNJ11",
+   "omic.KCNK5",
+   "omic.KDM4B",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MTHFD1L",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TTC8",
+   "omic.TTLL4",
+   "omic.WFS1",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.GAS1",
+   "omic.KLF14",
+   "omic.LOC285548",
+   "omic.LOC554202",
+   "omic.MIR563",
+   "omic.SNORD93",
+   "omic.TMEFF1",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir449a",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.ARHGAP11A",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.ARHGEF4",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.ARL4C",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CDH3",
+   "omic.CHST2",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPM6B",
+   "omic.HAPLN3",
+   "omic.LOC84856",
+   "omic.MICALL1",
+   "omic.MPZL2",
+   "omic.NCK2",
+   "omic.NPM2",
+   "omic.TRIM29",
+   "omic.VGLL1",
+   "omic.XBP1",
+   "omic.C14orf72",
+   "omic.DSC3",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.UGT2B11",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.ARSG",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.C6orf97",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.ATAD2",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.ATP8B1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.AURKA",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L"
+  ]
+ },
+ {
+  "name": "omic.BBOX1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.SFRP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.BCL11A",
+  "size": 5,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.ARL4C",
+   "omic.BOC",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.DUSP7",
+   "omic.EPHA2",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD7",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.LANCL3",
+   "omic.LOC84856",
+   "omic.MALL",
+   "omic.MIA",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.PLAGL1",
+   "omic.PPM1F",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.SFRP1",
+   "omic.SOX10",
+   "omic.TLE4",
+   "omic.TMEM200C",
+   "omic.TRIM29",
+   "omic.LOC100130331",
+   "omic.MIR563",
+   "omic.mir765",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.BCL2",
+  "size": 2,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C16orf57",
+   "omic.C6orf97",
+   "omic.C7orf63",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.KLHDC1",
+   "omic.MPHOSPH6",
+   "omic.PHF15",
+   "omic.RRM2",
+   "omic.SOX11",
+   "omic.SPEF2",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.TTYH3",
+   "omic.WDR19"
+  ]
+ },
+ {
+  "name": "omic.BOC",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.NCK2",
+   "omic.STAC",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.BUB1B",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.KIF23",
+   "omic.NUSAP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.C12orf48",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.C14orf45",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.C6orf97",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC44A4",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.C15orf23",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.C16orf57",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.PADI2",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.C17orf28",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.MLPH",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.C22orf23",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.C4orf34",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CCDC125",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.C6orf145",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXA1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.C6orf97",
+  "size": 18,
+  "top_10": true,
+  "imports": [
+   "omic.ADCY9",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.BCL2",
+   "omic.C14orf45",
+   "omic.C16orf57",
+   "omic.C7orf63",
+   "omic.CA12",
+   "omic.CBX2",
+   "omic.CCDC103",
+   "omic.CELSR1",
+   "omic.DNMT3B",
+   "omic.ERBB2",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.FOXA1",
+   "omic.FUT3",
+   "omic.G6PD",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GRAMD2",
+   "omic.GREB1",
+   "omic.IFT140",
+   "omic.KDM4B",
+   "omic.KLHDC1",
+   "omic.KMO",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.MTHFD2",
+   "omic.MYO10",
+   "omic.PADI2",
+   "omic.PDSS1",
+   "omic.PGAP3",
+   "omic.PHF15",
+   "omic.PSAT1",
+   "omic.RRM2",
+   "omic.SLC44A4",
+   "omic.SOX11",
+   "omic.SPEF2",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMEM86A",
+   "omic.TMPRSS12",
+   "omic.TRPV6",
+   "omic.TTYH3",
+   "omic.WDR19",
+   "omic.ZNF396",
+   "omic.DSC3",
+   "omic.FJX1",
+   "omic.NHEG1",
+   "omic.mir1251",
+   "omic.mir135a2",
+   "omic.mir2114",
+   "omic.mir2115",
+   "omic.mir216a",
+   "omic.mir30a",
+   "omic.mir3178",
+   "omic.mir499",
+   "omic.mir5121",
+   "omic.mir520b",
+   "omic.mir525"
+  ]
+ },
+ {
+  "name": "omic.C7orf63",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.SUSD3",
+   "omic.WDR19"
+  ]
+ },
+ {
+  "name": "omic.C9orf116",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.C9orf53",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.INGX",
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.C9orf98",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552"
+  ]
+ },
+ {
+  "name": "omic.CA12",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.C6orf97",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FAM174A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.IVD",
+   "omic.KCNK5",
+   "omic.KIAA1370",
+   "omic.LRTOMT",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.RNF103",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TTC8",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.TMEFF1",
+   "omic.mir18a",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.CBX2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.GREB1",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.CCDC103",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.CCDC125",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.C4orf34",
+   "omic.CA12",
+   "omic.CDC20",
+   "omic.CMBL",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.IVD",
+   "omic.KCNK5",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.LRTOMT",
+   "omic.MLPH",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.mir18a",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.CCDC82",
+  "size": 7,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.CCT3",
+   "omic.CDK6",
+   "omic.CHST2",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.DDX26B",
+   "omic.EPHA2",
+   "omic.ESR1",
+   "omic.FAM49A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FUT4",
+   "omic.GATA3",
+   "omic.GPM6B",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.MMP7",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.PIWIL4",
+   "omic.PLAGL1",
+   "omic.PLEKHG1",
+   "omic.PRNP",
+   "omic.RNF145",
+   "omic.RUNX3",
+   "omic.S1PR2",
+   "omic.SIRPA",
+   "omic.TLE4",
+   "omic.VGLL1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.CCNB1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CCNE2",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.SGOL1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CCT3",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CMBL",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.LANCL3",
+   "omic.RUNX3",
+   "omic.S1PR2",
+   "omic.LOC100130331",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.CDC20",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.DNALI1",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.CDC25C",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.CDCA7",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.CDH3",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.DSC3",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.LOC84856",
+   "omic.MMP7",
+   "omic.PLAGL1",
+   "omic.RUNX3",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.CDK1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir516a2",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CDK6",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82"
+  ]
+ },
+ {
+  "name": "omic.CELSR1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.CENPA",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.CENPE",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CENPN",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.MPHOSPH6",
+   "omic.MTHFD2"
+  ]
+ },
+ {
+  "name": "omic.CENPW",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.CEP55",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CHODL",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CHST2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.CCDC82",
+   "omic.CMBL",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.NCK2",
+   "omic.RUNX3",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.CHST3",
+  "size": 2,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CDH3",
+   "omic.CMBL",
+   "omic.CMTM7",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.LOC84856",
+   "omic.MIA",
+   "omic.NCK2",
+   "omic.RAET1L",
+   "omic.RNF145",
+   "omic.RUNX3",
+   "omic.LOC100130331",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CKAP2L",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.RACGAP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CMBL",
+  "size": 5,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.CCDC125",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CDH3",
+   "omic.CHST2",
+   "omic.CHST3",
+   "omic.CSDA",
+   "omic.DUSP7",
+   "omic.ERI2",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FUT4",
+   "omic.GLIPR2",
+   "omic.GPR160",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.LOC84856",
+   "omic.MMP7",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.PLAGL1",
+   "omic.RASAL1",
+   "omic.RIN3",
+   "omic.RUNDC1",
+   "omic.RUNX3",
+   "omic.SIRPA",
+   "omic.TRIM29",
+   "omic.XBP1",
+   "omic.C14orf72",
+   "omic.FOXA1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.CMTM7",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.CHST3"
+  ]
+ },
+ {
+  "name": "omic.CNTNAP3",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CSDA",
+  "size": 2,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CDH3",
+   "omic.CMBL",
+   "omic.DUSP7",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.LOC84856",
+   "omic.MMP7",
+   "omic.NCK2",
+   "omic.NPM2",
+   "omic.PLAGL1",
+   "omic.RIN3",
+   "omic.RUNX3",
+   "omic.S1PR2",
+   "omic.TRIM29",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.CSRP2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.CXXC5",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.KCNK5",
+   "omic.MLPH",
+   "omic.PRKX",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.DDX26B",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.FOXC1",
+   "omic.RUNX3",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.DLGAP5",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.DNALI1",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CXXC5",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.DNMT3B",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.DSC3",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CDH3",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.DSG3",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.DSN1",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.DUSP7",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.RUNX3",
+   "omic.TRIM29",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.ENO1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC44A4",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.EPHA2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.NCK2",
+   "omic.C14orf72",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.ERBB2",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97"
+  ]
+ },
+ {
+  "name": "omic.ERGIC1",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.IVD",
+   "omic.KIAA1370",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MTHFD1L",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.RNF103",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.SUOX",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.ERI2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CMBL",
+   "omic.FOXA1"
+  ]
+ },
+ {
+  "name": "omic.ESPL1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.ESR1",
+  "size": 22,
+  "top_10": true,
+  "imports": [
+   "omic.ABAT",
+   "omic.ADCY9",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARL4C",
+   "omic.ARSG",
+   "omic.BCL2",
+   "omic.C16orf57",
+   "omic.C6orf97",
+   "omic.C7orf63",
+   "omic.CA12",
+   "omic.CBX2",
+   "omic.CCDC103",
+   "omic.CCDC125",
+   "omic.CCDC82",
+   "omic.CDH3",
+   "omic.CELSR1",
+   "omic.CHST2",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.DNALI1",
+   "omic.DNMT3B",
+   "omic.EPHA2",
+   "omic.ERGIC1",
+   "omic.ETFA",
+   "omic.FAM63A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FUT3",
+   "omic.G6PD",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GRAMD2",
+   "omic.GREB1",
+   "omic.HAPLN3",
+   "omic.IFT140",
+   "omic.IL34",
+   "omic.KDM4B",
+   "omic.KLHDC1",
+   "omic.KMO",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.MTHFD2",
+   "omic.MYO10",
+   "omic.NCK2",
+   "omic.NUDT12",
+   "omic.PADI2",
+   "omic.PDSS1",
+   "omic.PLAGL1",
+   "omic.PPM1F",
+   "omic.PSAT1",
+   "omic.RIN3",
+   "omic.RRM2",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.SIRPA",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SOX11",
+   "omic.SPEF2",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TLE4",
+   "omic.TMEM86A",
+   "omic.TMPRSS12",
+   "omic.TRPV6",
+   "omic.TTYH3",
+   "omic.WDR19",
+   "omic.XBP1",
+   "omic.ZNF396",
+   "omic.ZNF552",
+   "omic.C14orf39",
+   "omic.FJX1",
+   "omic.FOXC1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.NHEG1",
+   "omic.mir1251",
+   "omic.mir135a2",
+   "omic.mir2114",
+   "omic.mir2115",
+   "omic.mir216a",
+   "omic.mir2182",
+   "omic.mir30a",
+   "omic.mir30c2",
+   "omic.mir3176",
+   "omic.mir3178",
+   "omic.mir3619",
+   "omic.mir383",
+   "omic.mir499",
+   "omic.mir5121",
+   "omic.mir636",
+   "omic.mir765"
+  ]
+ },
+ {
+  "name": "omic.ETFA",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ESR1",
+   "omic.GATA3"
+  ]
+ },
+ {
+  "name": "omic.FAM171A1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.SCPEP1"
+  ]
+ },
+ {
+  "name": "omic.FAM174A",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.GATA3",
+   "omic.MLPH"
+  ]
+ },
+ {
+  "name": "omic.FAM174B",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.FAM49A",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82"
+  ]
+ },
+ {
+  "name": "omic.FAM63A",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.CBX2",
+   "omic.DNMT3B",
+   "omic.ESR1",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.PSAT1",
+   "omic.SOX11",
+   "omic.SUSD3",
+   "omic.TMEM86A"
+  ]
+ },
+ {
+  "name": "omic.FAM64A",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.FANCD2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.FANCI",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.FOXA1",
+  "size": 19,
+  "top_10": true,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGPAT4",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARL4C",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.BCL11A",
+   "omic.BOC",
+   "omic.C14orf45",
+   "omic.C17orf28",
+   "omic.C4orf34",
+   "omic.C6orf145",
+   "omic.C6orf97",
+   "omic.C9orf116",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CDH3",
+   "omic.CENPA",
+   "omic.CENPW",
+   "omic.CHST2",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.DUSP7",
+   "omic.ENO1",
+   "omic.EPHA2",
+   "omic.ERGIC1",
+   "omic.ERI2",
+   "omic.ESR1",
+   "omic.FAM174B",
+   "omic.FAM64A",
+   "omic.FOXC1",
+   "omic.FUT4",
+   "omic.FZD9",
+   "omic.GATA3",
+   "omic.GLIPR2",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.IVD",
+   "omic.KCNJ11",
+   "omic.KCNK5",
+   "omic.KDM4B",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.LOC84856",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MMP7",
+   "omic.MTHFD1L",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.NUDT12",
+   "omic.PLAGL1",
+   "omic.PPM1F",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RASAL1",
+   "omic.RIN3",
+   "omic.RNF103",
+   "omic.RUNDC1",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.SIDT1",
+   "omic.SIRPA",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TLE4",
+   "omic.TMBIM6",
+   "omic.TRIM29",
+   "omic.TTC8",
+   "omic.TTLL4",
+   "omic.WFS1",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GAS1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.LOC285548",
+   "omic.LOC554202",
+   "omic.MIR563",
+   "omic.SNORD93",
+   "omic.TMEFF1",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir3187",
+   "omic.mir3662",
+   "omic.mir3942",
+   "omic.mir3944",
+   "omic.mir449a",
+   "omic.mir577",
+   "omic.mir765"
+  ]
+ },
+ {
+  "name": "omic.FOXC1",
+  "size": 23,
+  "top_10": true,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGPAT4",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARL4C",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.BBOX1",
+   "omic.BCL11A",
+   "omic.BOC",
+   "omic.C22orf23",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CDC25C",
+   "omic.CDH3",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.CXXC5",
+   "omic.DDX26B",
+   "omic.DNALI1",
+   "omic.DSC3",
+   "omic.DSG3",
+   "omic.DUSP7",
+   "omic.EPHA2",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FAM174B",
+   "omic.FOXA1",
+   "omic.FZD7",
+   "omic.GABRP",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.GRAMD2",
+   "omic.GREB1",
+   "omic.HAPLN3",
+   "omic.IFFO2",
+   "omic.IL34",
+   "omic.IVD",
+   "omic.KCNJ11",
+   "omic.KCNK5",
+   "omic.KIAA1370",
+   "omic.LANCL3",
+   "omic.LOC84856",
+   "omic.LRTOMT",
+   "omic.MALL",
+   "omic.MAPT",
+   "omic.MIA",
+   "omic.MLPH",
+   "omic.MMP7",
+   "omic.MPZL2",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.NUDT12",
+   "omic.PLAGL1",
+   "omic.PLEKHG1",
+   "omic.PPM1F",
+   "omic.PRNP",
+   "omic.PRSS12",
+   "omic.RAET1L",
+   "omic.RASAL1",
+   "omic.RIN3",
+   "omic.RIPK4",
+   "omic.RNF103",
+   "omic.RNF145",
+   "omic.ROPN1",
+   "omic.RUNX3",
+   "omic.S1PR2",
+   "omic.SCPEP1",
+   "omic.SFRP1",
+   "omic.SIDT1",
+   "omic.SIRPA",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SOX10",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TLE4",
+   "omic.TMBIM6",
+   "omic.TMEM200C",
+   "omic.TMPRSS12",
+   "omic.TRIM29",
+   "omic.TTC8",
+   "omic.VGLL1",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.C14orf72",
+   "omic.DSC3",
+   "omic.FOXC1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir206",
+   "omic.mir3187",
+   "omic.mir3662",
+   "omic.mir3942",
+   "omic.mir3944",
+   "omic.mir449b",
+   "omic.mir765",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.FUT3",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1"
+  ]
+ },
+ {
+  "name": "omic.FUT4",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.CMBL",
+   "omic.FOXA1",
+   "omic.HAPLN3",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.FXYD5",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.FZD7",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.FOXC1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.FZD9",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CCDC125",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.G6PD",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.GABRP",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.ROPN1",
+   "omic.SCPEP1"
+  ]
+ },
+ {
+  "name": "omic.GATA3",
+  "size": 14,
+  "top_10": true,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARL4C",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.BCL2",
+   "omic.C14orf45",
+   "omic.C16orf57",
+   "omic.C17orf28",
+   "omic.C4orf34",
+   "omic.C6orf97",
+   "omic.C9orf116",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CCDC82",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CENPA",
+   "omic.CENPW",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ENO1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.ETFA",
+   "omic.FAM174A",
+   "omic.FAM174B",
+   "omic.FAM64A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.G6PD",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.IL34",
+   "omic.IVD",
+   "omic.KCNJ11",
+   "omic.KCNK5",
+   "omic.KDM4B",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.KMO",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.MTHFD1L",
+   "omic.NCK2",
+   "omic.NUDT12",
+   "omic.PADI2",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TMEM86A",
+   "omic.TRPV6",
+   "omic.TTC8",
+   "omic.TTLL4",
+   "omic.WFS1",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf39",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.GAS1",
+   "omic.KLF14",
+   "omic.LOC100130331",
+   "omic.LOC285548",
+   "omic.LOC554202",
+   "omic.MIR563",
+   "omic.SNORD93",
+   "omic.TMEFF1",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir30a",
+   "omic.mir3176",
+   "omic.mir449a",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.GINS1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.GLIPR2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CMBL",
+   "omic.FOXA1",
+   "omic.HAPLN3",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.GPM6B",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.CCDC82",
+   "omic.IL34",
+   "omic.PIWIL4",
+   "omic.RAET1L",
+   "omic.RUNX3",
+   "omic.SIRPA",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.GPR160",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CMBL",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.HAPLN3",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.GPR77",
+  "size": 11,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.ADCY9",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.BCL2",
+   "omic.C14orf45",
+   "omic.C16orf57",
+   "omic.C4orf34",
+   "omic.C6orf97",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CENPA",
+   "omic.CENPW",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.DNMT3B",
+   "omic.ENO1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FAM174B",
+   "omic.FAM63A",
+   "omic.FAM64A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.G6PD",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GREB1",
+   "omic.IVD",
+   "omic.KCNJ11",
+   "omic.KCNK5",
+   "omic.KDM4B",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.KMO",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.MTHFD1L",
+   "omic.NUDT12",
+   "omic.PADI2",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.RRM2",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SOX11",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TMEM86A",
+   "omic.TRPV6",
+   "omic.TTC8",
+   "omic.TTLL4",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.SNORD93",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir216a",
+   "omic.mir30a",
+   "omic.mir449a",
+   "omic.mir499",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.GRAMD2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.FOXC1",
+   "omic.GREB1"
+  ]
+ },
+ {
+  "name": "omic.GREB1",
+  "size": 8,
+  "top_10": false,
+  "imports": [
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.BCL2",
+   "omic.C16orf57",
+   "omic.C6orf97",
+   "omic.C7orf63",
+   "omic.CBX2",
+   "omic.CCDC103",
+   "omic.DNMT3B",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FUT3",
+   "omic.G6PD",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GRAMD2",
+   "omic.KDM4B",
+   "omic.KLHDC1",
+   "omic.KMO",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.MTHFD2",
+   "omic.PADI2",
+   "omic.PSAT1",
+   "omic.RRM2",
+   "omic.SOX11",
+   "omic.SPEF2",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMEM86A",
+   "omic.TMPRSS12",
+   "omic.TRPV6",
+   "omic.WDR19",
+   "omic.ZNF396",
+   "omic.FJX1",
+   "omic.NHEG1",
+   "omic.mir1251",
+   "omic.mir135a2",
+   "omic.mir216a",
+   "omic.mir30a",
+   "omic.mir3178"
+  ]
+ },
+ {
+  "name": "omic.GSTP1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.HAPLN3",
+  "size": 4,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CHST2",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.DUSP7",
+   "omic.EPHA2",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FUT4",
+   "omic.GLIPR2",
+   "omic.GPR160",
+   "omic.IL34",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.PLAGL1",
+   "omic.RASAL1",
+   "omic.RIN3",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.TLE4",
+   "omic.TRIM29",
+   "omic.XBP1",
+   "omic.C14orf72",
+   "omic.FOXA1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.HMMR",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.HRK",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.INGX",
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.IFFO2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.LOC100130331",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.IFT140",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.IL34",
+  "size": 6,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CDH3",
+   "omic.CHST2",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GABRP",
+   "omic.GATA3",
+   "omic.GPM6B",
+   "omic.HAPLN3",
+   "omic.LANCL3",
+   "omic.LOC84856",
+   "omic.MIA",
+   "omic.MICALL1",
+   "omic.MPZL2",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.RAET1L",
+   "omic.RASAL1",
+   "omic.RIPK4",
+   "omic.ROPN1",
+   "omic.RUNX3",
+   "omic.SFRP1",
+   "omic.TRIM29",
+   "omic.VGLL1",
+   "omic.XBP1",
+   "omic.C14orf72",
+   "omic.DSC3",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.UGT2B11",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.INGX",
+  "size": 4,
+  "top_10": false,
+  "imports": [
+   "omic.C9orf53",
+   "omic.HRK",
+   "omic.MIA",
+   "omic.PTX3",
+   "omic.RACGAP1",
+   "omic.RAET1L",
+   "omic.SEC14L4",
+   "omic.SFRP1",
+   "omic.mir1051",
+   "omic.mir1052",
+   "omic.mir516a2",
+   "omic.mir519a1",
+   "omic.mir522",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.IQGAP3",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.IVD",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.KCNG1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.NCK2",
+   "omic.SCPEP1",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.KCNJ11",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.KCNK5",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CXXC5",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.KDM4B",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.KIAA1370",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir18a"
+  ]
+ },
+ {
+  "name": "omic.KIF11",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.KIF18A",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.KIF23",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.BUB1B",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.KIF2C",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CCDC125",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.KLHDC1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.SUSD3",
+   "omic.WDR19"
+  ]
+ },
+ {
+  "name": "omic.KMO",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.KRT16",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.TMPRSS12",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.KRT6B",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.MIA",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.L3MBTL4",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L"
+  ]
+ },
+ {
+  "name": "omic.LANCL3",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCT3",
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.NCK2",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.LMNB1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.LOC84856",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.CDH3",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.NCK2",
+   "omic.PLAGL1",
+   "omic.RUNX3",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.LRTOMT",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.MALL",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.FOXC1",
+   "omic.PTX3",
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.MAPT",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.C6orf97",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.MIA",
+  "size": 2,
+  "top_10": false,
+  "imports": [
+   "omic.ANXA8",
+   "omic.BCL11A",
+   "omic.CHST3",
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.INGX",
+   "omic.KRT6B",
+   "omic.RAET1L",
+   "omic.SEC14L4",
+   "omic.SFRP1",
+   "omic.SOX10",
+   "omic.mir516a2",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.MICALL1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.IL34",
+   "omic.RUNX3",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.MLF1IP",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.MLPH",
+  "size": 10,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.C14orf45",
+   "omic.C17orf28",
+   "omic.C4orf34",
+   "omic.C6orf97",
+   "omic.C9orf116",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CENPA",
+   "omic.CENPW",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ENO1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FAM174A",
+   "omic.FAM174B",
+   "omic.FAM64A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.IVD",
+   "omic.KCNJ11",
+   "omic.KCNK5",
+   "omic.KDM4B",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MTHFD1L",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TTC8",
+   "omic.TTLL4",
+   "omic.WFS1",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.GAS1",
+   "omic.KLF14",
+   "omic.LOC285548",
+   "omic.LOC554202",
+   "omic.MIR563",
+   "omic.SNORD93",
+   "omic.TMEFF1",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir449a",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.MMP7",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.CDH3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.NCK2",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.MPHOSPH6",
+  "size": 4,
+  "top_10": false,
+  "imports": [
+   "omic.ADCY9",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.BCL2",
+   "omic.C16orf57",
+   "omic.C6orf97",
+   "omic.C7orf63",
+   "omic.CA12",
+   "omic.CCDC103",
+   "omic.CENPN",
+   "omic.DNMT3B",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.KDM4B",
+   "omic.KLHDC1",
+   "omic.MAPT",
+   "omic.PADI2",
+   "omic.PSAT1",
+   "omic.RRM2",
+   "omic.SOX11",
+   "omic.SPEF2",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.WDR19"
+  ]
+ },
+ {
+  "name": "omic.MPZL2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.FOXC1",
+   "omic.IL34"
+  ]
+ },
+ {
+  "name": "omic.MTHFD1L",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.MTHFD2",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.CENPN",
+   "omic.ESR1",
+   "omic.GREB1",
+   "omic.RRM2"
+  ]
+ },
+ {
+  "name": "omic.MYO10",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.NCAPG",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.NCK2",
+  "size": 4,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.BOC",
+   "omic.CCDC82",
+   "omic.CHST2",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.EPHA2",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.KCNG1",
+   "omic.LANCL3",
+   "omic.LOC84856",
+   "omic.MMP7",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.PLAGL1",
+   "omic.RIN3",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.TLE4",
+   "omic.C14orf72",
+   "omic.FOXA1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.UGT2B11"
+  ]
+ },
+ {
+  "name": "omic.NCOA7",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CMBL",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.NCK2",
+   "omic.RUNX3",
+   "omic.VGLL1",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.NEK2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.NPM2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.NCK2",
+   "omic.RUNX3",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.NUDT12",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.NUF2",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.NUSAP1",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.BUB1B",
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.PADI2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C16orf57",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.RRM2",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.TMEM86A"
+  ]
+ },
+ {
+  "name": "omic.PDE9A",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.PDSS1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.PGAP3",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97"
+  ]
+ },
+ {
+  "name": "omic.PHF15",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.PIWIL4",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.GPM6B",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.PLAGL1",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CDH3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.LOC84856",
+   "omic.NCK2",
+   "omic.C14orf72",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.PLEKHG1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.PPM1F",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.PPP1R14C",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.PRC1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.PRKX",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CXXC5",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.PRNP",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.FOXC1",
+   "omic.VGLL1",
+   "omic.LOC100130331",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.PRSS12",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.PSAT1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.C6orf97",
+   "omic.CCDC125",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.TMEM86A",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.PTX3",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.INGX",
+   "omic.MALL",
+   "omic.RAET1L",
+   "omic.RGMA",
+   "omic.SFRP1",
+   "omic.TMPRSS12",
+   "omic.TRIM29",
+   "omic.mir1381",
+   "omic.mir516a1",
+   "omic.mir516a2",
+   "omic.mir519a1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.RACGAP1",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.CKAP2L",
+   "omic.INGX",
+   "omic.RAET1L",
+   "omic.UBE2T",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.RAET1L",
+  "size": 24,
+  "top_10": true,
+  "imports": [
+   "omic.ANXA8",
+   "omic.ARHGEF4",
+   "omic.AURKA",
+   "omic.C12orf48",
+   "omic.C9orf53",
+   "omic.CCNB1",
+   "omic.CDK1",
+   "omic.CENPE",
+   "omic.CHST3",
+   "omic.CNTNAP3",
+   "omic.CSRP2",
+   "omic.ESPL1",
+   "omic.FANCD2",
+   "omic.FOXC1",
+   "omic.GINS1",
+   "omic.GPM6B",
+   "omic.GSTP1",
+   "omic.HRK",
+   "omic.IL34",
+   "omic.INGX",
+   "omic.KRT16",
+   "omic.L3MBTL4",
+   "omic.LMNB1",
+   "omic.MALL",
+   "omic.MIA",
+   "omic.NEK2",
+   "omic.NUSAP1",
+   "omic.PDE9A",
+   "omic.PPP1R14C",
+   "omic.PRC1",
+   "omic.PRSS12",
+   "omic.PTX3",
+   "omic.RACGAP1",
+   "omic.RGMA",
+   "omic.SEC14L4",
+   "omic.SFRP1",
+   "omic.SFRS13B",
+   "omic.SOX10",
+   "omic.SPAG5",
+   "omic.STAC",
+   "omic.TRIM29",
+   "omic.WDR67",
+   "omic.mir1051",
+   "omic.mir1052",
+   "omic.mir1382",
+   "omic.mir3691",
+   "omic.mir516a2",
+   "omic.mir519a1",
+   "omic.mir519a2",
+   "omic.mir522",
+   "omic.mir548s",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.RASAL1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CMBL",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.IL34"
+  ]
+ },
+ {
+  "name": "omic.RGMA",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.PTX3",
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.RIN3",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.NCK2",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.RIPK4",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.IL34"
+  ]
+ },
+ {
+  "name": "omic.RNF103",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.RNF145",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.CHST3",
+   "omic.FOXC1",
+   "omic.RUNX3",
+   "omic.LOC100130331",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.ROPN1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.GABRP",
+   "omic.IL34",
+   "omic.SCPEP1"
+  ]
+ },
+ {
+  "name": "omic.RRM2",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.MTHFD2",
+   "omic.PADI2",
+   "omic.SOX11",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.TMEM86A",
+   "omic.TRPV6"
+  ]
+ },
+ {
+  "name": "omic.RUNDC1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CMBL",
+   "omic.FOXA1"
+  ]
+ },
+ {
+  "name": "omic.RUNX3",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CDH3",
+   "omic.CHST2",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.DDX26B",
+   "omic.DUSP7",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPM6B",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.LOC84856",
+   "omic.MICALL1",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.RNF145",
+   "omic.S1PR2",
+   "omic.TRIM29",
+   "omic.VGLL1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.UGT2B11"
+  ]
+ },
+ {
+  "name": "omic.S1PR2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CSDA",
+   "omic.FOXC1",
+   "omic.RUNX3",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.SCPEP1",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.ESR1",
+   "omic.FAM171A1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GABRP",
+   "omic.GATA3",
+   "omic.HAPLN3",
+   "omic.KCNG1",
+   "omic.NCK2",
+   "omic.ROPN1",
+   "omic.VGLL1",
+   "omic.XBP1",
+   "omic.C14orf72",
+   "omic.FOXA1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.UGT2B11",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.SEC14L4",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.INGX",
+   "omic.MIA",
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.TRIM29",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.SFRP1",
+  "size": 5,
+  "top_10": false,
+  "imports": [
+   "omic.BBOX1",
+   "omic.BCL11A",
+   "omic.CNTNAP3",
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.INGX",
+   "omic.MALL",
+   "omic.MIA",
+   "omic.PRSS12",
+   "omic.PTX3",
+   "omic.RAET1L",
+   "omic.RGMA",
+   "omic.SEC14L4",
+   "omic.SOX10",
+   "omic.STAC",
+   "omic.TMPRSS12",
+   "omic.TRIM29",
+   "omic.mir516a1",
+   "omic.mir516a2",
+   "omic.mir519a1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.SFRS13B",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.SGOL1",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.CCNE2",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.SIDT1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.SIRPA",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CCDC82",
+   "omic.CMBL",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GPM6B",
+   "omic.VGLL1",
+   "omic.LOC100130331",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.SKA1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.SLC22A5",
+  "size": 4,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.IVD",
+   "omic.KCNK5",
+   "omic.KIAA1370",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MTHFD1L",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TTC8",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.SLC44A4",
+  "size": 6,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.C14orf45",
+   "omic.C4orf34",
+   "omic.C6orf97",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ENO1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.IVD",
+   "omic.KCNK5",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MTHFD1L",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TTC8",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.KLF14",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.TMEFF1",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.SLC7A8",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.KCNK5",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.SOX10",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.FOXC1",
+   "omic.MIA",
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.TRIM29",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.SOX11",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MPHOSPH6",
+   "omic.RRM2",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.TMEM86A",
+   "omic.WDR19"
+  ]
+ },
+ {
+  "name": "omic.SPAG5",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.SPDEF",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.PRKX",
+   "omic.SIDT1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.TMBIM6",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.SPEF2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.SLC44A4",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.mir30a"
+  ]
+ },
+ {
+  "name": "omic.STAC",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BOC",
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.SUOX",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.SUSD3",
+  "size": 8,
+  "top_10": false,
+  "imports": [
+   "omic.ADCY9",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.BCL2",
+   "omic.C16orf57",
+   "omic.C6orf97",
+   "omic.C7orf63",
+   "omic.CA12",
+   "omic.CBX2",
+   "omic.CCDC103",
+   "omic.CELSR1",
+   "omic.DNMT3B",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.KLHDC1",
+   "omic.MAPT",
+   "omic.MPHOSPH6",
+   "omic.MYO10",
+   "omic.PADI2",
+   "omic.PHF15",
+   "omic.PSAT1",
+   "omic.RRM2",
+   "omic.SOX11",
+   "omic.SPEF2",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMEM86A",
+   "omic.TMPRSS12",
+   "omic.TRPV6",
+   "omic.TTYH3",
+   "omic.WDR19",
+   "omic.ZNF396",
+   "omic.FJX1",
+   "omic.mir135a2",
+   "omic.mir30a",
+   "omic.mir499",
+   "omic.mir520b"
+  ]
+ },
+ {
+  "name": "omic.TBC1D9",
+  "size": 11,
+  "top_10": true,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.BCL2",
+   "omic.C14orf45",
+   "omic.C17orf28",
+   "omic.C4orf34",
+   "omic.C6orf97",
+   "omic.C9orf116",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CENPA",
+   "omic.CENPW",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ENO1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FAM174B",
+   "omic.FAM64A",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.G6PD",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.IVD",
+   "omic.KCNJ11",
+   "omic.KCNK5",
+   "omic.KDM4B",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.KMO",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.MTHFD1L",
+   "omic.NUDT12",
+   "omic.PADI2",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.RRM2",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SOX11",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.SUSD3",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TMEM86A",
+   "omic.TTC8",
+   "omic.TTLL4",
+   "omic.WFS1",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.GAS1",
+   "omic.LOC285548",
+   "omic.LOC554202",
+   "omic.MIR563",
+   "omic.SNORD93",
+   "omic.TMEFF1",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir216a",
+   "omic.mir30a",
+   "omic.mir449a",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.TCF7L1",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.THSD4",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.C6orf97",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.MLPH",
+   "omic.MPHOSPH6",
+   "omic.NUDT12",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SUSD3",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.TLE4",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.NCK2",
+   "omic.VGLL1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.TMBIM6",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.TMEM200C",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.TMEM86A",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.FAM63A",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.PADI2",
+   "omic.PSAT1",
+   "omic.RRM2",
+   "omic.SOX11",
+   "omic.SUSD3",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.TMPRSS12",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.FOXC1",
+   "omic.GREB1",
+   "omic.KRT16",
+   "omic.PTX3",
+   "omic.SFRP1",
+   "omic.SUSD3",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.TRIM29",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.DUSP7",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.PTX3",
+   "omic.RAET1L",
+   "omic.RUNX3",
+   "omic.SEC14L4",
+   "omic.SFRP1",
+   "omic.SOX10",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.TRPV6",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.RRM2",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.TTC8",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.TTLL4",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.TTYH3",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.TUBB6",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.UBE2T",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.RACGAP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.VGLL1",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.CCDC82",
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.NCOA7",
+   "omic.PRNP",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.SIRPA",
+   "omic.TLE4",
+   "omic.MIR563",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.WDR19",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.BCL2",
+   "omic.C6orf97",
+   "omic.C7orf63",
+   "omic.ESR1",
+   "omic.GREB1",
+   "omic.KLHDC1",
+   "omic.MPHOSPH6",
+   "omic.SOX11",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.WDR67",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L"
+  ]
+ },
+ {
+  "name": "omic.WFS1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.WNT6",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.XBP1",
+  "size": 6,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANKRA2",
+   "omic.ANXA9",
+   "omic.ARL4C",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.C17orf28",
+   "omic.C4orf34",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CMBL",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FZD9",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.IVD",
+   "omic.KCNK5",
+   "omic.KIAA1370",
+   "omic.KIF2C",
+   "omic.LRTOMT",
+   "omic.MAPT",
+   "omic.MLPH",
+   "omic.MTHFD1L",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.PSAT1",
+   "omic.RNF103",
+   "omic.SCPEP1",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.SPEF2",
+   "omic.SUOX",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TTC8",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.ZNF695",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.GAS1",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.YBX1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CCDC125",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.ZNF367",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.ZNF396",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.ZNF552",
+  "size": 2,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.C9orf98",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.IVD",
+   "omic.KIAA1370",
+   "omic.LRTOMT",
+   "omic.MLPH",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TTC8",
+   "omic.XBP1",
+   "omic.C14orf72",
+   "omic.FOXC1",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.mir18a",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.ZNF695",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.C14orf39",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ESR1",
+   "omic.GATA3"
+  ]
+ },
+ {
+  "name": "omic.C14orf72",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARL4C",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CMBL",
+   "omic.DNALI1",
+   "omic.EPHA2",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.MLPH",
+   "omic.NCK2",
+   "omic.PLAGL1",
+   "omic.SCPEP1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.DSC3",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.C6orf97",
+   "omic.FOXC1",
+   "omic.IL34",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.FJX1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.FOXA1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.CMBL",
+   "omic.FOXA1",
+   "omic.HAPLN3",
+   "omic.NCK2",
+   "omic.SCPEP1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.FOXC1",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.C4orf34",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CDC20",
+   "omic.CDCA7",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR160",
+   "omic.GPR77",
+   "omic.IVD",
+   "omic.KIAA1370",
+   "omic.LRTOMT",
+   "omic.MLPH",
+   "omic.NUDT12",
+   "omic.PRKX",
+   "omic.RNF103",
+   "omic.SIDT1",
+   "omic.SKA1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TMBIM6",
+   "omic.TTC8",
+   "omic.XBP1",
+   "omic.YBX1",
+   "omic.ZNF552",
+   "omic.C14orf72",
+   "omic.LOC285548",
+   "omic.MIR563",
+   "omic.VIM",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.GAS1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.MLPH",
+   "omic.TBC1D9",
+   "omic.XBP1"
+  ]
+ },
+ {
+  "name": "omic.KLF14",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.GATA3",
+   "omic.MLPH",
+   "omic.SLC44A4"
+  ]
+ },
+ {
+  "name": "omic.LOC100130331",
+  "size": 3,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.ARL4C",
+   "omic.BCL11A",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.EPHA2",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.HAPLN3",
+   "omic.IFFO2",
+   "omic.IL34",
+   "omic.LOC84856",
+   "omic.NCK2",
+   "omic.PLAGL1",
+   "omic.PRNP",
+   "omic.RNF145",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.SIRPA",
+   "omic.TLE4",
+   "omic.LOC145837",
+   "omic.MIR563",
+   "omic.UGT2B11"
+  ]
+ },
+ {
+  "name": "omic.LOC145837",
+  "size": 5,
+  "top_10": false,
+  "imports": [
+   "omic.AGPAT4",
+   "omic.ARHGEF4",
+   "omic.ARL4C",
+   "omic.BOC",
+   "omic.CCDC82",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.EPHA2",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.HAPLN3",
+   "omic.IL34",
+   "omic.KCNG1",
+   "omic.LOC84856",
+   "omic.NCK2",
+   "omic.PLAGL1",
+   "omic.PPM1F",
+   "omic.RIN3",
+   "omic.RUNX3",
+   "omic.S1PR2",
+   "omic.SCPEP1",
+   "omic.TLE4",
+   "omic.C14orf72",
+   "omic.LOC100130331",
+   "omic.MIR563",
+   "omic.UGT2B11",
+   "omic.mir206",
+   "omic.mir449b",
+   "omic.mir765",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.LOC285548",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.LOC554202",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.MIR563",
+  "size": 19,
+  "top_10": true,
+  "imports": [
+   "omic.ABAT",
+   "omic.AFF3",
+   "omic.AGPAT4",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ARHGEF4",
+   "omic.ARL4C",
+   "omic.ARSG",
+   "omic.ATP8B1",
+   "omic.BCL11A",
+   "omic.BOC",
+   "omic.C6orf145",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CCDC82",
+   "omic.CCT3",
+   "omic.CDC25C",
+   "omic.CDH3",
+   "omic.CHST2",
+   "omic.CHST3",
+   "omic.CMBL",
+   "omic.CSDA",
+   "omic.CXXC5",
+   "omic.DDX26B",
+   "omic.DNALI1",
+   "omic.DUSP7",
+   "omic.EPHA2",
+   "omic.ERGIC1",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.FUT4",
+   "omic.GATA3",
+   "omic.GLIPR2",
+   "omic.GPM6B",
+   "omic.GPR77",
+   "omic.HAPLN3",
+   "omic.IFFO2",
+   "omic.IL34",
+   "omic.IQGAP3",
+   "omic.IVD",
+   "omic.KCNG1",
+   "omic.KIAA1370",
+   "omic.LANCL3",
+   "omic.LOC84856",
+   "omic.MICALL1",
+   "omic.MLF1IP",
+   "omic.MLPH",
+   "omic.MMP7",
+   "omic.NCK2",
+   "omic.NCOA7",
+   "omic.NPM2",
+   "omic.NUDT12",
+   "omic.PIWIL4",
+   "omic.PLAGL1",
+   "omic.PLEKHG1",
+   "omic.PPM1F",
+   "omic.PRKX",
+   "omic.PRNP",
+   "omic.RIN3",
+   "omic.RNF145",
+   "omic.RUNX3",
+   "omic.S1PR2",
+   "omic.SCPEP1",
+   "omic.SIDT1",
+   "omic.SIRPA",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SLC7A8",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.THSD4",
+   "omic.TLE4",
+   "omic.TMBIM6",
+   "omic.TRIM29",
+   "omic.TTC8",
+   "omic.VGLL1",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.C14orf72",
+   "omic.DSC3",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.UGT2B11",
+   "omic.mir18a",
+   "omic.mir190b",
+   "omic.mir204",
+   "omic.mir2182",
+   "omic.mir221",
+   "omic.mir3187",
+   "omic.mir3944",
+   "omic.mir449b",
+   "omic.mir765"
+  ]
+ },
+ {
+  "name": "omic.NHEG1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1"
+  ]
+ },
+ {
+  "name": "omic.SNORD93",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.TMEFF1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.MLPH",
+   "omic.SLC44A4",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.UGT2B11",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ARL4C",
+   "omic.IL34",
+   "omic.NCK2",
+   "omic.RUNX3",
+   "omic.SCPEP1",
+   "omic.LOC100130331",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.VIM",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.mir1051",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.INGX",
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir1052",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.INGX",
+   "omic.RAET1L",
+   "omic.mir516a2",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir1251",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1"
+  ]
+ },
+ {
+  "name": "omic.mir135a2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.mir1381",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.PTX3",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir1382",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir18a",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.KIAA1370",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.mir190b",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ABAT",
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ATP8B1",
+   "omic.CA12",
+   "omic.CCDC125",
+   "omic.CXXC5",
+   "omic.DNALI1",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.PRKX",
+   "omic.SIDT1",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.SPDEF",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.ZNF552",
+   "omic.FOXC1",
+   "omic.MIR563",
+   "omic.mir18a",
+   "omic.mir577"
+  ]
+ },
+ {
+  "name": "omic.mir204",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.mir206",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.LOC145837"
+  ]
+ },
+ {
+  "name": "omic.mir2114",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.mir2115",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.mir216a",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.mir2182",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ESR1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.mir221",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.mir30a",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.GREB1",
+   "omic.SPEF2",
+   "omic.SUSD3",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.mir30c2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.mir3176",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.ESR1",
+   "omic.GATA3"
+  ]
+ },
+ {
+  "name": "omic.mir3178",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GREB1"
+  ]
+ },
+ {
+  "name": "omic.mir3187",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.mir3619",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.mir3662",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXA1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.mir3680",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir3691",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir383",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.mir3942",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXA1",
+   "omic.FOXC1"
+  ]
+ },
+ {
+  "name": "omic.mir3944",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.mir449a",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.TBC1D9"
+  ]
+ },
+ {
+  "name": "omic.mir449b",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.FOXC1",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.mir499",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1",
+   "omic.GPR77",
+   "omic.SUSD3"
+  ]
+ },
+ {
+  "name": "omic.mir5121",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.mir516a1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.PTX3",
+   "omic.SFRP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir516a2",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.CDK1",
+   "omic.INGX",
+   "omic.MIA",
+   "omic.PTX3",
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.mir1052",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir519a1",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.INGX",
+   "omic.PTX3",
+   "omic.RAET1L",
+   "omic.SFRP1",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir519a2",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir520b",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97",
+   "omic.SUSD3",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir522",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.INGX",
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir525",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.C6orf97"
+  ]
+ },
+ {
+  "name": "omic.mir548s",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.RAET1L",
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir577",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.AGR3",
+   "omic.ANXA9",
+   "omic.ERGIC1",
+   "omic.FOXA1",
+   "omic.GATA3",
+   "omic.GPR77",
+   "omic.MLPH",
+   "omic.SLC22A5",
+   "omic.SLC44A4",
+   "omic.TBC1D9",
+   "omic.XBP1",
+   "omic.FOXC1",
+   "omic.mir190b"
+  ]
+ },
+ {
+  "name": "omic.mir636",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.ESR1"
+  ]
+ },
+ {
+  "name": "omic.mir765",
+  "size": 0,
+  "top_10": false,
+  "imports": [
+   "omic.BCL11A",
+   "omic.ESR1",
+   "omic.FOXA1",
+   "omic.FOXC1",
+   "omic.LOC145837",
+   "omic.MIR563"
+  ]
+ },
+ {
+  "name": "omic.mir767",
+  "size": 1,
+  "top_10": false,
+  "imports": [
+   "omic.mir934"
+  ]
+ },
+ {
+  "name": "omic.mir934",
+  "size": 50,
+  "top_10": true,
+  "imports": [
+   "omic.ANXA8",
+   "omic.ARHGAP11A",
+   "omic.ARL4C",
+   "omic.ATAD2",
+   "omic.BBOX1",
+   "omic.BCL11A",
+   "omic.BUB1B",
+   "omic.C12orf48",
+   "omic.C15orf23",
+   "omic.C9orf53",
+   "omic.CCNB1",
+   "omic.CCNE2",
+   "omic.CDK1",
+   "omic.CENPE",
+   "omic.CEP55",
+   "omic.CHODL",
+   "omic.CHST3",
+   "omic.CKAP2L",
+   "omic.CNTNAP3",
+   "omic.CSRP2",
+   "omic.DLGAP5",
+   "omic.DSN1",
+   "omic.EPHA2",
+   "omic.ESPL1",
+   "omic.FANCD2",
+   "omic.FANCI",
+   "omic.FOXC1",
+   "omic.FXYD5",
+   "omic.FZD7",
+   "omic.GINS1",
+   "omic.GPM6B",
+   "omic.GSTP1",
+   "omic.HMMR",
+   "omic.HRK",
+   "omic.IL34",
+   "omic.INGX",
+   "omic.KIF11",
+   "omic.KIF18A",
+   "omic.KIF23",
+   "omic.KRT16",
+   "omic.KRT6B",
+   "omic.LMNB1",
+   "omic.LOC84856",
+   "omic.MALL",
+   "omic.MIA",
+   "omic.NCAPG",
+   "omic.NCOA7",
+   "omic.NEK2",
+   "omic.NPM2",
+   "omic.NUF2",
+   "omic.NUSAP1",
+   "omic.PDE9A",
+   "omic.PPP1R14C",
+   "omic.PRC1",
+   "omic.PRSS12",
+   "omic.PTX3",
+   "omic.RACGAP1",
+   "omic.RAET1L",
+   "omic.RGMA",
+   "omic.SCPEP1",
+   "omic.SEC14L4",
+   "omic.SFRP1",
+   "omic.SFRS13B",
+   "omic.SGOL1",
+   "omic.SOX10",
+   "omic.SPAG5",
+   "omic.STAC",
+   "omic.TCF7L1",
+   "omic.TLE4",
+   "omic.TMPRSS12",
+   "omic.TRIM29",
+   "omic.TUBB6",
+   "omic.UBE2T",
+   "omic.VGLL1",
+   "omic.WNT6",
+   "omic.ZNF367",
+   "omic.LOC145837",
+   "omic.mir1051",
+   "omic.mir1052",
+   "omic.mir1381",
+   "omic.mir1382",
+   "omic.mir3680",
+   "omic.mir3691",
+   "omic.mir516a1",
+   "omic.mir516a2",
+   "omic.mir519a1",
+   "omic.mir519a2",
+   "omic.mir520b",
+   "omic.mir522",
+   "omic.mir548s",
+   "omic.mir767"
+  ]
+ }
+]
