@@ -349,7 +349,8 @@ class DataPreprocessing:
                 
             logger.info(f"Selected genes: {len(selected_genes)} , {selected_genes[:5]}...")
             if len(selected_genes) > 10:
-                df = df[selected_genes]
+                #df = df[selected_genes]
+                pass
             
         sel = SelectKBest(score_func=f_classif, k=threshold)
         df_filtered = pd.DataFrame(sel.fit_transform(df, df_label[target]), index=df.index , columns=df.columns[sel.get_support()])

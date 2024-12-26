@@ -115,6 +115,7 @@ class OtherClassifier:
         torch.save(selected_gene , f"./artifacts/ac_genes/gene.pt")
         self.information_edge_tensor = information_edge_tensor
         
+                
         if self.config.discretized:
             self.train_data_ac =  pd.DataFrame(est.transform(self.train_data))[selected_gene]
             self.test_data_ac = pd.DataFrame(est.transform(self.test_data))[selected_gene]
@@ -460,4 +461,8 @@ class OtherClassifier:
             mlflow.log_param("dataset" , self.dataset)
             trainer = Trainer(max_epochs=self.config.epochs)
             trainer.fit(model , train_loader , test_loader)
+            
+            # save model 
+            model_path = f"./artifacts/amogel/{self.dataset}_model.pt"
+            torch.save(model.state_dict() , model_path)
             

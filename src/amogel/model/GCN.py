@@ -108,11 +108,11 @@ class GCN(pl.LightningModule):
         else:
             perm = None 
             score = None
-        x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
+        gnn_x = global_mean_pool(x, batch)  # [batch_size, hidden_channels]
         
         concat_layer = []
         if self.GNN:
-            concat_layer.append(x)
+            concat_layer.append(gnn_x)
         if self.DNN: 
             concat_layer.append(feed_x)
         global_x = torch.concat(concat_layer , dim=1)
@@ -123,11 +123,11 @@ class GCN(pl.LightningModule):
         # x = self.lin(x)
         x = self.mlp(global_x)
         
-        return x , edge_attn_l1 , edge_attn_l2 , batch , perm , score
+        return x , edge_attn_l1 , edge_attn_l2 , batch , perm , score , gnn_x
 
     def training_step(self, batch, batch_idx):
         x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
-        out , edge_attn_l1 , edge_attn_l2 , _ , _ , _ = self(x, edge_index, edge_attr, batch)
+        out , edge_attn_l1 , edge_attn_l2 , _ , _ , _ , _ = self(x, edge_index, edge_attr, batch)
         loss = self.criterion(out, y)
         acc = self.accuracy(out, y)
         self.cfm_training(out , y)
@@ -140,7 +140,7 @@ class GCN(pl.LightningModule):
         
         x , edge_index , edge_attr, batch , y = batch.x , batch.edge_index , batch.edge_attr , batch.batch , batch.y
         self.batches.append(batch)
-        out , edge_attn_l1, edge_attn_l2 , pool_batch , pool_perm , pool_score = self(x, edge_index, edge_attr, batch)
+        out , edge_attn_l1, edge_attn_l2 , pool_batch , pool_perm , pool_score , _ = self(x, edge_index, edge_attr, batch)
         
         self.edge_attn_l1.append(edge_attn_l1)
         self.edge_attn_l2.append(edge_attn_l2)
